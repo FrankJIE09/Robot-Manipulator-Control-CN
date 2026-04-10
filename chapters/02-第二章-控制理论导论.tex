@@ -179,46 +179,30 @@ x_1 = y, \quad x_2 = \dot{y}
 \end{example}
 
 \begin{example}[双平台系统]
-考虑图2.2.2所示的MIMO机械系统，它代表了一个用于将实验与外部扰动隔离的双平台系统。系统有两个输入：导致地面移动的外部激励 $u_2(t)$ 和作用在平台 $m_1$ 上的力 $u_1(t)$。系统有三个输出位移：平台 $m_1$ 的运动 $y_1(t)$、平台 $m_2$ 的运动 $y_2(t)$ 以及地面的运动 $y_3(t)$。实验将在平台 $m_1$ 的顶部进行，因此，人们希望最小化 $y_1$ 的大小。
-
-使用牛顿第二定律，并考虑弹簧 $k_1$、$k_2$ 和阻尼器 $c_1$、$c_2$ 的作用，获得描述该系统的微分方程：
-\begin{align}
-\ddot{y}_1 &= -\frac{k_1}{m_1}y_1 - \frac{c_1}{m_1}\dot{y}_1 + \frac{k_1}{m_1}y_2 + \frac{c_1}{m_1}\dot{y}_2 + \frac{1}{m_1}u_1 \\
-\ddot{y}_2 &= \frac{k_1}{m_2}y_1 + \frac{c_1}{m_2}\dot{y}_1 - \frac{k_1+k_2}{m_2}y_2 - \frac{c_1+c_2}{m_2}\dot{y}_2 + \frac{k_2}{m_2}y_3 + \frac{c_2}{m_2}\dot{y}_3 \\
-\ddot{y}_3 &= u_2
-\end{align}
-
-可以通过选择以下状态向量获得该系统的状态空间表述：
+考虑图2.2.2所示的MIMO机械系统，它代表了一个用于将实验与外部扰动隔离的双平台系统。系统有两个输入：导致地面移动的 $u_2$ 和导致平台 $m_1$ 移动的 $u_1$。系统还有2个输出，即平台 $m_1$ 的运动 $y_1$ 和平台 $m_2$ 的运动 $y_2$。实验将在平台 $m_1$ 的顶部进行，因此，人们希望最小化 $y_1$ 的大小。系统包含弹簧 $k_1$、$k_2$ 和阻尼器 $c_1$、$c_2$，使用牛顿第二定律获得描述该系统的微分方程：
+\begin{equation}\label{eq:2.2.8}
+m_1 \ddot{y}_1 + c_1(\dot{y}_1 - \dot{y}_2) + k_1(y_1 - y_2) + u_1 = 0
+\end{equation}
+\begin{equation}\label{eq:2.2.9}
+m_2 \ddot{y}_2 + c_1(\dot{y}_2 - \dot{y}_1) + c_2\dot{y}_2 + k_1(y_2 - y_1) + k_2(y_2 - u_2) = 0
+\end{equation}
+可以通过选择以下状态获得该系统的状态空间表述：
 \[
-x_1 = y_1, \quad x_2 = \dot{y}_1, \quad x_3 = y_2, \quad x_4 = \dot{y}_2, \quad x_5 = y_3, \quad x_6 = \dot{y}_3
+x_1 = y_1, \quad x_2 = \dot{y}_1, \quad x_3 = y_2, \quad x_4 = \dot{y}_2
 \]
-
-状态空间方程 $\dot{x} = Ax + Bu$ 的矩阵形式为：
+状态方程为：
 \[
-\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \\ \dot{x}_3 \\ \dot{x}_4 \\ \dot{x}_5 \\ \dot{x}_6 \end{bmatrix}
-=
-\begin{bmatrix}
-0 & 1 & 0 & 0 & 0 & 0 \\
--\frac{k_1}{m_1} & -\frac{c_1}{m_1} & \frac{k_1}{m_1} & \frac{c_1}{m_1} & 0 & 0 \\
-0 & 0 & 0 & 1 & 0 & 0 \\
-\frac{k_1}{m_2} & \frac{c_1}{m_2} & -\frac{k_1+k_2}{m_2} & -\frac{c_1+c_2}{m_2} & \frac{k_2}{m_2} & \frac{c_2}{m_2} \\
-0 & 0 & 0 & 0 & 0 & 1 \\
-0 & 0 & 0 & 0 & 0 & 0
-\end{bmatrix}
-\begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \\ x_5 \\ x_6 \end{bmatrix}
-+
-\begin{bmatrix}
-0 & 0 \\
-\frac{1}{m_1} & 0 \\
-0 & 0 \\
-0 & 0 \\
-0 & 0 \\
-0 & 1
-\end{bmatrix}
-\begin{bmatrix} u_1 \\ u_2 \end{bmatrix}
+\dot{x}_1 = x_2
 \]
-
-输出方程为 $y = Cx$，其中输出向量为 $y = [y_1 \quad y_2]^T = [x_1 \quad x_3]^T$。
+\[
+\dot{x}_2 = -\frac{k_1}{m_1}(x_1 - x_3) - \frac{c_1}{m_1}(x_2 - x_4) - \frac{u_1}{m_1}
+\]
+\[
+\dot{x}_3 = x_4
+\]
+\[
+\dot{x}_4 = -\frac{k_1}{m_2}(x_3 - x_1) - \frac{k_2}{m_2}(x_3 - u_2) - \frac{c_1}{m_2}(x_4 - x_2) - \frac{c_2}{m_2}x_4
+\]
 \end{example}
 
 \begin{quote}
