@@ -1,0 +1,148 @@
+\documentclass[UTF8,a4paper,12pt]{ctexbook}
+
+% 标记主文档，使章节文件检测到后关闭独立模式
+\newcommand{\maindoc}{true}
+
+\usepackage{amsmath,amssymb,amsthm,graphicx,hyperref,bm,listings,float}
+\usepackage{geometry}
+\usepackage{standalone}
+\usepackage{tocloft}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{appendix}
+
+\geometry{a4paper,margin=2.5cm,top=3cm,bottom=2.5cm}
+
+% 页面设置
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO,RE]{\leftmark}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% 章节标题格式
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\centering}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries}
+  {\thesection}{1em}{}
+
+% 目录深度
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{2}
+
+% 超链接设置
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    bookmarksopen=true,
+    bookmarksnumbered=true
+}
+
+% 定理环境
+\theoremstyle{definition}
+\newtheorem{theorem}{定理}[chapter]
+\newtheorem{lemma}{引理}[chapter]
+\newtheorem{definition}{定义}[chapter]
+\newtheorem{example}{示例}[chapter]
+
+\begin{document}
+
+% 定义主文档标记（用于章节文件检测是否在主文档中）
+\newcommand{\maindoc}{true}
+
+% 封面
+\begin{titlepage}
+\begin{center}
+\vspace*{3cm}
+
+{\Huge\bfseries 机器人操作器控制}\\[1.5cm]
+{\Large\bfseries ——理论与实践（第二版）}\\[2cm]
+{\large 中文译本}\\[3cm]
+
+\vfill
+
+{\large 原著作者：}\\[0.5cm]
+{\large Frank L. Lewis}\\
+{\large Darren M. Dawson}\\
+{\large Chaouki T. Abdallah}\\[2cm]
+
+\vfill
+
+{\large \today}
+
+\end{center}
+\end{titlepage}
+
+% 前言与目录
+\frontmatter
+
+% 前言
+\chapter*{前言与系列介绍}
+\addcontentsline{toc}{chapter}{前言与系列介绍}
+\input{chapters/00-前言与系列介绍}
+
+% 目录
+\tableofcontents
+\newpage
+
+% 正文
+\mainmatter
+
+% 第1章
+\chapter{商用机器人操作器}
+\input{chapters/01-第一章-商用机器人操作器}
+
+% 第2章
+\chapter{控制理论导论}
+\input{chapters/02-第二章-控制理论导论}
+
+% 第3章
+\chapter{机器人动力学}
+\input{chapters/03-第三章-机器人动力学}
+
+% 第4章
+\chapter{计算力矩控制}
+\input{chapters/04-第四章-计算力矩控制}
+
+% 第5章
+\chapter{机器人操作器的鲁棒控制}
+\input{chapters/05-第五章-鲁棒控制}
+
+% 第6章
+\chapter{机器人操作器的自适应控制}
+\input{chapters/06-第六章-自适应控制}
+
+% 第7章
+\chapter{先进控制技术}
+\input{chapters/07-第七章-先进控制技术}
+
+% 第8章
+\chapter{机器人的神经网络控制}
+\input{chapters/08-第八章-神经网络控制}
+
+% 第9章
+\chapter{力控制}
+\input{chapters/09-第九章-力控制}
+
+% 第10章
+\chapter{机器人控制实现与软件}
+\input{chapters/10-第十章-控制实现与软件}
+
+% 附录
+\appendix
+\chapter{机器人运动学与雅可比矩阵回顾}
+\input{chapters/A-附录A-运动学与雅可比矩阵}
+
+\chapter{控制器仿真软件}
+\input{chapters/B-附录B-仿真软件}
+
+\chapter{常见机器人手臂的动力学}
+\input{chapters/C-附录C-常见机器人动力学}
+
+\backmatter
+\end{document}

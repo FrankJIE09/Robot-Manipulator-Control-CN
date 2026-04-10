@@ -1,0 +1,122 @@
+Appendix C
+
+Dynamics of Some
+Common Robot Arms
+In this appendix we give the dynamics of some common robot arms. We
+assume that the robot dynamics are given by
+
+                                                                       (C.1.1)
+where the matrix M(q) is symmetric and positive definite with elements mij(q),
+that is,
+
+
+
+
+and N (q, q) is an n×1 vector with elements ni, that is,
+
+
+Note in particular that the gravity terms are indentified in the expressions of
+ni by the gravity constant g=9.8 meters/s2. We will also adopt the following
+notation:
+
+    Length of link i is Li in meters
+    Mass of link i is mi in kilograms
+    Mass moment of inertia of Link i about axis u is Iuui in kg-m-m
+    Si=sin qi and Ci=cos qi
+    Sij=sin(qi+qj) and Cij=cos(qi+qj)
+    Sijk=sin(qi+qj+qk) and Cijk=cos(qi+qj+qk)
+    SSi=sin2 qi, CCi=cos2 qi, and CSi=cos qi sin qi;
+    SSij=sin2(qi+qj)
+
+                                                                           599
+Copyright © 2004 by Marcel Dekker, Inc.
+600                                             Dynamics of Some Common Robot Arms
+
+
+C.1 SCARA ARM
+
+The first robot we consider is a general SCARA configuration robot shown in
+Figure C.1.1. These equations will apply to the AdeptOne and AdeptTwo
+robots. The dynamics include the first four degrees of freedom and are
+symbolically given by
+
+
+
+
+                                   Figure C.1.1: SCARA manipulator.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+C.2 Stanford Manipulator                                             601
+
+
+
+
+C.2 Stanford Manipulator
+
+The Stanford manipulator shown in Figure C.2.1 has the following dynamics
+[Bejczy 1974], [Paul 1981]:
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+602                                               Dynamics of Some Common Robot Arms
+
+
+
+
+                                   Figure C.2.1: Stanford manipulator.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+C.3 PUMA 560 Manipulator                                                 603
+
+
+C.3 PUMA 560 Manipulator
+
+The PUMA 560 is shown in Figure C.3.1. Many simplifications can be made
+for this particular structure in order to obtain the following dynamics which
+appeared in [Armstrong et al. 1986].
+
+
+
+
+                                 Figure C.3.1: PUMA 560 manipulator.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+604                                       Dynamics of Some Common Robot Arms
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+C.3 PUMA 560 Manipulator                  605
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+
+[Armstrong et al. 1986] Armstrong, B., O.Khatib, and J.Burdick, “The explicit
+   dynamic model and inertial parameters of the PUMA 560 arm,” Proc.
+   1986 IEEE Conf. Robot. Autom., pp. 510–518, San Francisco, Apr. 7–
+   10, 1986.
+[Bejczy 1974] Bejczy, A.K., “Robot arm dynamics and control,” NASA-JPL
+    Technical Memorandum 33–669, 1974.
+[Paul 1981] Paul, R.P., Robot Manipulators: Mathematics, Programming and
+    Control. Cambridge, MA: MIT Press, 1981.
+
+
+
+
+                                                                         607
+Copyright © 2004 by Marcel Dekker, Inc.

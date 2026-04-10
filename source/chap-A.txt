@@ -1,0 +1,1412 @@
+Appendix A
+
+Review of Robot
+Kinematics and Jacobians
+We review here the basic information from a first course in robotics that is
+needed for this book. This includes robot kinematics, the arm Jacobian, and
+the issue of specifying the Cartesian position. The review is detailed since
+those with a background in system theory and controls may not yet have seen
+this material. Several examples are given which are used throughout the
+book for design and simulation purposes.
+
+
+A.1 Basic Manipulator Geometries
+
+In this section we look at some basic arm geometries. A robot arm or
+manipulator is composed of a set of joints separated in space by the arm
+links. The joints are where the motion in the arm occurs (cf. our own wrist
+and elbow), while the links are of fixed construction (cf. our own forearm).
+Thus the links maintain a fixed relationship between the joints. [Although the
+links may be flexible (i.e., they may bend); we ignore flexibility effects here.]
+   The joints may be actuated by motors or hydraulic actuators. There are
+two sorts of robot joints, involving two sorts of motion. A revolute joint
+(denoted R) is one that allows rotary motion about an axis of rotation. An
+example is the human elbow. A prismatic joint (denoted P) is one that allows
+extension or telescopic motion. An example is a telescoping automobile
+antenna. There is no anthropomorphous analogy to the prismatic link. The
+joint variables of a manipulator are the variable parameters of the joints. For
+
+                                                                             555
+Copyright © 2004 by Marcel Dekker, Inc.
+556                                       Review of Robot Kinematics and Jacobians
+
+
+
+
+Figure A.1.1: Basic robot arm geometries: (a) articulated arm, revolute co-ordinates
+(RRR); (b) spherical coordinates (RRP); (c) SCARA arm (RRP).
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.1 Basic Manipulator Geometries                                                 557
+
+
+
+
+Figure A.1.1:(Cont.) (d) cylindrical coordinates (RPP); (e) Cartesian arm, rectangular
+coordinates (PPP).
+
+
+
+a revolute joint the variable is an angle, denoted ␪. For a prismatic joint it is
+a length, denoted d.
+    Some basic arm geometries are shown in Figure A.1.1. The RRR articulated
+arm in Figure A.1.1a is like the human arm, while the PPP Cartesian arm in
+Figure A.1.1e is closely tied to the coordinates used in the manipulator
+workspace, where the Cartesian coordinates (x, y, z) are often used to describe
+tasks to be performed. The workspace is the total volume swept out by the
+end effector as the robot executes all possible motions.
+    The joint axis of a revolute joint is the axis about which the rotation ␪
+occurs. (The sense of rotation is determined using the right-handed screw
+rule: If the curled fingers of the right hand indicate the direction of rotation,
+the thumb indicates the direction of the axis of rotation.) For a prismatic
+joint, it is the axis along which the telescoping action d occurs. The relative
+orientations of the joint axes of an arm determine its fundamental properties.
+Figure A.1.1c shows a RRP manipulator known as the SCARA (selected
+compliant articulated robot for assembly) arm. It has quite a different structure
+than the RRP spherical arm shown in Figure A.1.1b, since its joint axes are
+all parallel. On the other hand, the joint axes of the spherical arm intersect at
+a point.
+    Industrial examples of the RRR arm are the PUMA and Cincinnati-Milacron
+T3 735 manipulators. The Stanford manipulator is a spherical RRP arm; the
+AdeptOne is a SCARA RRP arm. An example of the RPP arm is the GMF M-
+100. The Cincinnati-Milacron T3 gantry robot is a PPP arm.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+558                                       Review of Robot Kinematics and Jacobians
+
+   Many industrial robots are serial link manipulators since they consist of
+a series of links connected together by actuated joints. The base is called
+link 0, and the last link is terminated by the tool or end effector. Many
+robots have six joints, corresponding to the six degrees of freedom needed to
+obtain arbitrary position and orientation of the end effector in three-
+dimensional space.
+   Arms like the PUMA 560 have six revolute joints. In such an arm, the
+joints may be grouped into two sets of three joints each. The first three
+joints may be used to place the end effector at an arbitrary position within
+the three-dimensional workspace. The last three joints may be used to
+obtain an arbitrary orientation of the end effector at that position. In the
+PUMA 560, the axes of joints 4, 5, and 6 intersect at a common point and
+are mutually orthogonal. This makes orienting the end-effector convenient.
+The last three joints are known as the wrist mechanism (see Example
+A.2.4).
+
+
+
+
+A.2 Robot Kinematics
+
+
+Here we review the kinematics of robot manipulators, including the arm A
+matrices, homogeneous transformations, the T matrix, forward and inverse
+kinematics, and joint-space and Cartesian coordinates. Several illustrative
+examples are given.
+
+
+A Matrices
+
+For given values of the joint variables, it is important to be able to specify the
+locations of the links with respect to each other. This is accomplished by
+using the manipulator kinematic equations.
+   We may associate with each link i a coordinate frame (xi, yi, zi) fixed to
+that link. See Figure A.2.1. A standard and consistent paradigm for so doing
+is the Denavit-Hartenberg (D-H) representation [Paul 1981], [Spong and
+Vidyasagar 1989]. The frame attached to link 0 (i.e., the base of the
+manipulator) is called the base frame or inertial frame.
+   The relation between coordinate frame i-1 and coordinate frame i is given
+by the transformation matrix
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                              559
+
+
+
+
+                                                                               (A.2.1)
+
+
+
+
+Most of the parameters in this A matrix for link i are fixed. The link parameters
+are ␣i, the twist of the link i, and ai, the length of link i. These parameters are
+tabulated for each link in the arm manufacturer’s specifications. The joint
+parameters are the joint angle ␪i and the joint offset di. If joint i is revolute,
+the joint variable is ␪i and di is a constant tabulated in the specs. On the other
+hand, if the link is prismatic, then di is the joint variable and ␪i is a constant
+provided in the specs. The parameter ai for a prismatic joint is defined to be
+zero, since the link length is variable and described by di.
+   By the D-H convention, for a revolute joint, the rotation ␪i occurs about
+axis zi-1. For a prismatic joint di occurs along axis zi-1. Thus the link
+coordinate frame is considered to be attached to the outer end of the link.
+See the examples.
+
+
+
+
+                    Figure A.2.1: Link kinematic relations in a manipulator.
+
+   The A matrix Ai is a function of only a single variable, namely the joint
+variable ␪i or di, since all the other parameters in Ai are fixed for a specific
+joint. If a manipulator has n links, the joint-variable vector q is an n-vector
+composed of the individual joint variables. Thus q is in general a combination
+of angles ␪i and lengths di. For instance, for an RRP arm,
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+560                                       Review of Robot Kinematics and Jacobians
+
+The components of q are denoted by qi; that is, the general joint variable qi
+can represent either an angle ␪i or a length di as appropriate.
+
+Homogeneous Transformations
+  The A matrix is a homogeneous transformation matrix of the form
+
+
+                                                                                (A.2.2)
+
+where Ri is a rotation matrix and pi is a translation vector. Thus if ir is a point
+described with respect to the coordinate frame of link i, the same point has
+coordinates i-1r with respect to the frame of link i-1 given by
+
+                                                                                (A.2.3)
+
+   The homogeneous transformation is a 4×4 matrix, so that it can describe
+both rotations and translations; therefore, the vectors describing position in a
+given coordinate frame are 4-vectors. They are of the form
+
+
+
+                                                   ,
+                                                                                (A.2.4)
+
+
+where (ix, iy, iz) are the coordinates of the point in frame i. Thus, according to
+(A.2.3) and (A.2.2),
+
+
+                                                                                (A.2.5)
+
+which is just a rotation of Ri applied to the coordinates in frame i plus a
+translation of pi.
+   We may interpret frame i-1 as the fixed (i.e., “original”) frame and frame
+i as the rotated and translated (i.e., “new”) frame due to the following
+considerations. According to (A.2.5), there is an easy way to find the rotation
+matrix Ri that rotates a given coordinate frame i-1 into another given frame i.
+Set pi equal to zero and (ix, iy, iz)=(1,0,0). Then (A.2.5) is equal to the first
+column of Ri. That is, the first column of Ri is nothing but the representation
+of the new x-axis ix in terms of the original coordinates (i-1x, i-1y, i-1z). Similarly,
+the second (respectively third) column of Ri is the representation of the rotated
+y-axis iy (respectively, z-axis and iz) in the fixed frame i-1. We shall illustrate
+this in Example A.2.1.
+   Therefore, Ai may be interpreted from several points of view. It is the
+transformation that takes a representation ir of a vector in frame i to its
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                          561
+
+representation i-1r in frame i-1. On the other hand, it is the description of
+frame i in terms of frame i-1; in fact, Ri describes the orientation of the axes of
+frame i in terms of frame i-1, while pi describes the origin of frame i in terms
+of the coordinates of frame i-1.
+   A rotation matrix R enjoys the property of orthogonality, that is, RT=R-1. It
+has one eigenvalue at ␭=1, whose eigenvector is the axis of rotation. A rotation
+of ␪ about the x axis, for instance, looks like
+
+
+                                                                           (A.2.6)
+
+
+   The last entry of “1” in (A.2.4) represents a scaling factor for the length of
+the vector. By using a homogeneous transformation whose (4, 4) entry is not
+unity, vectors may be scaled. By using entries in positions, (4, 1), (4, 2), (4, 3)
+of the transformation matrix, perspective transformations may be performed.
+These ideas are important, for instance, in camera-frame transformations but
+will not be useful in the transformations associated with the manipulator
+arm.
+
+Arm T Matrix
+  To obtain the coordinates of a point in terms of the base (i.e., link 0) frame,
+we may use the matrices
+
+                                                                           (A.2.7)
+
+Then, given the coordinates ir of a point expressed in the frame attached to
+link i, the coordinates of the same point in the base frame are given by
+
+                                                                           (A.2.8)
+We call Ti a kinematic chain of transformations.
+  We define the arm T matrix as
+
+                                                                           (A.2.9)
+
+with n the number of links in the manipulator. Then, if nr are the coordinates
+of a point referred to the last link, the base coordinates of the point are
+
+                                                                          (A.2.10)
+
+This is an important relation since nr, the coordinates of an object in the nth
+frame, can represent the location of the object with respect to the tool or end
+effector. It is thus important in specifying tasks to be accomplished. On the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+562                                       Review of Robot Kinematics and Jacobians
+
+other hand, 0r represents the location of the object with respect to the base
+frame, which is the object’s absolute position with respect to the manipulator
+base.
+
+Forward Kinematics
+  The position and orientation of the end effector with respect to the
+manipulator base frame are given by evaluating the arm T matrix. It is
+conventional to symbolize this homogeneous transformation as
+
+
+                                                                            (A.2.11)
+
+
+Thus the orientations of the axes of the end-effector reference frame are described
+with respect to base coordinates by the rotation matrix R=[n o a], and the
+origin of the end-effector frame has a position of p in base coordinates.
+
+
+
+
+Figure A.2.2: Robot end effector, showing the definition of (n, o, a, p).
+
+
+   The 3-vectors n, o, a, and p are defined as in Figure A.2.2. The approach
+vector of the end effector is “a”; the orientation vector “o” is the direction
+specifying the orientation of the hand, from fingertip to fingertip. The normal
+vector “n” is chosen to complete the definition of a right-handed coordinate
+system using
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                              563
+
+Thus (n, o, a) are the base coordinates of an (x, y, z) Cartesian coordinate
+system attached to the end effector. The position vector p specifies the location
+of the origin of the (n, o, a) frame with respect to the base frame.
+   The representation (n, o, a) for the orientation of the end effector is inefficient.
+Note that [n o a] is a 3×3 matrix, so that it has nine entries. However, it does
+not take nine degrees of freedom to specify orientation. Indeed, [n o a] is a
+rotation matrix, so that its columns are orthogonal; this orthogonality
+requirement imposes extra constraints on the elements of [n o a], so that the
+nine entries of [n o a] are not independent. Alternative more efficient methods
+of specifying the orientation of the end effector in base coordinates are the
+roll-pitch-yaw, Euler angle, quaternion, and tool-configuration vector
+descriptions. We discuss some of these later. The reason we use (n, o, a) is that
+the arm T matrix is easily computed using the A matrices in terms of the arm
+parameters and join variables. Then n, o, a, and p are simply read off by
+examining the T matrix, as we shall see in the examples.
+   At this point we should like to distinguish between two sets of coordinates
+describing the end effector. The joint variable coordinates of the end effector
+are given by the n-vector.
+
+
+
+where qi can represent angles or lengths, depending on whether the links are
+revolute or prismatic. Generally, n=6, so that the arm has six degrees of
+freedom. The end-effector Cartesian coordinates are the description of end
+effector orientation and position in terms of the arm base coordinates. According
+to (A.2.11), where T may be computed knowing q, the joint variable and
+Cartesian coordinates are equivalent, for both specify the location of the end
+effector.
+   We say that q is the joint-space description of the position and orientation
+of the end effector, while (n, o, a, p) is the Cartesian or task space description.
+This terminology derives from the fact that descriptions of tasks to be performed
+by an arm are generally given in Cartesian coordinates, not in joint coordinates.
+   The robot arm kinematics problem is as follows. Given the joint variables
+q, find the Cartesian position and orientation of the end of the manipulator.
+Thus the kinematics problem amounts to converting given joint variables
+into the Cartesian position and orientation of the end effector expressed in
+base coordinates. Let us illustrate the solution of this problem for several
+simple robot arms which we use as examples throughout the book. It amounts
+to computing T.
+   It should be mentioned that there are several software packages
+commercially available for computing the A matrices and the T matrix for a
+given robot arm. See, for instance, [MATMAN 1986].
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+564                                       Review of Robot Kinematics and Jacobians
+
+EXAMPLE A.2–1: Kinematics for Three-Link Cylindrical Arm
+A simple RPP manipulator is shown in Figure A.2.3a. It may be interpreted as
+the first three joints of an arm much as the GMF M-100. These are the joints
+used to position the end effector. A wrist mechanism consisting of three joints
+may be added to the end of the RPP arm to orient the end effector in space (see
+Example A.2.4). The joint variables of the three-link arm shown are ␪, h, r,
+which correspond to the coordinates of a cylindrical coordinate system, so
+that the joint-variable vector is
+
+
+                                                                               (1)
+
+
+
+a. A Matrices
+Coordinate frames may be attached to links 1, 2, and 3 using any technique
+desired. The D-H frames, to which (A.2.1) corresponds, are shown in Figure
+A.2.3b. For this choice of frames, the A matrices may be determined as
+follows.
+   Frame 1 is related to the base frame 0 by a simple rotation of ␪
+degrees about the axis z 0. A z-axis rotation, R z, ␪, with no translation is
+described by
+
+
+
+
+                                                                               (2)
+
+
+
+
+where c␪ represents cos ␪ and s␪ represents sin ␪.
+    To find A2 we may use (A.2.1). Since link 2 is prismatic with extension h,
+the length a2 is zero. In this example the rotation ␪2 is also zero. The twist ␣2
+of link 2 is the angle of rotation about axis x2 required to align z1 with z2–that
+is, -90°. Therefore,
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                              565
+
+
+
+
+Figure A.2.3: Three-link cylindrical manipulator: (a) arm schematic; (b) D-H coordinate
+frames.
+
+
+
+
+                                                                                   (3)
+
+
+
+
+   There is an attractive alternative to (A.2.1) for determining the link A
+matrix in simple cases. Recall that the first column of A2 is the representation
+of x2 in the coordinates (x1, y1, z1). According to the figure, this is just [1 0 0]T.
+The second column of A2 is the representation of y2 in the coordinates (x1, y1,
+z1), which the figure shows is [0 0 -1]T. The third column of A2 is the
+representation of 22 in frame o1, which is just [0 1 0]T. Thus (3) is obtained by
+inspection.
+
+In similar fashion we obtain,
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+566                                       Review of Robot Kinematics and Jacobians
+
+
+
+
+                                                                               (4)
+
+
+
+
+b. T Matrix and Arm Kinematics
+The arm T matrix is now obtained as
+
+
+
+
+                                                                               (5)
+
+
+
+
+To interpret the T matrix, examine (A.2.11). The position in base coordinates
+of the end of the manipulator, that is, the origin of frame 3, is
+
+
+                                                                               (6)
+
+
+The orientation of frame 3 described in base coordinates is expressed in (n, o,
+a) form by giving the coordinates of the normal, orientation, and approach
+vectors in terms of the base frame. These are given by
+
+
+
+                                                                               (7)
+
+
+    A glance at Figure A.2.3b verifies these expressions.
+                                                                              䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                  567
+
+EXAMPLE A.2–2: Kinematics for Two-Link Planar Elbow Arm
+A two-link planar RR arm is shown in Figure A.2.4a where a1 and a2 are the
+fixed and known link length parameters. The link coordinate frames are
+shown in Figure A.2.4b. We have taken the z-axes perpendicular to the page
+to conform to the convention of specifying points in a plane by (x, y)
+coordinates. Therefore, the frames are not defined quite as in the D-H
+convention.
+   The arm A matrices may be written by inspection as
+
+
+
+
+                                                                       (1)
+
+
+
+
+where c1, s1, represent respectively cos ␪1, sin ␪1 and
+
+
+
+
+                                                                       (2)
+
+
+
+
+The arm T matrix is given by
+
+
+
+
+                                                                       (3)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+568                                       Review of Robot Kinematics and Jacobians
+
+
+
+
+Figure A.2.4: Two-link planar RR arm: (a) arm schematic; (b) D-H coordinate
+frames.
+
+
+
+where
+   Therefore, the origin o2 of frame 2 in terms of base coordinates is located
+at
+
+
+                                                                               (4)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                        569
+
+This represents the kinematic solution, which converts the joint variable
+coordinates (␪1, ␪2) into the base-frame Cartesian coordinates of the end of the
+arm. The reader should examine Figure A.2.4a to verify this expression.
+                                                                           䊏
+
+
+EXAMPLE A.2–3: Kinematics for Two-Link Polar Arm
+A two-link planar RP arm is shown in Figure A.2.5a where ᐉ is the fixed
+known length of the base link. The link frames, with the z-axes perpendicular
+to the page, are shown in Figure A.2.5b. The joint vector is
+
+
+                                                                             (1)
+
+
+which corresponds to polar coordinates in the plane.
+
+
+
+
+Figure A.2.5: Two-link planar RP arm: (a) arm schematic; (b) D-H coordinate
+frames.
+
+    By inspection, the A matrices are found to be
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+570                                       Review of Robot Kinematics and Jacobians
+
+
+
+
+                                                                               (2)
+
+
+
+
+                                                                               (3)
+
+
+
+
+The T matrix is
+
+
+
+
+                                                                               (4)
+
+
+
+
+    Therefore, the base coordinates of the end of the arm are
+
+                                                                               (5)
+
+which should be verified by examining Figure A.2.5a. This may be interpreted
+as the forward kinematics solution for the arm.
+   This example illustrates the freedom we have to select the base frame
+origin o0. We could have selected o0 coincident with o1. However, we have
+chosen to include the length ᐉ of link 0 by placing o0 at the bottom of the base
+link.
+                                                                            䊏
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                          571
+
+
+
+EXAMPLE A.2–4: Kinematics for Spherical Wrist
+
+
+
+
+                                          Figure A.2.6: Spherical wrist.
+
+
+
+A spherical wrist mechanism is shown in Figure A.2.6. See [Paul 1981], [Spong
+and Vidyasagar 1989]. For convenient orientational control, all three joint
+axes intersect at a common point. Since many six-link industrial arms, including
+the Stanford arm, end in such a configuration, we have labeled the three joint
+variables ␪4, ␪5, ␪6. The D-H frames are also shown in the figure. Recall that
+the rotation ␪i occurs about axis zi-1 in the D-H convention. The origin of
+frame 6 has been chosen at the base of the fingered gripper. The length d6 is a
+fixed known parameter.
+
+
+By expressing the axes x4, y4, z4 in terms of the coordinates (x3, y3, z3), we are
+able to directly determine the columns of A4 to obtain
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+572                                       Review of Robot Kinematics and Jacobians
+
+
+
+
+                                                                                 (1)
+
+
+
+
+    Determining x5, y5, z5 in terms of (x4, y4, z4) yields
+
+
+
+
+                                                                                 (2)
+
+
+
+
+In writing down A5, it is important to note that ␪5 is defined to be zero when
+the end effector is in an upright position, that is, when the arm is fully extended.
+We have drawn the figure with ␪5=-90° to show more clearly the different
+coordinate systems.
+   In similar fashion, we obtain
+
+
+
+
+                                                                                 (3)
+
+
+
+
+The wrist T matrix is
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                        573
+
+
+
+
+                                                                             (4)
+
+
+
+
+where c4≡cos ␪4, and so on. It is quite interesting to note that the rotational
+part of this T matrix corresponds to the Euler angle transformation [Spong
+and Vidyasagar 1989]. Therefore, ␪4, ␪5, ␪6 may be interpreted as the Euler
+angles with respect to frame 3.
+   Suppose that we would like to determine the kinematic transformations of
+the 3-link cylindrical arm in Example A.2.1 terminated with a spherical wrist.
+Then it is only necessary to multiply the T matrix in Example A.2.1 and (4),
+in that order, to obtain the overall manipulator T matrix.
+                                                                           䊏
+
+Inverse Kinematics
+   The location of the end effector is specified in base coordinates by the arm
+T matrix. On the other hand, the location of the end effector is specified in
+joint coordinates by giving the values of the joint variables qi. We may compute
+the T matrix knowing the joint-variable vector q, as in the examples just
+shown. Finding T from q is the kinematics problem.
+   The inverse-kinematics problem is as follows. Given (n, o, a, p) for the
+end effector in base coordinates, determine the joint variables qi in the T
+matrix
+
+
+                                                                       (A.2.12)
+
+
+that yield the specified (n, o, a, p). This problem is important in manipulator
+control, for the desired Cartesian orientation and position of the end effector
+are specified by the task. Then the solution to the inverse kinematics
+problems gives the joint variables qi required to achieve that orientation
+and position.
+   Due to the functions involved in the T matrix, the relations between qi
+and (n, o, a, p) are highly nonlinear; these must be inverted to obtain the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+574                                       Review of Robot Kinematics and Jacobians
+
+inverse kinematic solution q. The solutions for qi are generally not unique.
+If the last three arm axes intersect at a point (e.g., the wrist mechanism in
+Example A.2.4), it is common to split the inverse kinematics problem into
+two parts. In a six-link arm, for instance, one first determines q1, q2, and q3
+required to obtain the desired Cartesian position p. Then the wrist variables
+q4, q5, and q6 that give the desired orientation (n, o, a) are determined. Some
+techniques for solving the inverse kinematics problem are given in [Paul
+1981], [Craig 1989], [Spong and Vidyasagar 1989]. An example is now
+given.
+
+
+EXAMPLE A.2–5: Inverse Kinematics for Two-Link Planar Elbow Arm
+
+For the planar RR arm of Example A.2.2, the inverse kinematics problem
+amounts to finding the joint variable ␪1 and ␪2 given a desired Cartesian
+position (x, y) of the end of the arm. See Figure A.2.7.
+   The first thing that is evident is that, as long as                       ,
+there are two solutions. The one shown in Figure A.2.7 is the “elbow down”
+solution. Another solution may be determined for the “elbow
+up“configuration, where both links are above the vector [x y]T. Thus the
+inverse kinematics problem generally has a nonunique solution. This may
+often be taken advantage of to obtain end-effector positioning with collision
+avoidance.
+   Given the T matrix from Example A.2.2, we see that ␪1 and ␪2 may be
+found by solving
+
+
+                                                                               (1)
+
+
+
+                                                                               (2)
+
+
+Determining ␪1 and ␪2 based on algebraic manipulations of such equations is
+called the algebraic inverse kinematics solution technique [Paul 1981]. Let us
+show a geometric technique here.
+   Referring to Figure A.2.7, define
+
+                                                                               (3)
+
+
+and use the law of cosines to obtain
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.2 Robot Kinematics                                                           575
+
+
+
+
+                Figure A.2.7: Inverse kinematics for two-link planar RR arm.
+
+
+
+
+                                                                               (4)
+
+We could now solve for ␪2 using the cos-1 function. However, it is better to use
+tan-1 for reasons of numerical accuracy. The FORTRAN function implementing
+tan-1(b/c) is ATAN2(b, c). This function has a uniform accuracy over the
+range of its arguments, returns a unique value for the angle depending on the
+signs of b and c, and gives the correct solution if b and/or c is zero.
+   Therefore, we proceed by computing
+
+
+                                                                               (5)
+
+
+                                                                               (6)
+
+
+                                                                               (7)
+
+An additional advantage of using the arctangent is that the multiple solutions
+of the inverse kinematics problem are explicitly revealed by the choice of
+negative or positive sign in (6).
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+576                                       Review of Robot Kinematics and Jacobians
+
+   To determine ␪1 define the auxiliary angle ␸ in the figure. By inspection of
+the right triangle shown,
+
+                                                                                 (8)
+
+Moreover,
+
+                                                                                 (9)
+
+so that
+
+                                                                              (10)
+
+Note that ␪1 depends on ␪2.
+                                                                             䊏
+
+
+A.3 The Manipulator Jacobian
+
+Given a generally nonlinear transformation from the joint variable q(t)僆Rn
+to         ,
+
+                                                                           (A.3.1)
+
+we define the Jacobian associated with h(q) as
+
+
+                                                                           (A.3.2)
+
+   As we have just seen, the Jacobian is useful in feedback linearization, and
+therefore in robot manipulator control. It is also the means by which we
+transform velocity, acceleration, and force between coordinate frames.
+
+Transformation of Velocity and Acceleration
+  Since
+
+                                                                           (A.3.3)
+
+the Jacobian allows us to transform velocity from joint space to “y-space.”
+Let us discuss the special case where y(t) is the Cartesian velocity. Then J(q) is
+called the manipulator Jacobian.
+   It is usual to define the generalized Cartesian velocity as
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.3 The Manipulator Jacobian                                                 577
+
+
+
+                                                                         (A.3.4)
+
+
+with v=[vx vy vz]T the linear velocity and ␻=[␻x ␻y ␻z]T the angular velocity.
+For instance, ␻x represents angular velocity about the x-axis. Thus y has six
+components and the arm Jacobian J is a 6×n matrix, with n the number of
+joints in the manipulator. If n=6, the Jacobian is square. We shall soon show
+how to compute the manipulator Jacobian.
+    Using (A.3.3), we can obtain an expression for the transformation of
+differential motion. Let dq=[dq1…dqn]T be a differential motion in joint space,
+with dqi a small rotation if joint i is revolute, and a small linear displacement
+if joint i is prismatic. Let
+
+
+
+
+                                                                         (A.3.5)
+
+
+
+describe the same differential motion in Cartesian coordinates, with [dx dy
+dz]T the differential linear motion and [␦x ␦y ␦z]T representing the differential
+rotation. Here ␦x, for instance, means a small rotation about the x-axis. We
+have written the Cartesian differential motion vector dy in boldface to
+distinguish it from the small change dy in the second coordinate of Cartesian
+position.
+   According to (A.3.3), where                              , we see that
+
+                                                                         (A.3.6)
+
+with J the Jacobian relating joint space and Cartesian space.
+  The transformation of acceleration is found by differentiating (A.3.3) to be
+
+                                                                         (A.3.7)
+
+
+Transformation of Force
+   To discover the transformation of static force between coordinate frames,
+consider the following.
+   The virtual work resulting from the application of a generalized force/
+torque in joint space that results in a differential motion dq is
+
+                                                                         (A.3.8)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+578                                       Review of Robot Kinematics and Jacobians
+
+with ␶ the n-vector of arm control torques/forces, and dq=[dq1…dqn]T the
+differential change in the joint variable. If the description in another coordinate
+frame of the force is F and the description there of position is y, we must also
+have
+
+                                                                            (A.3.9)
+
+Now taking (A.3.6) into account, we may write
+
+
+
+so that the transformation from force to torque is given by
+
+                                                                           (A.3.10)
+
+In the case that y(t) is Cartesian position, we define the Cartesian generalized
+force to be the 6-vector
+
+                                                                           (A.3.11)
+
+with fc=[fx fy fz]T a Cartesian force 3-vector, and ␶c=[␶ x ␶y ␶z]T a 3-vector
+representing Cartesian torques. For instance, ␶x represents torque exerted about
+the x-axis.
+   If the arm has six links and the Jacobian is nonsingular, the transformation
+from generalized torque to generalized force is given by
+
+                                                                           (A.3.12)
+
+The singularities in the Jacobian generally occur at the extremities of the
+manipulator workspace.
+
+Specification of Cartesian Position
+   It is now necessary to confront an issue that is a source of confusion in
+robotics. Consider Equation (A.3.2). Unfortunately, when discussing the
+transformation h(q) from joint space to Cartesian space, this equation may only
+be interpreted as a convenience of notation, not as a rigorous mathematical
+formula. The reason is that although the generalized Cartesian velocity (A.3.4)
+and acceleration, and the generalized Cartesian force (A.3.11) are bona fide 6-
+vectors, there is a problem with conveniently specifying the generalized Cartesian
+position y(t). We now discuss several ways to specify the Cartesian position.
+
+Representing Generalized Cartesian Position as (n, o, a, p). In our context,
+both the location of the origin of the end-effector frame as well as its orientation
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.3 The Manipulator Jacobian                                                  579
+
+must be specified in base coordinates. It is easy to specify the origin of the
+end-effector frame in base coordinates (x, y, z) using a 3-vector p(t)=[px py pz]T.
+However, specification of orientation is not so easy. This is because it takes
+more than three independent variables to specify uniquely the orientation of
+one frame with respect to another.
+   It should be mentioned that conventions such as the Euler angles and roll-
+pitch-yaw [Paul 1981], [Spong and Vidyasagar 1989] involve only three
+variables. However, they may not be used to uniquely specify the absolute
+orientation of one frame with respect to another, but only relative changes in
+orientation. We have already seen in (A.3.5) that only three variables are
+needed to describe differential rotations.
+   In our work we have specified the Cartesian position y(t) of the end effector
+in base coordinates by using the (n, o, a, p) approach (see Section A.2). There
+we define the generalized Cartesian position as
+
+
+                                                                          (A 3.13)
+
+
+with T(t) the arm T matrix, (n, o, a) the vectors needed to describe the end-
+effector orientation, and p=[px py pz]T the positional portion of the Cartesian
+description that specifies the origin of the end-effector frame.
+   It is clear that the selection of the transformation h(q) depends on how we
+wish to describe the Cartesian position y(t). If we use (A.3.13), then h(q) is just
+the arm kinematics transformation discussed in Section A.2. However, then
+y(t) is not a 6-vector but a 4×4 matrix. Therefore, the definition of the arm
+Jacobian as J(q)=∂h/∂q is a loose one purely for notational convenience.
+Therefore, we are faced with the problem of providing a suitable definition
+for J(q). Before we do this, let us discuss some more techniques for representing
+the generalized Cartesian position.
+
+Representing Cartesian Orientation Using Euler’s Theorem. The positional
+portion of y is easy to specify; it is just the 3-vector p= [px py pz]T found from
+the last column of the T matrix in (A.3.13). However, since [n o a] is a
+rotation matrix having nine elements, it does not afford an efficient
+representation of orientation. The orthogonality of the rotation matrix imposes
+some constraints among its elements, meaning that it actually has only four
+degrees of freedom.
+   The orientation of one coordinate frame (frame 1) with respect to another
+(frame 0) may be specified uniquely using a 3-vector k representing the axis
+of rotation of frame 1 with respect to frame 0, and an angle ϕ specifying the
+amount of rotation about that axis. We call (k, ␸) the Euler rotation parameters.
+The (k, ␸) convention involves four variables, which may be found as follows.
+Suppose that the rotation matrix
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+580                                       Review of Robot Kinematics and Jacobians
+
+
+
+                                                                          (A.3.14)
+
+describes the orientation of frame 1 with respect to frame 0. Note that R is the
+upper left 3×3 submatrix of the arm T matrix, so that it may be computed
+given the joint vector q.
+   A rotation matrix is orthogonal, so that it has one eigenvalue equal to 1.
+Then the axis of rotation k is the eigenvector of the eigenvalue. That is,
+
+                                                                          (A.3.15)
+
+
+This is known as Euler’s theorem. It says that Rk=k, or that the rotation axis
+is not rotated by R. There are many good routines for computing eigenvectors
+(e.g., [IMSL]), which may be used to find k from R. See the problems to find
+an explicit formula for k in terms of (n, o, a) [Paul 1981].
+    The angle of rotation ␸ about the axis k may easily be found, for the trace
+of a rotation matrix is equal to 1+2 cos ␸. Therefore,
+
+
+                                                                          (A.3.16)
+
+
+where nx, for instance, denotes the x component of the normal vector n.
+   Using Euler’s rotation parameters we may specify the generalized Cartesian
+position as a 7-vector, with three components for position (i.e., the last column
+p of the T matrix) and four components (i.e., k and ␸) for orientation.
+
+Representing Cartesian Orientation Using Quaternions. The quaternion
+representation is a 4-vector which is often used to describe the end-effector
+frame orientation [Ickes 1970], [Sheppard 1978], [Yuan 1988], [Stevens and
+Lewis 1992].
+   The quaternions are four numbers represented as (q0, q), with q=[q1 q2 q3]T
+a 3-vector. They are given in terms of the Euler parameters (k, ␸) by
+
+
+
+                                                                          (A.3.17)
+
+
+Using quaternions, the generalized Cartesian position may be represented as
+the 7-vector y=[px py pz q0 q1 q2 q3 ] T . An advantage of this representation is
+that no angles are involved.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.3 The Manipulator Jacobian                                                  581
+
+
+    Tool-Configuration Vector. A technique for specifying y(t) as a 6-vector is
+given in [Schilling 1990]. It depends on adopting a convention for encoding
+orientational information.
+    Consider the arm T matrix in (A.3.13) whose rotational portion is R in
+(A.3.14). Let us select the 3-vector p to represent Cartesian linear position.
+The approach vector a is a 3-vector specifying the direction in which the end
+effector points in terms of base coordinates. Recall from the discussion on
+kinematics in Section A.2 that this vector specifies in base coordinates the
+axis zn of the frame attached to the end of link n. Since the rotation matrix R
+is orthogonal, the approach vector has a length of one.
+    The two vectors p and a almost completely specify the Cartesian position
+of the end effector. The only piece of information missing is the roll angle of
+the end effector. However, this angle is nothing by qn=␪n, the last joint variable
+of the manipulator.
+    To capture the information qn, let us propose scaling the approach vector
+by the exponential function eqn/␲ to define the tool-configuration vector as
+
+
+
+                                                                         (A.3.18)
+
+This is a 6-vector, which uniquely specifies the Cartesian position of the end
+effector in base coordinates.
+   Note that there is a unique mapping between w and (p, a, qn), since, given
+w and the fact that ||a||=1, we may compute
+
+
+                                                                         (A.3.19)
+
+
+
+                                                                         (A.3.20)
+
+
+with wi the ith component of w.
+
+Finding Cartesian Velocity from the Arm T Matrix. Note that using the
+definition (A.3.4), the Cartesian velocity y is a 6-vector that is not strictly
+speaking the derivative of y(t) in (A.3.13), which is a 4×4 matrix. To compute
+y, we may find the Jacobian J(q) and then use (A.3.3). Alternatively, the
+Cartesian velocity may be found directly from the arm T matrix (A.2.11) as
+follows.
+    Setting                with v the linear velocity and ␻ the angular velocity,
+it is clear that
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+582                                            Review of Robot Kinematics and Jacobians
+
+
+
+                                                                                  (A.3.21)
+
+with p found from the last column of T.
+  To find ␻, proceed as follows. Since R in (A.2.11) is orthogonal, we have
+
+                                                                                  (A.3.22)
+
+which on differentiation yields
+
+
+
+Therefore, the matrix defined as
+
+                                                                                  (A.3.23)
+
+satisfies                        , so it is skew symmetric. It may therefore be represented
+as
+
+
+                                                                                  (A.3.24)
+
+
+   The relation between the cross-product matrix ⍀ and the angular velocity
+vector
+
+
+                                                                                  (A.3.25)
+
+
+is an interesting one, for one may easily demonstrate that
+
+                                                                                  (A.3.26)
+
+for any 3-vector w. That is, the cross product may be replaced by a matrix
+multiplication in terms of the cross-product matrix. We denote by ⍀(w) the
+cross-product matrix associated with a vector ␻.
+   The complete procedure for determining y from the T matrix is then as
+follows. First, compute v using the p vector as in (A.3.21). Then, compute
+⍀(w) from the rotation matrix R using (A.3.23), and hence find the last three
+components ␻ of y from the definition of ⍀(w). Computing y from q thus
+requires a computer subroutine. Robot controllers generally have block
+diagrams in which some of the blocks are standard components like integrators,
+but some of the blocks are implemented in software.
+   Using (A.3.23), we may write the strapdown equation
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.3 The Manipulator Jacobian                                                   583
+
+
+
+                                                                           (A.3.27)
+
+which is of fundamental importance in inertial navigation [Stevens and Lewis
+1992].
+
+Computing the Arm Jacobian
+   Let us now return to the problem of defining and computing the arm Jacobian
+J(q). If the Cartesian position is defined by (A.3.13), then (A.3.2) does not
+afford an appropriate definition. Therefore, let us select (A.3.3) as the definition
+of J(q). That is, define J(q) by
+
+                                                                           (A.3.28)
+
+so that it maps the joint velocity q to the Cartesian velocity y as defined by
+(A.3.4). Then J(q) is a 6×n matrix.
+   Let us consider a few examples showing how to compute the arm Jacobian
+to demonstrate that the procedure is not complicated. A methodical technique
+for computing J(q) will then be given.
+
+EXAMPLE A.3–1: Arm Jacobian for Three-Link Cylindrical Arm
+
+Let us use the kinematics derived in Example A.2.1 to compute the Jacobian
+for the three-link cylindrical arm. We shall call the joint variables (␪, z, r)
+instead of (␪, h, r) to avoid confusion with the nonlinear function h(q).
+    Since there is no wrist on this three-link arm, the orientation of the last
+coordinate frame is fixed in terms of (␪, z, r), so that is not necessary to
+specify Cartesian orientation. This simplifies things for this example.
+    Denote the linear Cartesian position of the end effector in base co-ordinates
+(i.e., the first three components of y) as yp. Then, according to Example A.2.1,
+yp is the last column of the arm T matrix, so that
+
+
+
+                                                                                 (1)
+
+
+Omitting the orientational information has allowed us to define a (positional)
+transformation function hp(q) simply as the last column p of the T matrix.
+   Using (A.3.2) and the definition of hp(q) given in (1), the Jacobian is
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+584                                       Review of Robot Kinematics and Jacobians
+
+
+
+
+                                                                               (2)
+
+
+Therefore, the velocities of the joints are converted into Cartesian velocities
+using
+
+
+
+                                                                               (3)
+
+
+The determinant of J is (r cos2 ␪+r sin2 ␪)=r, so that J is nonsingular as long as
+r⬆0.
+   Note that the definition (1) of the positional function hp(q) means that the
+Jacobian is equal to ∂hp/∂q. This is a result of neglecting the orientation
+portion of y.
+                                                                             䊏
+
+EXAMPLE A.3–2: Arm Jacobian for Two-Link Planar Elbow Arm
+In Example A.2.2 the joint variable was q=[␪1 ␪2]T. As in Example A.3.1, the
+orientation of the last coordinate frame is fixed once q is given, so that we are
+not concerned with the orientational portion of y, but only its linear position
+portion yp.
+   The linear Cartesian position of the end effector in the (x1, x2)-plane is
+given by the last column of the arm T matrix as
+
+
+                                                                               (1)
+
+
+Since the motion is constrained to the plane, we have suppressed the x3
+component of yp.
+   The Jacobian is
+
+
+                                                                               (2)
+
+
+Note that the definition of hp(q) in (1) means that the Jacobian is equal to
+∂hp/∂q.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.3 The Manipulator Jacobian                                                 585
+
+  The determinant of J is (verify!) equal to a1a2 sin␪2, so that J is nonsingular
+unless ␪2=0 or ␲; that is, unless the arm is fully extended or link 2 is folded
+back on top of link 1.
+                                                                            䊏
+
+EXAMPLE A.3–3: Jacobian for Transformation to Camera Co-ordinates
+Consider the three-link cylindrical arm of Examples A.2.1 and A.3.1 with a
+camera mounted vertically above the arm that measures only the position (x1,
+x2) of the end effector in the horizontal plane (in base coordinates). Call this
+position y. Then, according to those examples, the transformation from joint
+coordinates (␪, z, r) to camera coordinates (x1, x2) is
+
+
+                                                                              (1)
+
+
+and the associated Jacobian is
+
+
+                                                                              (2)
+
+
+   The determinant of J with the second column deleted is equal to -r, so that
+J has full row rank as long as r⬆0. The pseudo-inverse of J is
+
+
+
+                                                                              (3)
+
+
+   Since the camera cannot measure the distance x3 perpendicular to the plane,
+that coordinate must be selected in any control scheme using an independent
+means that does not involve trajectory following control in the horizontal
+plane.
+                                                                         䊏
+
+Algorithm for Computing the Arm Jacobian. We are finally in a position to
+show how to compute the arm Jacobian given the joint variables qi. The
+procedure follows.
+  Given qi, compute the matrices Ti defined in Section A.2 as
+
+
+                                                                        (A.3.29)
+
+whose corresponding rotation matrices will be denoted
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+586                                       Review of Robot Kinematics and Jacobians
+
+
+                                                                           (A.3.30)
+
+Define To=I, Ro=I, and the arm T matrix
+
+
+                                                                           (A.3.31)
+
+   The vector zi represents the z-axis of frame i in base coordinates. The
+vector p represents the location of the origin of link frame n (the end-effector
+frame) in terms of base coordinates. The Jacobian is computed using the
+vectors p and zi as follows.
+   The generalized Cartesian velocity is                   . Therefore, we may
+partition the Jacobian matrix into a linear and an orientational part by
+writing
+
+                                                                           (A.3.32)
+
+with Jp(q) the first three rows of J(q) and Jo(q) its last three rows.
+   First, consider the computation of the linear position Jacobian Jp(q). Given
+that the linear portion of the generalized Cartesian position y is just p, we
+may write
+
+
+                                                                           (A.3.33)
+
+Therefore, Jp(q) is given by
+
+                                                                           (A.3.34)
+
+It should be clearly understood that this is exactly what we used in Examples
+A.3.1 and A.3.2.
+    Let us now turn to the orientational portion Jo(q) of the Jacobian. Exactly
+as for linear velocities, one may add angular velocities as long as they are
+represented in the same coordinate frame. Let us therefore add the individual
+angular velocities of the links in the arm to obtain the angular velocity of the
+end effector. A prismatic joint does not contribute to the angular velocity of
+the end effector.
+    For a revolute joint, the joint rotation qi=␪i occurs about joint axis zi-1 (see
+Section A.2, especially Figure A.2.1). The angular velocity for joint variable
+i is therefore given by        . To add the effects of all the links, it is necessary
+to express zi-1 in a common frame; we select base coordinates. However, the
+last column of Ri-1 is exactly zi-1 in base coordinates. Therefore, we may write
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+A.3 The Manipulator Jacobian                                                 587
+
+
+
+
+                                                                        (A.3.35)
+
+
+where z0=[0 0 1]T and the selection parameter ␬i is zero if qi is prismatic and 1
+if qi is revolute. Thus
+
+
+                                                                        (A.3.36)
+
+
+   The complete Jacobian is now given by stacking Ji(q) on top of Jo(q). It
+should now be clear that the arm Jacobian must be found from the joint
+vector q using a significant amount of computation. Therefore, whenever the
+Jacobian is required in a robot arm control scheme, it should be computed
+using a computer subroutine.
+   It is a good exercise to rework Examples A.3.1 and A.3.2 to determine the
+complete Jacobian, including the angular portion (see the problems).
+
+
+EXAMPLE A.3–4: Jacobian for Spherical Wrist
+In Example A.2.4 we derived the kinematics for a spherical wrist. Although
+the wrist would normally terminate an arm, for illustration let us take link 3
+as the base link in this example. See Figure A.2.6. Thus we shall determine
+the Jacobian in the coordinates of the link 3 frame of reference.
+   To find the Jacobian, we compute the matrices
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+588                                       Review of Robot Kinematics and Jacobians
+
+
+
+
+Using the approach just derived, we compute directly that
+
+
+
+
+                                                                             䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+
+[Craig 1989] Craig, J.J., Introduction to Robotics. Reading, MA: Addison-
+    Wesley, 1989.
+[Ickes 1970] Ickes, B.P., “A new method for performing digital control system
+    altitude computations using quaternions,” AIAA J., vol. 8, no. 1, pp. 13–
+    17, Jan. 1970.
+[IMSL] IMSL, Library Contents Document, 8th ed. Houston, TX: International
+   Mathematical and Statistical Libraries.
+[MATMAN 1986] MATMAN, Symbolic Matrix Manipulation, M.R.Driels,
+   Pembroke, MA: Kern International, 1986.
+[Paul 1981] Paul, R.P., Robot Manipulators, Cambridge, MA: MIT Press,
+    1981.
+[Schilling 1990] Schilling, R.J., Fundamentals of Robotics, Englewood Cliffs,
+    NJ: Prentice Hall, 1990.
+[Sheppard 1978] Sheppard, S.W., “Quaternion from rotation matrix,” Eng.
+    Notes, pp. 223–224, May/June 1978.
+[Spong and Vidyasagar 1989] Spong, M.W., and M.Vidyasagar, Robot
+    Dynamics and Control. New York: Wiley, 1989.
+[Stevens and Lewis 1992] Stevens, B.L., and F.L.Lewis, Aircraft Modeling,
+    Dynamics, and Control. New York: Wiley, 1992.
+[Yuan 1988] Yuan, J.S.-C., “Closed-loop manipulator control using quaternion
+    feedback,” IEEE J. Robot. Autom., vol. 4, no. 4, pp. 434–440, Aug.
+    1988.
+
+
+
+
+                                                                         589
+Copyright © 2004 by Marcel Dekker, Inc.

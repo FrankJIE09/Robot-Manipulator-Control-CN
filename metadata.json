@@ -1,0 +1,146 @@
+{
+  "title": "Robot Manipulator Control: Theory and Practice, Second Edition",
+  "title_zh": "机器人操作器控制：理论与实践（第二版）",
+  "authors": ["Frank L. Lewis", "Darren M. Dawson", "Chaouki T. Abdallah"],
+  "source_pdf": "Robot Manipulator Control - Theory and Practice, Second Edition (Control Engineering, 15) (Frank L. Lewis, Darren M. Dawson etc.) (z-library.sk, 1lib.sk, z-lib.sk).pdf",
+  "extraction_method": "pdftotext -layout",
+  "extraction_date": "2025-04-09",
+  "chapters": [
+    {
+      "id": "00",
+      "title": "Preface and Series Introduction",
+      "title_zh": "前言与系列介绍",
+      "source_file": "source/chap-00.txt",
+      "tex_file": "chapters/00-前言与系列介绍.tex",
+      "lines_tex": 358,
+      "chars_tex": 5326
+    },
+    {
+      "id": "01",
+      "title": "Chapter 1: Commercial Robot Manipulators",
+      "title_zh": "第1章　商用机器人操作器",
+      "source_file": "source/chap-01.txt",
+      "tex_file": "chapters/01-第一章-商用机器人操作器.tex",
+      "lines_tex": 761,
+      "chars_tex": 12382
+    },
+    {
+      "id": "02",
+      "title": "Chapter 2: Introduction to Control Theory",
+      "title_zh": "第2章　控制理论导论",
+      "source_file": "source/chap-02.txt",
+      "tex_file": "chapters/02-第二章-控制理论导论.tex",
+      "lines_tex": 1705,
+      "chars_tex": 38422
+    },
+    {
+      "id": "03",
+      "title": "Chapter 3: Robot Dynamics",
+      "title_zh": "第3章　机器人动力学",
+      "source_file": "source/chap-03.txt",
+      "tex_file": "chapters/03-第三章-机器人动力学.tex",
+      "lines_tex": 2156,
+      "chars_tex": 57847
+    },
+    {
+      "id": "04",
+      "title": "Chapter 4: Computed-Torque Control",
+      "title_zh": "第4章　计算力矩控制",
+      "source_file": "source/chap-04.txt",
+      "tex_file": "chapters/04-第四章-计算力矩控制.tex",
+      "lines_tex": 1295,
+      "chars_tex": 45259
+    },
+    {
+      "id": "05",
+      "title": "Chapter 5: Robust Control of Robotic Manipulators",
+      "title_zh": "第5章　机器人操作器的鲁棒控制",
+      "source_file": "source/chap-05.txt",
+      "tex_file": "chapters/05-第五章-鲁棒控制.tex",
+      "lines_tex": 1402,
+      "chars_tex": 44579
+    },
+    {
+      "id": "06",
+      "title": "Chapter 6: Adaptive Control of Robotic Manipulators",
+      "title_zh": "第6章　机器人操作器的自适应控制",
+      "source_file": "source/chap-06.txt",
+      "tex_file": "chapters/06-第六章-自适应控制.tex",
+      "lines_tex": 1606,
+      "chars_tex": 51025
+    },
+    {
+      "id": "07",
+      "title": "Chapter 7: Advanced Control Techniques",
+      "title_zh": "第7章　先进控制技术",
+      "source_file": "source/chap-07.txt",
+      "tex_file": "chapters/07-第七章-先进控制技术.tex",
+      "lines_tex": 1151,
+      "chars_tex": 46312
+    },
+    {
+      "id": "08",
+      "title": "Chapter 8: Neural Network Control of Robots",
+      "title_zh": "第8章　机器人的神经网络控制",
+      "source_file": "source/chap-08.txt",
+      "tex_file": "chapters/08-第八章-神经网络控制.tex",
+      "lines_tex": 990,
+      "chars_tex": 40114
+    },
+    {
+      "id": "09",
+      "title": "Chapter 9: Force Control",
+      "title_zh": "第9章　力控制",
+      "source_file": "source/chap-09.txt",
+      "tex_file": "chapters/09-第九章-力控制.tex",
+      "lines_tex": 987,
+      "chars_tex": 37066
+    },
+    {
+      "id": "10",
+      "title": "Chapter 10: Robot Control Implementation and Software",
+      "title_zh": "第10章　机器人控制实现与软件",
+      "source_file": "source/chap-10.txt",
+      "tex_file": "chapters/10-第十章-控制实现与软件.tex",
+      "lines_tex": 926,
+      "chars_tex": 30187
+    },
+    {
+      "id": "A",
+      "title": "Appendix A: Review of Robot Kinematics and Jacobians",
+      "title_zh": "附录A　机器人运动学与雅可比矩阵回顾",
+      "source_file": "source/chap-A.txt",
+      "tex_file": "chapters/A-附录A-运动学与雅可比矩阵.tex",
+      "lines_tex": 596,
+      "chars_tex": 11332
+    },
+    {
+      "id": "B",
+      "title": "Appendix B: Software for Controller Simulation",
+      "title_zh": "附录B　控制器仿真软件",
+      "source_file": "source/chap-B.txt",
+      "tex_file": "chapters/B-附录B-仿真软件.tex",
+      "lines_tex": 120,
+      "chars_tex": 1887
+    },
+    {
+      "id": "C",
+      "title": "Appendix C: Dynamics of Some Common Robot Arms",
+      "title_zh": "附录C　常见机器人手臂的动力学",
+      "source_file": "source/chap-C.txt",
+      "tex_file": "chapters/C-附录C-常见机器人动力学.tex",
+      "lines_tex": 229,
+      "chars_tex": 5356
+    }
+  ],
+  "verification": {
+    "status": "completed",
+    "completed_date": "2025-04-09",
+    "notes": "全书14个章节已全部翻译完成，包括前言、10个主要章节和3个附录。每个章节均为独立的LaTeX文档，可单独编译。所有文件均包含完整的文档结构（\\documentclass、\\begin{document}、\\end{document}）。",
+    "total_chapters": 14,
+    "translated_chapters": 14,
+    "total_tex_chars": 416914,
+    "verification_pass": true,
+    "verifier": "Each .tex file is a standalone document with \\documentclass, no main.tex dependency. Structure check passed."
+  }
+}

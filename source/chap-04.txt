@@ -1,0 +1,3224 @@
+Chapter 4
+
+Computed-Torque Control
+In this chapter we examine some straightforward control schemes for robot
+manipulators that fall under the class known as “computed-torque controllers.”
+These generally perform well when the robot arm parameters are known
+fairly accurately. Some connections are given with classical robot control,
+and modern design techniques are provided as well. The effects of digital
+implementation of robot controllers are shown. Trajectory generation is
+outlined.
+
+
+4.1 Introduction
+
+A basic problem in controlling robots is to make the manipulator follow a
+preplanned desired trajectory. Before the robot can do any useful work, we
+must position it in the right place at the right instances. In this chapter we
+discuss computed-torque control, which yields a family of easy-to-understand
+control schemes that often work well in practice. These schemes involve the
+decomposition of the controls design problem into an inner-loop design and
+an outer-loop design.
+    In Section 4.4 we provide connections with classical manipulator control
+schemes based on independent joint design using PID control. In Section 4.6
+we show how to use some modern design techniques in conjunction with
+computed-torque control. Thus this chapter could be considered as a bridge
+between classical design techniques of the sort used several years ago in robot
+control, and the modern design techniques in the remainder of the book which
+are needed to obtain high performance in uncertain environments.
+    We assume here the robot is moving in free space, having no contact with
+its environment. Contact results in the generation of forces. The force control
+
+                                                                           169
+Copyright © 2004 by Marcel Dekker, Inc.
+170                                                 Computed-Torque Control
+
+problem is dealt with in Chapter 7. We will also assume in this chapter that
+the robot is a well-known rigid system, thus designing controllers based on a
+fairly well-known model. Control in the presence of uncertainties or unknown
+parameters (e.g., friction, payload mass) requires refined approaches. This
+problem is dealt with using robust control in Chapter 4 and adaptive control
+in Chapter 5.
+    An actual robot manipulator may have flexibility in its links, or compliance
+in its gearing (joint flexibility). In Chapter 6 we cover some aspects of control
+with joint flexibility.
+    Before we can control a robot arm, it is necessary to know the desired path
+for performing a task. There are many issues associated with the path planning
+problem, such as avoiding obstacles and making sure that the planned path
+does not require exceeding the voltage and torque limitations of the actuators.
+To reduce the control problem to its basic components, in this chapter we
+assume that the ultimate control objective is to move the robot along a
+prescribed desired trajectory. We do not concern ourselves with the actual
+trajectory-planning problem; we do, however, show how to reconstruct a
+continuous desired path from a given table of desired points the end effector
+should pass through. This continuous-path generation problem is covered in
+Section 4.2.
+    In most practical situations robot controllers are implemented on
+microprocessors, particularly in view of the complex nature of modern control
+schemes. Therefore, in Section 4.5 we illustrate some notions of the digital
+implementation of robot controllers.
+    Throughout, we demonstrate how to simulate robot controllers on a
+computer. This should be done to verify the effectiveness of any proposed
+control scheme prior to actual implementation on a real robot manipulator.
+
+
+4.2 Path Generation
+
+Throughout the book we assume that there is given a prescribed path qd(t) the
+robot arm should follow. We design control schemes that make the manipulator
+follow this desired path or trajectory. Trajectory planning involves finding
+the prescribed path and is usually considered a separate design problem
+involving collision avoidance, concerns about actuator saturation, and so on.
+See [Lee et al. 1983].
+   We do not cover trajectory planning. However, we do cover two aspects of
+trajectory generation. First, we show how to convert a given prescribed path
+from Cartesian space to joint space. Then, given a table of desired points the
+end effector should pass through, we show how to reconstruct a continuous
+desired trajectory.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.2 Path Generation                                                           171
+
+Converting Cartesian Trajectories to Joint Space
+In robotic applications, a desired task is usually specified in the workspace or
+Cartesian space, as this is where the motion of the manipulator is easily
+described in relation to the external environment and workpiece. However,
+trajectory-following control is easily performed in the joint space, as this is
+where the arm dynamics are more easily formulated.
+   Therefore, it is important to be able to find the desired joint space trajectory
+qd(t) given the desired Cartesian trajectory. This is accomplished using the
+inverse kinematics, as shown in the next example. The example illustrates
+that the mapping of Cartesian to joint space trajectories may not be unique-
+that is, several joint space trajectories may yield the same Cartesian trajectory
+for the end-effector.
+
+EXAMPLE 4.2–1: Mapping a Prescribed Cartesian Trajectory to Joint
+Space
+In Example A.3–5 are derived the inverse kinematics for the two-link planar
+robot arm shown in Figure 4.2.1. Let us use them to convert a path from
+Cartesian space to joint space.
+   Suppose that we want the two-link arm to follow a given workspace or
+Cartesian trajectory
+
+                                           p(t)=(x(t), y(t))                    (1)
+
+in the (x, y) plane which is a function of time t. Since the arm is moved by
+actuators that control its angles 1, 2, it is convenient to convert the specified
+Cartesian trajectory (x(t), y(t)) into a joint space trajectory (1(t), 2(t)) for
+control purposes.
+   This may be achieved by using the inverse kinematics transformations
+
+                                              r2=x2+y2                          (2)
+
+
+
+                                                                                (3)
+
+
+
+                                                                                (4)
+
+
+
+                                          2=ATAN2 (D, C)                       (5)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+172                                                      Computed-Torque Control
+
+                       1=ATAN2(y, x)-ATAN2 (a2 sin 2, a1+a2 cos 2)        (6)
+
+
+
+
+Figure 4.2.1: Two-link planar elbow arm.
+
+
+
+
+Figure 4.2.2: Desired Cartesian trajectory.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.2 Path Generation                                                           173
+
+  Suppose that the end of the arm should repeatedly trace out the circular
+workspace path p(t) shown in Figure 4.2.2, which is described by
+
+                                          x(t)=2+½cos t
+                                          y(t)=1+½sin t.                        (7)
+
+   By using these expressions for each time t in the inverse kinematics equations,
+we obtain the required joint-space trajectories q(t)=(1(t), 2(t)) given in Figure
+4.2.3 that yield the circular Cartesian motion of the end effector (using a1=2,
+a2=2).
+   We have computed the joint variables for the “elbow down” configuration.
+Selecting the opposite sign in (4) gives the “elbow up” joint space trajectory
+yielding the same Cartesian trajectory.
+                                                                                 䊏
+Polynomial Path Interpolation
+Suppose that a desired trajectory for the manipulator motion has been
+determined, either in Cartesian space or, using the inverse kinematics, in joint
+space. For convenience, we use the joint space variable q(t) for notation. It is
+not possible to store the entire trajectory in computer memory, and few
+practically useful trajectories have a simple closed-form expression. Therefore,
+it is usual to store in computer memory a sequence of points qi(tk) for each
+joint variable i that represent the desired values of that variable at the discrete
+times tk. Thus q(tk) is a point in Rn that the joint variables should pass through
+at time tk.We call these via points.
+    Most robot control schemes require a continuous desired trajectory. To
+convert the table of via points qi(tk) to a continuous desired trajectory qd(t), we
+may use many options. Let us discuss here polynomial interpolation.
+    Suppose that the via points are uniformly spaced in time and define the
+sampling period as
+
+                                            T=tk+1-tk.                     (4.2.1)
+
+For smooth motion, on each time interval [tk, tk+1] we require the desired
+                             .
+position qd(t) and velocity qd(t) to match the tabulated via points. This yields
+boundary conditions of
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+174                                                  Computed-Torque Control
+
+
+
+
+Figure 4.2.3: Required joint-space trajectories: (a) 1 (deg); (b) 2 (deg).
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.2 Path Generation                                                           175
+
+
+
+
+                                                                          (4.2.2)
+
+
+
+To match these boundary conditions, it is necessary to use on [tk, tk+1] the
+cubic interpolating polynomial
+
+                                                                          (4.2.3)
+
+
+which has four free variables. Then
+
+                                                                          (4.2.4)
+
+
+                                                                          (4.2.5)
+
+so that the acceleration is linear on each sample period.
+  It is easy to solve for the coefficients that guarantee matching of the boundary
+conditions. In fact, we see that
+
+
+
+
+                                                                          (4.2.6)
+
+
+This is solved to obtain the required interpolating coefficients on each interval
+[tk, tk+1].
+
+
+
+
+                                                                          (4.2.7)
+
+
+
+
+Note that this technique requires storing the desired position and velocity at
+each sampling point in tabular form. A variant uses a higher-order polynomial
+to ensure continuous position, velocity, and acceleration at each sample
+time tk.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+176                                                  Computed-Torque Control
+
+  Although we have used the joint variable notation q(t), it should be
+emphasized that trajectory interpolation can also be performed in Cartesian
+space.
+
+Linear Function with Parabolic Blends
+Using cubic interpolating polynomials, the acceleration on each sample
+period is linear. However, in many practical applications there are good
+reasons for insisting on constant accelerations within each sample period.
+For instance, any real robot has upper limits on the torques that can be
+supplied by its actuators. For linear systems (think of Newton’s law) this
+translates into constant accelerations. Therefore, constant accelerations are
+less likely to saturate the actuators. Besides that, most industrial robot
+controllers are programmed to use constant accelerations on each sample
+period.
+    A constant acceleration profile is shown in Figure 4.2.4(a). The associated
+velocity and position profiles are shown in Figure 4.2.4(b) and 4.2.4(c). The
+position trajectory has three parts: a quadratic or parabolic initial portion,
+a linear midsection, and a parabolic final portion. Therefore, let us discuss
+interpolation of via points using linear functions with parabolic blends (LFPB).
+    The time at which the position trajectory switches from parabolic to
+linear is known as the blend time tb. A position qdi(t) should be specified for
+each joint variable i. The trajectory in Figure 4.2.4(c) can be written for
+joint i as
+
+
+
+
+                                                                          (4.2.8)
+
+The coefficient vi may be interpreted as the maximum velocity allowed for
+joint variable i. The design parameters are vi and tb.
+    It is straightforward to solve for the coefficients on each time interval [tk,
+tk+1] that ensure satisfaction of the boundary conditions (4.2.2). The result is
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.2 Path Generation                                                 177
+
+
+
+
+Figure 4.2.4: LFPB trajectory: (a) acceleration; (b) velocity.
+
+
+
+
+                                                                 (4.2.9)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+178                                                                 Computed-Torque Control
+
+
+
+
+                                      Figure 4.2.4: (Cont.)(c) position.
+
+Minimum-Time Trajectories
+There is an important special class of LFPB trajectories. Suppose the
+acceleration is limited by a maximum value of aM and it is desired for the
+robot arm to get from one position to another in minimum time. For simplicity
+assume that the initial and final velocities are equal to zero. The general case
+is covered in [Lewis 1986a] (see the Problems).
+    A minimum-time trajectory is shown in Figure 4.2.5. To drive joint variable
+i from a rest position of q0=qi(t0) to a desired final rest position of qf=qi(tf) in a
+minimum time tf, the maximum acceleration aM should be applied until the
+switching time ts, after which time the maximum deceleration -aM should be
+applied until tf. Note that both ts and tf depend on q0 and qf. We may write
+
+
+
+
+Then the velocity equations yield
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.2 Path Generation                                                          179
+
+
+
+
+Figure 4.2.5: Minimum-time trajectory: (a) acceleration; (b) velocity.
+
+
+or
+
+                                          ts=(tf+t0)/2.                  (4.2.10)
+
+That is, the switching from maximum acceleration to maximum deceleration
+occurs at the half-time point. Now simple manipulations on the position
+equations yield
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+180                                                                 Computed-Torque Control
+
+
+
+
+                                      Figure 4.2.5: (Cont.)(c) position.
+
+
+
+
+whence (4.2.10) yields
+
+                                                                                    (4.2.11)
+
+
+A closed-loop formulation of minimum-time control appears in [Lewis 1986a].
+   Unfortunately, minimum-time trajectories computed using a constant
+maximum acceleration are not directly relevant in robotics. This is due to the
+fact that an actual manipulator has a torque limit of τm. Since the robot
+equation (see Table 3.3.1) is nonlinear, this does not correlate to a constant
+upper bound on the acceleration. For instance, a robot arm has different
+maximum accelerations in its fully extended and fully retracted positions. For
+more discussion see [Kahn and Roth 1971], [Chen 1989], [Geering 1986],
+[Gourdeau and Schwartz 1989], [Jayasuriya and Suh 1985], [Kahn and Roth
+1971], [Kim and Shin 1985], [Shin and McKay 1985].
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.3 Computer Simulation of Robotic Systems                                    181
+
+
+4.3 Computer Simulation of Robotic Systems
+
+It is very important to simulate on a digital computer a proposed manipulator
+control scheme before actually implementing it on an arm. We show here
+how to perform such computer simulations for robotic systems. Since most
+robot controllers are actually implemented in a digital fashion (Section 4.5),
+we also show how to simulate digital robot arm controllers.
+
+Simulation of Robot Dynamics
+There is a variety of software packages for the simulation of nonlinear
+dynamical systems, including SIMNON [Åström and Wittenmark 1984],
+MATLAB, and others. For convenience, we include in Appendix B some
+simulation programs that are quite useful for continuous and digital control.
+   All simulation programs require the user to write similar subroutines. Time
+response simulators that use integration routines such as Runge-Kutta all require
+the computation of the state derivative given the current state. In Section 3.4
+we saw how to represent the robot arm equation
+
+                                                                           (4.3.1)
+
+in the nonlinear state-space form
+
+                                                                           (4.3.2)
+
+with x(t) the state and u(t) the input.
+                               .
+  Defining a state as x=[qT qT]T, we may write the implicit form
+
+
+                                                                           (4.3.3)
+
+
+with τ the arm control torque that is provided by the controller and τd the
+disturbance torque. We say that this is an implicit form since the coefficient
+matrix of the left-hand side means that                                is not given
+explicitly in terms of the right-hand side.
+   Given x(t), it is necessary to provide a subroutine for the integration program
+that computes (t). One approach to solving for is to invert M(q). However,
+due to potential numerical problems this is not recommended. Let us represent
+(4.3.3) as
+                                                                           (4.3.4)
+
+Note that in this case u(t) is the vector composed of the controls (t) and the
+disturbances d(t).
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+182                                                                     Computed-Torque Control
+
+   A simple time response program, TRESP, is given in Appendix B. Given a
+subroutine F(time, x, ) that computes given x(t) and u(t) using (4.3.4); it
+uses a Runge-Kutta integrator to compute the state trajectory x(t). To solve
+                                                                           .
+for within subroutine F(t, x, )we recommend computing M(q) and N(q, q)
+and, then solving
+
+                                                                                         (4.3.5)
+
+
+[i.e., the bottom portion of (4.3.3)] by least-squares techniques, which are
+more stable numerically than the inversion of M(q). Least-squares equation
+solvers are readily available commercially in, for instance [IMSL], [LINPACK],
+and elsewhere. For simpler arms, M(q) may be inverted analytically.
+    Throughout the book we illustrate the simulation of the arm dynamics
+using various control schemes.
+
+Simulation of Digital Robot Controllers
+While most robot controllers are designed in continuous time, they are
+implemented on actual robots digitally. That is, the control signals are only
+updated at discrete instants of time using a microprocessor. We discuss the
+implementation of digital robot arm controllers in Section 4.5. To verify that
+a proposed controller will operate as expected, therefore, it is highly desirable
+to simulate it in its digitized or discretized form prior to actual implementation.
+
+
+
+
+                                          Figure 4.3.1: Digital controller.
+
+
+   A digital control scheme is shown in Figure 4.3.1. The plant or system to
+be controlled is a continuous-time system, and K(z) is the dynamic digital
+controller, where z is the Z-transform variable (i.e., z-1 represents a unit time
+delay). The digital controller K(z) is implemented using software code in a
+digital signal processor (DSP). The reference input r(t) is the desired trajectory
+that y(t) should follow, and ek is the (discrete) tracking error.
+   The sampler with sample period T is an analog-to-digital (A/D) converter
+that takes the samples yk=y(kT) of the output y(t) that are required by the
+software controller K(z). The definition of y(t) can vary depending on the
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.3 Computer Simulation of Robotic Systems                                     183
+
+control scheme. For instance, in robot control, y(t) might represent the 2n—
+vector composed of q(t) and q.(t).
+
+
+
+
+Figure 4.3.2: Data reconstruction using a ZOH: (a) discrete control sequence uk; (b)
+reconstructed continuous signal u(t).
+
+
+   The hold device in the figure is a digital-to-analog (D/A) converter that
+converts the discrete control samples uk computed by the software controller
+K(z) into the continuous-time control u(t) required by the plant. It is a data
+reconstruction device. The input uk and output u(t) for a zero-order hold (ZOH)
+are shown in Figure 4.3.2. Note that u(kT)=uk, with T the sample period, so
+that u(t) is continuous from the right. That is, u(t) is updated at times kT. The
+ZOH is generally used for controls purposes, as opposed to other higher-order
+devices such as the first-order hold, since most commercially available DSPs
+have a built-in ZOH.
+   Once a controller has been designed, it is important to simulate it using a
+digital computer before it is implemented to determine if the closed-loop
+response is suitable. This is especially true in robotics, since the digital
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+184                                                            Computed-Torque Control
+
+controller is generally found by designing a continuous-time controller, which
+is then digitized using approximation techniques such as Euler’s method. That
+is, for nonlinear systems, the controller discretization schemes are generally
+not exact. This results in degraded performance. To verify that the controller
+performance will be suitable, the simulation should provide the response at
+all times, including times between the samples.
+    To simulate a digital controller we may use the scheme shown in Figure
+4.3.3. There, the continuous plant dynamics are contained in the subroutine
+F(t, x, ); they are integrated using a Runge-Kutta integrator. The figure
+assumes a ZOH; thus the control input u(t) is updated to uk at each time kT,
+and then held constant until time (k+1)T Note that two time intervals are
+involved; the sampling period T and the Runge-Kutta integration period
+TR <<T. TR should be selected as an integral divisor of T.
+
+
+
+
+                           Figure 4.3.3: Digital control simulation scheme.
+
+    This simulation technique provides the plant state x(t) as a continuous
+function of time, even at values between the sampling instants [in fact, it
+provides x(t) at multiples of TR]. This is essential in verifying acceptable
+intersample behavior of the closed-loop system prior to implementing the
+digital controller on the actual plant.
+    Program TRESP in Appendix B can be used to implement Figure 4.3.3.
+It is written in a modular fashion to apply to a wide variety of situations.
+We shall illustrate its use for the purpose of digital control in several
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                 185
+
+subsequent examples. The use of such simulation software as SIMNON is
+quite similar.
+   We discuss the implementation of digital robot arm controllers in Section
+4.5. Some detailed discussion on digital control, simulation, and DSP
+implementation of controllers is given in [Lewis 1992].
+
+
+4.4 Computed-Torque Control
+
+Through the years there have been proposed many sorts of robot control
+schemes. As it happens, most of them can be considered as special cases of the
+class of computed-torque controllers. Computed torque, at the same time, is a
+special application of feedback linearization of nonlinear systems, which has
+gained popularity in modern systems theory [Hunt et al. 1983], [Gilbert and
+Ha 1984]. In fact, one way to classify robot control schemes is to divide them
+as “computed-torque-like” or “noncomputed-torque-like.” Computed-torque-
+like controls appear in robust control, adaptive control, learning control, and
+so on.
+   In the remainder of this chapter we explore this class of robot controllers,
+which includes such a broad range of designs. Computed-torque control allows
+us to conveniently derive very effective robot controllers, while providing a
+framework to bring together classical independent joint control and some
+modern design techniques, as well as set the stage for the rest of the book. A
+summary of the different computed-torque-like controllers is given at the end
+of the section in Table 4.4.1. We shall see that many digital robot controllers
+are also computed-torque-like controllers (Section 4.5).
+
+Derivation of Inner Feedforward Loop
+The robot arm dynamics are
+
+                                                                         (4.4.1)
+
+or
+
+                                                                         (4.4.2)
+
+with the joint variable                      the control torque, and d(t) a
+disturbance. If this equation includes motor actuator dynamics (Section 3.6),
+then (t) is an input voltage.
+   Suppose that a desired trajectory qd(t) has been selected for the arm motion,
+according to the discussion in Section 4.2. To ensure trajectory tracking by
+the joint variable, define an output or tracking error as
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+186                                                             Computed-Torque Control
+
+                                                                                     (4.4.3)
+
+To demonstrate the influence of the input               (t)on the tracking error, differe-
+ntiate twice to obtain
+
+
+
+Solving now for                    in (4.4.2) and substituting into the last equation yields
+
+                                                                                     (4.4.4)
+
+Defining the control input function
+
+                                                                                     (4.4.5)
+
+and the disturbance function
+
+                                                                                     (4.4.6)
+
+we may define a state                          by
+
+
+                                                                                     (4.4.7)
+
+
+and write the tracking error dynamics as
+
+
+                                                                                     (4.4.8)
+
+
+This is a linear error system in Brunovsky canonical form consisting of n
+pairs of double integrators 1/s2, one per joint. It is driven by the control input
+u(t) and the disturbance w(t). Note that this derivation is a special case of the
+general feedback linearization procedure in Section 3.4.
+   The feedback linearizing transformation (4.4.5) may be inverted to yield
+
+                                                                                     (4.4.9)
+
+We call this the computed-torque control law. The importance of these
+manipulations is as follows. There has been no state-space transformation in
+going from (4.4.1) to (4.4.8). Therefore, if we select a control u(t) that stabilizes
+(4.4.8) so that e(t) goes to zero, then the nonlinear control input given by
+(t)(4.4.9) will cause trajectory following in the robot arm (4.4.1). In fact,
+substituting (4.4.9) into (4.4.2) yields
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                   187
+
+
+
+
+or
+
+                                                                         (4.4.10)
+
+which is exactly (4.4.8).
+
+
+
+
+Figure 4.4.1: Computed-torque control scheme, showing inner and outer loops.
+
+
+
+
+   The stabilization of (4.4.8) is not difficult. In fact, the nonlinear
+transformation (4.4.5) has converted a complicated nonlinear controls design
+problem into a simple design problem for a linear system consisting of n
+decoupled subsystems, each obeying Newton’s laws.
+   The resulting control scheme appears in Figure 4.4.1. It is important to
+note that it consists of an inner nonlinear loop plus an outer control signal
+u(t). We shall see several ways for selecting u(t). Since u(t) will depend on q(t)
+      .
+and q(t), the outer loop will be a feedback loop. In general, we may select a
+dynamic compensator H(s) so that
+
+                                          U(s)=H(s)E(s).                 (4.4.11)
+
+H(s) can be selected for good closed-loop behavior. According to (4.4.10), the
+closed-loop error system then has transfer function
+
+                                          T(s)=s2I-H(s).                 (4.4.12)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+188                                                 Computed-Torque Control
+
+   It is important to realize that computed-torque depends on the inversion of
+the robot dynamics, and indeed is sometimes called inverse dynamics control
+In fact, (4.4.9) shows that (t) is computed by substituting d–u for in (4.4.2);
+that is, by solving the robot inverse dynamics problem. The caveats associated
+with system inversion, including the problems resulting when the system has
+non-minimum-phase zeros, all apply here. (Note that in the linear case, the
+system zeros are the poles of the inverse. Such nonminimum-phase notions
+generalize to nonlinear systems.) Fortunately for us, the rigid arm dynamics
+are minimum phase.
+   There are several ways to compute (4.4.9) for implementation purposes.
+Formal matrix multiplication at each sample time should be avoided. In some
+cases the expression may be worked out analytically. A good way to compute
+the torque (t) is to use the efficient Newton-Euler inverse dynamics formulation
+[Craig 1985] with d–u in place of (t).
+   The outer-loop signal u(t) can be chosen using many approaches, including
+robust and adaptive control techniques. In the remainder of this chapter we
+explore some choices for u(t) and some variations on computed-torque control.
+
+PD Outer-Loop Design
+One way to select the auxiliary control signal u(t) is as the proportional-plus-
+derivative (PD) feedback,
+
+                                                                        (4.4.13)
+
+Then the overall robot arm input becomes
+
+                                                                        (4.4.14)
+
+This controller is shown in Figure 4.4.6 with Ki=0. The closed-loop error
+dynamics are
+                                                                        (4.4.15)
+or in state-space form,
+
+                                                                        (4.4.16)
+
+The closed-loop characteristic polynomial is
+
+                                                                        (4.4.17)
+
+   Choice of PD Gains. It is usual to take the n×n gain matrices diagonal so
+that
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                 189
+
+                                                                       (4.4.18)
+
+Then
+
+                                                                       (4.4.19)
+
+and the error system is asymptotically stable as long as the Kvi and Kpi are
+all positive. Therefore, as long as the disturbance w(t) is bounded, so is the
+error e(t). In connection with this, examine (4.4.6) and recall from Table
+3.3.1 that M-1 is upper bounded. Thus boundedness of w(t) is equivalent to
+boundedness of d(t).
+   It is important to note that although selecting the PD gain matrices diagonal
+results in decoupled control at the outer-loop level, it does not result in a
+decoupled joint-control strategy. This is because multiplication by M(q) and
+                                                     .
+addition of the nonlinear feedforward terms N (q, q) in the inner loop scrambles
+the signal u(t) among all the joints. Thus, information on all joint positions
+                     .
+q(t) and velocities q(t) is generally needed to compute the control (t) for any
+one given joint.
+   The standard form for the second-order characteristic polynomial is
+
+                                                                       (4.4.20)
+
+with  the damping ratio and n the natural frequency. Therefore, desired
+performance in each component of the error e(t) may be achieved by selecting
+the PD gains as
+
+                                                                       (4.4.21)
+
+with , n the desired damping ratio and natural frequency for joint error i. It
+may be useful to select the desired responses at the end of the arm faster than
+near the base, where the masses that must be moved are heavier.
+  It is undesirable for the robot to exhibit overshoot, since this could cause
+impact if, for instance, a desired trajectory terminates at the surface of a
+workpiece. Therefore, the PD gains are usually selected for critical damping
+=1. In this case
+
+                                                                       (4.4.22)
+
+
+   Selection of the Natural Frequency. The natural frequency n governs the
+speed of response in each error component. It should be large for fast responses
+and is selected depending on the performance objectives. Thus the desired
+trajectories should be taken into account in selecting n. We discuss now
+some additional factors in this choice.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+190                                               Computed-Torque Control
+
+   There are some upper limits on the choice for n [Paul 1981]. Although the
+links of most industrial robots are massive, they may have some flexibility.
+Suppose that the frequency of the first flexible or resonant mode of link i is
+                                                                      (4.4.23)
+with J the link inertia and kr the link stiffness. Then, to avoid exciting the
+resonant mode, we should select n<r/2. Of course, the link inertia J changes
+with the arm configuration, so that its maximum value might be used in
+computing r.
+   Another upper bound on n is provided by considerations on actuator
+saturation. If the PD gains are too large, the torque τ(t) may reach its upper
+limits.
+   Some more feeling for the choice of the PD gains is provided from error-
+boundedness considerations as follows. The transfer function of the closed-
+loop error system in (4.4.15) is
+
+                                                                      (4.4.24)
+
+or if Kv and Kp are diagonal,
+
+                                                                      (4.4.25)
+
+
+                                                                      (4.4.26)
+
+    We assume that the disturbance and M-1 are bounded (Table 3.3.1), so that
+
+                                                                      (4.4.27)
+         —          —
+with m and d known for a given robot arm. Therefore,
+
+                                                                      (4.4.28)
+
+
+                                                                      (4.4.29)
+
+   Now selecting the L2—norm, the operator gain ||H(s)||2 is the maximum
+value of the Bode magnitude plot of H(s). For a critically damped system,
+
+                                                                      (4.4.30)
+
+Therefore,
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                 191
+
+                                                                       (4.4.31)
+
+Moreover (see the Problems),
+
+                                                                       (4.4.32)
+
+so that
+
+                                                                       (4.4.33)
+
+Thus, in the case of critical damping, the position error decreases with kpi and
+the velocity error decreases with kvi.
+
+EXAMPLE 4.4–1: Simulation of PD Computed-Torque Control
+    In this example we intend to show the detailed mechanics of simulating a
+    PD computed-torque controller on a digital computer.
+
+
+    a. Computed-Torque Control Law
+    In Example 3.2.2 we found the dynamics of the two-link planar elbow arm
+    shown in Figure 4.2.1 to be
+
+
+
+
+                                                                             (1)
+    These are in the standard form
+
+                                                                             (2)
+
+    Take the link masses as 1 kg and their lengths as 1 m.
+      The PD computed-torque control law is given as
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+192                                                            Computed-Torque Control
+
+                                                                                   (3)
+
+with the tracking error defined as
+
+                                               e=qd-q.                             (4)
+
+
+
+b. Desired Trajectory
+Let the desired trajectory qd(t) have the components
+
+
+                                          θ1d=g1 sin (2πt/T)
+                                          θ2d=g2 cos (2πt/T)                       (5)
+
+
+with period T=2 s and amplitudes gi=0.1 rad≈6 deg. For good tracking select
+the time constant of the closed-loop system as 0.1 s. For critical damping, this
+means that Kv=diag{kv}, KP=diag{kp}, where
+
+
+
+                                                                                   (6)
+
+
+
+It is important to realize that the selection of controller parameters such as the
+PD gains depends on the performance objectives-in this case, the period of the
+desired trajectory.
+
+
+c. Computer Simulation
+Let us simulate the computed-torque controller using program TRESP in
+Appendix B. Simulation using commercial packages such as MATLAB and
+SIMNON is quite similar.
+   The subroutines needed for TRESP are shown in Figure 4.4.2. They are
+worth examining closely. Subroutine SYSINP (ITx, t) is called once per Runge-
+Kutta integration period and generates the reference trajectory qd(t), as well
+as qd(t), and qd(t). Note that the reference signal should be held constant
+during each integration period.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control               193
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+194                                       Computed-Torque Control
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                     195
+
+
+
+
+Figure 4.4.2: Subroutines for simulation using TRESP.
+
+
+
+
+                            Figure 4.4.3: Joint angles θ1(t) and θ2(t) (red).
+
+
+  Subroutine F(time, x, xp) is called by Runge-Kutta and contains the
+continuous dynamics. This includes both the controller and the arm dynamics.
+The state to be integrated is                           and the subroutine should
+compute the state derivative x (i.e., xp, which signifies x—prime).
+  Subroutine CTL(x) contains the controller (3). Note the structure of this
+subroutine. First, the tracking error e(t) and its derivative are computed. Then
+M(q) and                                    are computed. Finally, (3) is
+manufactured.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+196                                                               Computed-Torque Control
+
+
+
+
+                             Figure 4.4.4: Tracking error e1(t), e2(t) (red).
+
+
+
+   Subroutine ARM(x, xp) contains the robot dynamics. First, M(q) and M-
+1
+ (q) are computed, and then N(q,q). The state derivatives are then determined.
+   The results of the simulation are shown in the figures. Figure 4.4.3 shows
+the joint angles. Figure 4.4.4 shows the joint errors. The initial conditions
+result in a large initial error that vanishes within 0.6 s. Figure 4.4.5 shows the
+control torques; the larger torque corresponds to the inner motor, which must
+move two links.
+   It is interesting to note the ripples in e(t) that appear in Figure 4.4.4. These
+are artifacts of the integrator. The Runge-Kutta integration period was TR=0.01
+s. When the simulation was repeated using TR=0.001 s, the tracking error was
+exactly zero after 0.6 s. It should be zero, since computed-torque, or inverse
+dynamics control, is a scheme for canceling the nonlinearities in the dynamics
+to yield a second-order linear error system. If all the arm parameters are
+exactly known, this cancellation is exact. It is a good exercise to repeat this
+simulation using various values for the PD gains (see the Problems).
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                  197
+
+
+
+
+                                    Figure 4.4.5: Torque inputs (N-m).
+
+
+                                                                              䊏
+PID Outer-Loop Design
+We have just seen that PD computed-torque control is very effective if all the
+arm parameters are known and there is no disturbance d. However, from
+classical control theory we know that in the presence of constant disturbances,
+PD control gives a nonzero steady-state error. Consequently, we are motivated
+to make the system type I by including an integrator in the feedforward loop-
+this can be achieved using the PID computed-torque controller
+
+                                                                         (4.4.34)
+
+
+                                                                         (4.4.35)
+
+which yields the arm control input
+
+                                                                         (4.4.36)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+198                                                                  Computed-Torque Control
+
+
+
+
+                           Figure 4.4.6: PID computed-torque controller.
+
+
+
+with e(t) the integral of the tracking error e(t). Thus additional dynamics have
+been added to the linear outer-loop compensator.
+   This control law is conveniently described by defining the state as
+x=                          and augmenting the error dynamics (4.4.8) with an
+integrator, so that
+
+
+
+                                                                                     (4.4.37)
+
+
+
+A block diagram of the PID computed-torque controller appears in Figure
+4.4.6. Then the closed-loop system is
+
+
+
+                                                                                     (4.4.38)
+
+
+
+The closed-loop characteristic polynomial is
+
+                                          ∆c(s)=|s3I+Kvs2+Kps+Ki|.                   (4.4.39)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                  199
+
+Selecting diagonal control’ gains
+
+                                                                        (4.4.40)
+
+gives
+
+
+                                                                        (4.4.41)
+
+
+By using the Routh test it can be found that for closed-loop stability we require
+that
+
+                                                                        (4.4.42)
+
+that is, the integral gain should not be too large.
+
+Actuator Saturation and Integrator Windup. It is important to be aware of an
+effect in implementing PID control on any actual robot manipulator that can
+cause serious problems if not accounted for. Any real robot arm will have
+limits on the voltages and torques of its actuators. These limits may or may
+not cause a problem with PD control, but are virtually guaranteed to cause
+problems with integral control due to a phenomenon known as integrator
+windup [Lewis 1992].
+    Consider the simple case where =kiε with ε(t) the integrator output. The
+torque input (t) is limited by its maximum and minimum values max and min.
+If kiε(t) hits max, there may or not may not be a problem. The problem arises
+if the integrator input remains positive, for then the integrator continues to
+integrate upwards and kiε(t) may increase well beyond max. Then, when the
+integrator input becomes negative, it may take considerable time for kiε(t) to
+decrease below max. In the meantime  is held at max, giving an incorrect
+control input to the plant.
+    Integrator windup is easy to correct using antiwindup protection in a digital
+controller. This is discussed in Section 4.5. The effects of uncorrected windup
+are demonstrated in Example 4.4.4.
+    The next example shows the usefulness of an integral term when there are
+unknown disturbances present.
+
+EXAMPLE 4.4–2: Simulation of PID Computed-Torque Control
+    In Example 4.4.1 we simulated the PD computed-torque controller for a
+    two-link planar arm. In this example we add a constant unknown
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+200                                                   Computed-Torque Control
+
+
+
+
+Figure 4.4.7: Computed-torque controller tracking errors e1(t), e2(t) (red): (a) PD
+control; (b) PID control.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                  201
+
+
+
+
+Figure 4.4.8: Computed-torque controller torque inputs (N-m): (a) PD control; (b)
+PID control.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+202                                                     Computed-Torque Control
+
+    disturbance to the arm dynamics and compare PD to PID computed
+    torque.
+    Thus let the arm dynamics be
+
+                                                                             (1)
+
+    with d a constant disturbance with 1 N-m in each component. This could
+    model unknown dynamics such as friction, and so on. The value of 1 N-m
+    represents quite a large bias.
+       Adding 1 to the computation of the nonlinear terms N1 and N2 in
+    subroutine arm(x, xp) in Figure 4.4.2 and using the PD computed-torque
+    controller with kp=100, kv=20 yields the error plot in Figure 4.4.7(a).
+    There is a unacceptable residual bias in the tracking error due to the
+    unmodeled constant disturbance, which is not accounted for in the
+    computed-torque law. The largest error is 0.033 rad, somewhat less
+    than 2 deg.
+       Adding now an integral-error weighting term with ki=500 yields the
+    results in Figure 4.4.7(b), which show a zero steady-state error and are
+    quite good.
+       The associated control torques are shown in Figure 4.4.8, which shows
+    that the torque magnitudes are not appreciably increased by using the
+    integral term.
+       To simulate the PID control law, it is necessary to add two additional
+    states to x in subroutine arm(x, xp). It is convenient to call them x(5) and
+    x(6), so that the lines added to the subroutine are
+
+
+                                          xp(5)=e(1).
+                                          xp(6)=e(2).                        (2)
+
+    Thus it is now necessary to compute e(1) and e(2) in subroutine arm(x, xp)
+    for integration purposes.
+                                                                            䊏
+
+Class of Computed-Torque-Like Controllers
+An entire class of computed-torque-like controllers can be obtained by
+modifying the computed-torque control law to read
+
+                                                                        (4.4.43)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                    203
+
+The carets denote design choices for the weighting and offset matrices. One
+choice is =M(q), =N(q,q). The calculated control input into the robot arm
+is c(t).
+    In some cases M(q) is not known exactly (e.g., unknown payload mass), or
+N(q, ) is not known exactly (e.g., unknown friction terms). Then             and
+could be the best estimate we have for these terms. On the other hand, we
+might simply wish to avoid computing M(q) and N(q,q) at each sample time,
+or the sample period might be too short to allow this with the available
+hardware. From such considerations, we call (4.4.43) an “approximate
+computed-torque” controller.
+    In Table 4.4.1 are given some useful computed-torque-like controllers. As it
+turns out, computed torque is quite a good scheme since it has some important
+robustness properties. In fact, even if ≠M and ≠N the performance of
+controllers based on (4.4.43) can be quite good if the outer-loop gains are selected
+large enough. We study robustness formally in Chapter 4.
+    In the remainder of this chapter we consider various special choices of
+and       that give some special sorts of controllers. We shall present some
+theorems and simulation examples that illustrate the robustness properties of
+computed-torque control.
+
+Error Dynamics with Approximate Control Law. Let us now derive the error
+dynamics if the approximate computed-torque controller (4.4.43) is applied to
+the robot arm (4.4.2). Substituting c(t) into the arm equation for (t) yields
+
+
+
+
+Adding Mqd-Mqd to the left-hand side and Mu-Mu to the right gives
+
+
+
+
+or
+
+                                          ë=u-∆u+d,                        (4.4.44)
+
+where the inertia and nonlinear-term model mismatch terms are
+
+                                                                           (4.4.45)
+
+
+                                                                           (4.4.46)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+204                                                      Computed-Torque Control
+
+
+
+                    Table 4.4.1: Computed-Torque-Like Robot Controllers.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                  205
+
+and the disturbance is
+
+                                                                        (4.4.47)
+
+
+This reduces to the error system (4.4.10) if exact computed-torque control
+is used so that ∆=0, δ=0. Otherwise, the error system is driven by the
+desired acceleration and the nonlinear term mismatch δ(t). Thus the tracking
+error will never go exactly to zero. Moreover, the auxiliary control u(t) is
+multiplied by (I -∆), which can make for a very difficult control problem.
+   Using outer-loop PD feedback so that u(t)=-Kve-Kpe yields the error system
+
+                                                                        (4.4.48)
+
+
+The behavior of such systems is not obvious, even if Kv and Kp are selected for
+good stability of the left-hand side. There are two sorts of problems: first, the
+disturbance term d(t), and second the function ∆(Kve+Kpe) of the error and its
+derivative.
+
+PD-Plus-Gravity Controller
+A useful controller in the computed-torque family is the PD-plus-gravity
+controller that results when M=I, N=G(q)-qd, with G(q) the gravity term of
+the manipulator dynamics. Then, selecting PD feedback for u(t) yields
+
+                                                                        (4.4.49)
+
+
+This control law was treated in [Arimoto and Miyazaki 1984], [Schilling
+1990]. It is much simpler to implement than the exact computedtorque
+controller.
+   When the arm is at rest, the only nonzero terms in the dynamics (4.4.1)
+are the gravity G(q), the disturbance d, and possibly the control torque .
+The PD-gravity controller c, includes G(q), so that we should expect good
+performance for set-point tracking, that is, when a constant qd is given so
+that qd=0. The next result formalizes this. It relies on a Lyapunov proof
+(Chapter 1) of the sort that will be of consistent usefulness throughout the
+book, drawing especially on the skew-symmetry property in Table 3.3.1.
+Thus it is very important to understand the steps in this proof.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+206                                                 Computed-Torque Control
+
+THEOREM 4.4–1: Suppose that PD-gravity control is used in the arm
+dynamics (4.4.1) and d=0, qd=0. Then the steady-state tracking error. e=qd-
+q is zero.
+Proof:
+1. Closed-Loop System
+   Ignoring friction, the robot dynamics are given by
+
+                                                                             (1)
+
+When qd=0, the proposed control law (4.4.49) yields the closed-loop dynamics
+
+                                                                             (2)
+
+2. Lyapunov Function
+   Select now the Lyapunov function
+
+                                                                             (3)
+
+and differentiate to obtain
+
+                                                                             (4)
+
+Substituting the closed-loop dynamics (2) yields
+
+                                                                             (5)
+
+Now, the skew symmetry of the first term gives
+
+                                                                             (6)
+
+The state is                , so that V is positive definite but only negative
+semidefinite. Therefore, we have demonstrated stability in the sense of
+Lyapunov, that is, that the error and joint velocity are both bounded.
+
+3. Asymptotic Stability by LaSalle’s Extension
+   The asymptotic stability of the system may be demonstrated using Barbalat’s
+lemma and a variant of LaSalle’s extension [Slotine and Li 1991] (Chapter
+2). Thus it is necessary to demonstrate that the only invariant set contained in
+the set V=0 is the origin.
+   Since V is lower bounded by zero and nonpositive, it follows that V
+approaches a finite limit, which can be written
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                  207
+
+
+                                                                              (7)
+
+
+We now invoke Barbalat’s lemma to show that V goes to zero. For this, it is
+necessary to demonstrate the uniform continuity of V. We see that
+
+                                                                              (8)
+
+The demonstrated stability shows that a and q are bounded, whence (2) and
+the boundedness of M-1(q) (see Table 3.3.1) reveal that q is bounded. Therefore,
+V is bounded, whence V is uniformly continuous. This guarantees by Barbalat’s
+lemma that V goes to zero.
+   It is now clear that goes to zero. It remains to show that the tracking
+error e(t) vanishes. Note that when q=0, (2) reveals that
+
+                                                                              (9)
+
+Therefore, a nonzero e(t) results in nonzero and hence in q≠0, a contradiction.
+Therefore, the only invariant set contained in {x(t)|V=0} is x(t)=0. This finally
+demonstrates that both e(t) and vanish and concludes the proof.                 䊏
+   Some notes on this proof are warranted. First, note that the Lyapunov
+function chosen is a natural one, as it contains the kinetic energy and the
+“artificial potential energy” associated with the virtual spring in the control
+law [Slotine and Li 1991]. Kp appears in V while Kv appears in V.
+   The proof of Lyapunov stability is quick and easy. The effort comes about
+in showing asymptotic stability. For this, it is required to return to the system
+dynamics and study it more carefully, discussing issues such as boundedness
+of signals, invariant sets, and so on. The fundamental property of skew
+symmetry is used in computing V. The boundedness of M-1(q) is needed in
+Barbalat’s lemma.
+   The next example illustrates the performance of the PD-gravity controller
+for trajectory tracking. In general, if qd≠0, then the PD-gravity controller
+guarantees bounded tracking errors. The error bound decreases, that is, the
+tracking performance improves, as the PD gains become larger. This will be
+made rigorous in Chapter 4.
+
+EXAMPLE 4.4–3: Simulation of PD-Gravity Controller
+    In Example 4.4.1 we simulated the exact computed-torque control law on
+    a two link planar manipulator. Here, let us simulate the PD-gravity
+    controller. We shall take the same arm parameters and desired trajectory.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+208                                                   Computed-Torque Control
+
+   Assuming identical PD gains for each link, the PD-gravity control law for
+the two-link arm is
+
+
+                                                                                 (1)
+
+
+This is easily simulated by commenting out several lines of code and making
+a few other modifications in subroutine CTL(x) of Figure 4.4.2.
+   For critical damping, the PD gains are selected as
+
+                                                                                 (2)
+
+
+The results of the PD-gravity controller simulation for several values of wn
+are shown in Figure 4.4.9. As ωn, and hence the PD gains, increases, the
+tracking performance improves. However, no matter how large the PD gains,
+the tracking error never goes exactly to zero, but is bounded about zero by a
+ball whose radius decreases as the gains become larger. The performance for
+ωn=50, corresponding to kp=2500, kv=100, would be quite suitable for many
+applications.
+   It quite important to note that the dc value of the errors is equal to zero.
+One can consider the gravity terms as the “dc portion” of the computed-
+torque control law. If they are included in computing the torques, there will
+be no error offset.
+   The associated control input torques are shown in Figure 4.4.10. It is
+extremely interesting to note that the torques are smaller for the higher
+gains. This is contrary to popular belief, which assumes that the control
+torques always increase with increasing PD gains. It is due to the fact that
+larger gains give “tighter” performance, and hence smaller tracking errors.
+   In view of the fact that the errors in Figure 4.4.9(a) have different magnitudes,
+it would probably be more reasonable to take the PD gains larger for the
+inner link than the outer link.
+                                                                                  䊏
+
+Classical Joint Control
+A simple controller that often gives good results in practice is obtained by
+selecting in (4.4.43)
+
+                                                                           (4.4.50)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                      209
+
+
+
+
+Figure 4.4.9: PD-gravity tracking error e1(t), e2(t) (red): (a) wn=10 rad/s; (b) wn=25
+rad/s.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+210                                                               Computed-Torque Control
+
+
+
+
+                                   Figure 4.4.9: (Cont.) (c)wn=50 rad/s.
+
+
+
+
+Then there results
+
+                                                                                  (4.4.51)
+
+By selecting ui to depend only on joint variable i, this describes n decoupled
+individual joint controllers and is called independent joint control.
+Implementation on an actual robot arm is easy since the control input for
+joint i only depends on locally measured variables, not on the variables of the
+other joints. Moreover, the computations are easy and do not involve solving
+the complicated nonlinear robot inverse dynamics.
+   During the early days of robotics, independent joint control was popular
+[Paul 1981] since it allows a decoupled analysis of the closed-loop system
+using single-input/single-output (SISO) classical techniques. It is also called
+classical joint control. There are strong arguments even today by several
+researchers that this control scheme is always suitable in practical
+implementations, and that modern nonlinear control schemes are too
+complicated for industrial robotic applications.
+   A traditional analysis of independent joint control control now follows. It
+provides a connection with classical control notions and is important for the
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                   211
+
+
+
+
+Figure 4.4.10: PD-gravity torque inputs (N-m): (a) wn=10 rad/s; (b) wn=25 rad/s.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+212                                                              Computed-Torque Control
+
+
+
+
+                                  Figure 4.4.10: (Cont) (c) wn=50 rad/s.
+
+
+
+robot controls designer to understand. See [Franklin et al. 1986] for a reference
+on classical control theory.
+   A simplified dynamical model of a robot arm with electric actuators may
+be written as (Section 3.6)
+
+
+                                                                                 (4.4.52)
+
+
+with Jm the actuator motor inertia, Bm the rotor damping constant, km the
+torque constant, kb the back emf constant, R the armature resistance, and ri
+the gear ratio for joint i. The motor angle is denoted θi(t). The constant portions
+of the diagonal elements of M(q) are denoted mii. The time-varying portions
+of these elements, as well as the off-diagonal elements of M(q), the nonlinear
+terms N(q, ), and any disturbances d are all lumped into the disturbance
+di(t). Thus di(t) contains the effects on joint i of all the other joints. The control
+input is the motor armature voltage vi(t).
+    Note that predominantly motor parameters appear in this equation. In
+fact, if the gear ratio is small, even mii may be neglected. For this reason, if
+the gear ratio is small, the robot arm control problem virtually reduces to the
+problem of controlling the actuator motors.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                     213
+
+   Let us denote this simplified linear time-invariant model of manipulator
+joint i as
+
+                                                                            (4.4.53)
+
+where the constant km/R has been incorporated into the definitions of J and B.
+According to the properties in Table 3.3.1, the disturbance d(t) is bounded,
+although not generally by a constant. The bound may be a function of q(t), (t),
+and even (t). This is generally ignored in a classical analysis. The effects of
+d(t) are, however, somewhat ameliorated by multiplication by the gear ratio r.
+The effects of joint compliance (Chapter 6) are also ignored in classical joint
+control design. [For consistency with classical notation, there is a sign change
+in this section in the definition of u(t) compared to our previous usage.]
+    Now, let us consider a few selections for the control input u(t).
+
+PD Control. Selecting the PD control law
+
+                                             u=kve+kpe,                     (4.4.54)
+
+
+
+
+                             Figure 4.4.11: PD independent joint control.
+
+with e(t)=θdi (t)-θi(t) the tracking error for motor angle i, yields the closed-loop
+system shown in Figure 4.4.11. Recall that the motor angle is related to the
+joint variable by qi=riθi. Thus θd(t) may be computed from qdi(t). This PD
+controller is easily implemented on an actual arm with very little computing
+power.
+   Using Mason’s theorem from classical control, the closed-loop transfer
+function for set-point tracking (e.g., with θd=0) is found to be (see the
+problems)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+214                                                 Computed-Torque Control
+
+
+                                                                        (4.4.55)
+
+
+with the closed-loop characteristic polynomial
+
+                                                                        (4.4.56)
+
+The PD gains can be selected to obtain a suitable natural frequency and
+damping ratio, as we have seen.
+   At steady state, the only nonzero contribution to the disturbance d(t) is the
+neglected gravity G(q). Table 3.3.1 shows that the gravity vector is bounded
+by a known value gb for a given robot arm. Therefore, at steady state,
+
+
+   Using the final value theorem, the steady-state tracking error for joint i
+using PD control is bounded by
+                                                                        (4.4.57)
+Therefore, for set-point tracking where a final value for qd is specified and
+         PD control with a large kp might be suitable.
+    As a matter of fact, the next results show that PD control is often very
+suitable even for following a desired trajectory, not only for set-point control.
+It is proven in [Dawson 1990].
+
+THEOREM 4.4–2: If the PD control law (4.4.54) is applied to each joint and
+e(0)=0, (0)=0, the position and velocity tracking errors are bounded within a
+ball whose radius decreases approximately (for large k v )
+as       .
+
+                                                                            䊏
+   This result gives credence to those who maintain that PD control is often
+good enough for practical applications.
+   Of course, the point is that kv cannot be increased without limit without
+hitting the actuator torque limits. Other schemes to be discussed in the book
+allow good trajectory following without such large torques.
+   In [Paul 1981] are discussed several methods for modifying the PD control
+law to obtain better performance. These include gravity compensation [which
+yields exactly controller (4.4.49)], and acceleration feedforward, which
+amounts to using
+
+                                                                        (4.4.58)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                     215
+
+for each joint. Also mentioned is joint-coupling control, which amounts to
+adding back into u(t) some of the neglected terms in M(q) and N(q, )that
+describe the interactions between the joints. Thus such corrections involve
+using better estimates for    and     in the approximate computed-torque
+control (4.4.43).
+
+PID Control. It has been seen that PD independent joint control is often suitable
+for tracking control. However, at steady state there is a residual error (4.4.57)
+due to gravity. This can be removed using the PID independent joint control
+law
+
+
+                                                                            (4.4.59)
+
+for each joint. See Figure 4.4.12.
+
+
+
+
+                            Figure 4.4.12: PID independent joint control.
+
+
+
+
+Now the transfer function for set-point tracking                       is
+
+
+                                                                            (4.4.60)
+
+
+with closed-loop characteristic polynomial
+
+                                                                            (4.4.61)
+
+Now the final value theorem shows that the steady-state error for set-point
+control is zero. The Routh test shows that for stability it is required that
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+216                                                 Computed-Torque Control
+
+
+
+
+Figure 4.4.13: PD classical joint control tracking error e 1 (t), e 2 (t) (red):
+(a) n=10 rad/s; (b) n=25 rad/s.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                    217
+
+
+
+
+                                  Figure 4.4.13 (Cont.) (c) n=50 rad/s.
+
+
+                                                                           (4.4.62)
+
+   In using an integral term in the control law, it is important to be aware of
+the possibility of integrator windup due to actuator saturation limits, which
+was discussed earlier in the section “PID Outer-Loop Design.”
+
+EXAMPLE 4.4–4: Classical Joint Control and Torque Saturation Limits
+    In Example 4.4.1 we simulated the exact computed-torque control law for
+    a two-link planar elbow arm. Here we want to show the results of using
+    PD and PID classical joint control on the same arm (with the same desired
+    trajectory). We are also interested in demonstrating the effects of torque
+    saturation limits. To highlight the effects without extraneous details, we
+    shall use only the arm dynamics and no actuator dynamics or gear ratio.
+    These may easily be included by making some slight modifications to the
+    subroutine arm(x, xp) in Figure 4.4.2.
+
+
+    a. PD Independent Joint Control
+    For the two-link arm, PD independent joint control is simply
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+218                                             Computed-Torque Control
+
+
+
+
+Figure 4.4.14: PD classical joint control torque inputs (N-m): (a)  n =10
+rad/s; (b) n=25 rad/s.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                 219
+
+
+
+
+                                  Figure 4.4.14 (Cont.) (c) n=50 rad/s.
+
+                                                                             (1)
+
+with the tracking error e(t)=qd(t)-q(t). This control law is very simple and
+direct to implement on an actual arm without even using a DSP. It is much
+simpler than the control in Example 4.4.1.
+   The results of using the PD controller on the two-link arm are shown in
+Figure 4.4.13 for several values of a closed-loop natural frequency wn. Recall
+that the PD gains for critical damping are
+
+                                                                             (2)
+
+The low-gain results (kp=100, kv=20) in part (a) of the figure are very bad
+(note the scale). However, the high-gain results in part (c) are much better.
+Even higher gains would cause a further tracking error decrease.
+   It is important to notice that there is in all cases a do component of the
+tracking error. This is due to the fact that the gravity terms are neglected and
+should be contrasted with the results of Example 4.4.3.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+220                                                   Computed-Torque Control
+
+
+
+
+Figure 4.4.15: PD classical joint control: kv=100, kp=2500, ki=1000.
+
+
+
+
+    Adding the gravity terms in the control law, therefore, significantly increases
+    the tracking performance.
+       The associated control torques are shown in Figure 4.4.14.
+
+
+    b. PID Independent Joint Control
+    PID independent joint control for the two-link arm is
+
+                                                                                (3)
+
+    This simple law is easily implemented by adding two states, x(5) and x(6),
+    to subroutine arm(x, xp) in Figure 4.4.2 to account for the integrators (see
+    Example 4.4.2).
+       The simulation in Figure 4.4.13(c) was repeated, but now adding an
+    integral gain of ki=1000. The result is shown in Figure 4.4.15. After several
+    iterations of the sinusoidal motion, the do value of the tracking errors goes
+    to zero, so that the performance is much improved. That is, adding an
+    integral term can compensate for neglecting the gravity terms in the control
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.4 Computed-Torque Control                                                   221
+
+
+
+
+Figure 4.4.16: PID classical joint control with torque limits of ±35 N-m. Tracking
+error in rads.
+
+
+    law. However, it takes awhile for the error to converge to a zero do value,
+    and the results are still not as good as the PD-gravity controller in Example
+    4.4.3 for the same PD gains. On the other hand, the integral term can
+    reject other terms besides gravity (e.g., friction of some sorts). The torque
+    control input was virtually the same in form as Figure 4.4.14(c).
+
+
+    c. Actuator Saturation Limits
+    We discussed integrator windup due to actuator saturation limits earlier in
+    the section “PID Outer-Loop Design.” Here we should like to demonstrate
+    its deleterious effects.
+        The control torque in part (b) of this example is similar to the torque in
+    Figure 4.4.14(c); it is fairly well behaved, except for some frantic action
+    near time zero, where the maximum positive excursion is 78 N-m.
+        Suppose now that there are torque limits of tmax=35 N-m, tmin= -35 N-m.
+    This is easily simulated by modifying subroutine CTL(x) in Figure 4.4.2 to
+    include a saturation function by adding the lines
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+222                                                 Computed-Torque Control
+
+
+
+
+Figure 4.4.17: PID classical joint control with torque limits of ±35 N-m. Torque
+inputs in N-m.
+
+
+
+
+                                                                             (4)
+
+
+The results of the simulation with these limits are shown in Figure 4.4.16 and
+are terrible. The torque is shown in Figure 4.4.17.
+   In Section 4.5 we show how to ameliorate the effects of actuator
+saturation by using antiwindup protection in a digital controller. The
+simulation results for PD control with actuator limits are not as bad as the
+ones just shown for PID control, since saturation limits have less effect if
+no integrator is present.
+                                                                             䊏
+4.5 Digital Robot Control
+
+Many robot control schemes are complicated and involve a great deal of
+computation for the evaluation of nonlinear terms. Therefore, they are
+implemented as digital control laws on digital signal processors (DSPs). Certain
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                      223
+
+sorts of digital controllers for robot arms can be considered as members of the
+computer-torque-like class (see Table 4.4.1).
+   One approach to digital robot control is shown in Figure 4.5.1. There, a
+                                  .
+sampler is placed on q(t) and q(t) to define
+
+
+
+
+                              Figure 4.5.1: Digital robot control scheme.
+
+
+                                                                            (4.5.1)
+
+with T the sample period. Sample periods in robotic applications vary from
+about 1 to 20 ms. A zero-order hold is used to reconstruct the continuous-time
+control input (t)needed for the actuators from the samples k. In this section
+we use superscripts “d” for the desired trajectory for notational ease.
+  This digital control law amounts to selecting
+
+                                                                            (4.5.2)
+
+in the approximate computed-torque controller in Table 4.4.1 and a digital
+outer loop control signal uk. Then, with PD outer-loop control, the arm control
+input is
+
+                                                                            (4.5.3)
+
+where the tracking error is e(t)=qd(t)-q(t). There are many variations of this
+control scheme. For instance, it is very reasonable to use multirate sampling
+and update and less frequently than the sampling frequency. That is, the
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+224                                                               Computed-Torque Control
+
+inner nonlinear loop can be sampled more slowly than the outer linear feedback
+loop. In view of the robustness properties of computed-torque control, this
+works quite well in practice.
+
+Guaranteed Performance on Sampling
+It is usual in robot controls to design the controller in continuous time, providing
+rigorous proofs of stability and error boundedness. However, when the controller
+is implemented, a “small” sample period is selected and the stability is left to
+chance and verified by simulation studies. That this “wishful thinking”
+approach may not be so unreasonable is suggested by the next theorem. Define
+                  .
+
+THEOREM 4.5–1: Suppose that the PD digital control law (4.5.3) is applied
+to the robot arm. Then for every L>0 there exists a TM such that for all
+sampling periods T less than TM, each error trajectory which at some time to
+satisfies ||e(t0)||L has ||e(t)||L+r for all tt0 and any r>0.
+
+Proof:
+  Using the digital control law yields the error system (Table 4.4.1)
+
+                                                                                       (1)
+
+where and
+
+                                                                                       (2)
+
+Defining                                  this may be written in state-space form as
+
+
+                                                                                       (3)
+
+
+Applying now the outer-loop digital control
+
+                                                                                       (4)
+
+yields the closed-loop system
+
+                                                                                       (5)
+
+The feedback K is selected so that (A-BK) is stable; hence
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                 225
+
+                                                                           (6)
+
+for some positive definite P and Q.
+   Selecting now the Lyapunov function
+
+                                                                           (7)
+
+(5) and (6) reveal
+
+                                                                           (8)
+
+Assuming for simplicity that the disturbance d is zero, note that
+
+                                                                           (9)
+
+is negative definite at each sample time. [If d is nonzero but bounded, then
+V(ek) is negative outside some ball, and the discussion may be modified.]
+   The remainder of the proof follows from a theorem of [LaSalle and Lefschetz
+1961] by showing that:
+
+      1.
+      2. V( (t 1 ))<V( (t 2 )) for all t 2  t 1  0 when || (t 1 )||  L and
+         || (t2)||>L+r.
+
+At issue is the fact (9) and the continuity of                              䊏
+
+This result shows that good tracking is obtained for all sample periods less
+than some maximum sample period TM which depends on the specific robot
+arm. A more refined result can show that the errors increase as the maximum
+desired acceleration increases, or equivalently, that smaller sample periods
+are required for larger desired accelerations.
+   We now discuss some issues in discretizing the inner nonlinear loop and
+then the outer linear loop.
+
+Discretization of Inner Nonlinear Loop
+There is no convenient exact way to discretize nonlinear dynamics. Given
+a nonlinear state-space system
+                                                                       (4.5.4)
+Euler’s approximation yields
+
+                                                                       (4.5.5)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+226                                                  Computed-Torque Control
+
+   There do exist “exact” techniques for deriving discrete nonlinear robot
+dynamics. They rely on discretizing the robot arm dynamics in such a way
+that energy and momentum are conserved at each sampling instant [Neuman
+and Tourassis 1985]. See also [Elliott 1990]. Unfortunately, these schemes
+result in extremely complicated discrete dynamical equations, even for simple
+robot arms. It is very difficult to derive guaranteed digital control laws for
+them.
+   In this section we simply take the discretized inner nonlinear loop as given
+by the approximation (4.5.2).
+
+Joint Velocity Estimates from Position Measurements
+Throughout this chapter in the examples we have simulated continuous-time
+robot controllers assuming that both the joint positions and velocities are
+measured exactly. In point of fact, it is usual to measure the joint velocities
+using optical encoders, and then estimate the joint velocities from these position
+measurements. Simply computing the joint velocities using the Euler
+approximation
+
+                                                                          (4.5.6)
+
+is virtually doomed to failure, since this high-pass filter amplifies the encoder
+measurement noise.
+    Denote the joint velocity estimates by vk. Then a filtered derivative can be
+used to compute vk from qk using
+
+                                                                          (4.5.7)
+
+where ν is a design parameter. If ν is small, it corresponds to a fast pole near
+z=0, which provides some high-pass filtering to reject unwanted sensor noise.
+Example 4.5.1 will illustrate the use of this joint velocity estimation filter.
+    The velocity estimation filter design can be optimized for the given encoder
+noise statistics by using an alpha-beta tracker to reconstruct vk [Lewis 1986a],
+[Lewis 1986b], [Lowe and Lewis 1991]. This is a specialized form of Kalman
+filter. It should be noted that the velocity estimates are not only used in the
+outer linear loop for computing k; they must be used to compute the inner
+nonlinear terms in (4.5.3) as well.
+
+Discretization of Outer PD/PID Control Loop
+We have seen that a useful computed-torque outer feedback loop is the PID
+controller. Given a continuous-time PID controller, a digital PID controller
+for the outer loop may be designed as follows [Lewis 1992].
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                     227
+
+   A continuous PID controller that only uses joint position measurements q(t)
+is given by
+
+
+
+                                                                           (4.5.8)
+
+
+
+where k is the proportional gain, T1 is the integration time constant or “reset”
+time, TD is the derivative time constant. Rather than use pure differentiation,
+a “filtered derivative” is used which has a pole far left in the s-plane at s=-N/
+TD. The value for N is often in the range 3 to 10; it is usually fixed by the
+manufacturer of the controller [Åström and Wittenmark 1984]. A special case
+of the PID controller, of course, is the PD controller, which is therefore also
+covered by this discussion.
+   A common approximate discretization technique for converting continuous-
+time controllers Kc(s) to digital controllers K(z) is the bilinear transform (BLT),
+where
+
+                                                                           (4.5.9)
+
+
+
+                                                                          (4.5.10)
+
+
+This corresponds to approximating integration by the trapezoidal rule. Under
+this mapping, stable continuous systems with poles at s are mapped into
+stable discrete systems with poles at
+
+                                                                          (4.5.11)
+
+The finite zeros also map according to this transformation. However, the
+zeros at infinity in the s-plane map into zeros at z=-1.
+   Using the BLT to discretize (4.5.8) yields
+
+                                                                          (4.5.12)
+
+with the discrete integral and derivative time constants
+
+                                                                          (4.5.13)
+
+
+                                                                          (4.5.14)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+228                                                 Computed-Torque Control
+
+and the derivative-filtering pole at
+
+
+                                                                        (4.5.15)
+
+
+   It is easy to implement this digital outer-loop filter in terms of difference
+equations on a DSP. First, write K(z) in terms of z-1, which is the unit delay in
+the time domain (i.e., a delay of T seconds), as
+
+
+                                                                        (4.5.16)
+
+
+[Note: There is some abuse in notation in denoting (4.5.16) as K(z-1); this we
+shall accept.]
+   Now suppose that the control input uk is related to the tracking error as
+
+                                                                        (4.5.17)
+
+Then uk may be computed from past and present values of ek using auxiliary
+variables as follows:
+                                                                        (4.5.18)
+                                                                        (4.5.19)
+                                                                        (4.5.20)
+
+The variables            represent the integral and derivative portions of the
+digital PID controller, respectively. These difference equations are easily
+implemented in software.
+
+Actuator Saturation and Integrator Antiwindup Compensation
+Actuator saturation leading to integrator windup is a problem that can occur
+in the outer PID loop of a robot controller. In Example 4.4.4 we saw the
+deleterious effects of integrator windup. It is easy to implement antiwindup
+protection digitally [Åström and Wittenmark 1984], [Lewis 1992]. The
+antiwindup protection circuit would be placed into the outer linear feedback
+loop of a robot control system, where the integrator (controller memory) is
+located.
+   Suppose that the controller is given in transfer function form
+
+                                                                        (4.5.21)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                     229
+
+where rk is the reference command and wk is the controller input, composed
+generally of the tracking error and the plant measured output. Note that z-1 is
+interpreted in the time domain as a unit delay of T seconds. The controller
+output vk is passed through a hold device to generate the continuous plant
+control input u(t).
+    We have assumed thus far that the desired plant control input
+computed by the controller can actually be applied to the plant. However, in
+practical systems the plant inputs (such as motor voltages, etc.) are limited by
+maximum and minimum allowable values. Thus the relation between the
+desired plant input vk and the actual plant input uk is given by the sort of
+behavior shown in Figure 4.5.2, where uH and uL represent, respectively, the
+maximum and minimum control effort allowed by the mechanical actuator.
+If there are no control limits, we may set uk=vk.
+
+
+
+
+                              Figure 4.5.2: Actuator saturation function.
+
+Thus, to describe the actual case in a practical control system with actuator
+saturation, we are forced to include nonlinear saturation functions in the
+control channels as shown in Figure 4.5.3. Consider the simple case where the
+controller is an integrator with input wk and output vk. Then all is well as
+long as vk is between uL and uH, for in this region the plant input uk equals vk.
+However, if vk exceeds uH, then uk is limited to its maximum value uH—This
+in itself may not be a problem. The problem arises if wk remains positive, for
+then the integrator continues to integrate and vk may increase well beyond
+uH. Then, when wk becomes negative, it may take considerable time for vk to
+decrease below uH. In the meantime, uk is held at uH, giving an incorrect
+control input to the plant. This effect of integrator saturation is called windup.
+It arises because the controllers we design are generally dynamical in nature,
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+230                                                    Computed-Torque Control
+
+which means that they store information or energy. Windup occurs when R(z)
+is not a stable polynomial.
+   To correct integrator windup, it is necessary to limit the state of the controller
+so that it is consistent with the saturation effects being experienced by the
+plant input uk. This may be accomplished as follows. Select a desired stable
+observer polynomial A0(z) and add A0(z-1)uk to both sides to obtain
+
+                                                                            (4.5.22)
+
+A regulator with antiwindup compensation is then given by
+
+                                                                            (4.5.23)
+
+                                                                            (4.5.24)
+
+   A special case occurs when A0(z) has all n of its poles at the origin. Then
+the regulator displays deadbeat behavior; after n time steps its state remains
+limited to an easily computed value dependent on the values of wk and uk (see
+the Problems).
+
+
+
+
+Figure 4.5.3: Control system including actuator saturation.
+
+The next example demonstrates some aspects of digital control in robotics.
+
+EXAMPLE 4.5–1: Simulation of Digital Robot Computed-Torque
+Controller
+    In Example 4.4.1 we simulated a continuous-time PD computed-torque
+    (CT) controller for the two-link planar elbow arm. In this example some
+    issues in
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                    231
+
+
+
+
+    Figure 4.5–4: Subroutines for use with TRESP for digital CT control.
+
+    discretizing that controller are demonstrated. There are two objectives.
+    First, we show the effects of sampling on the CT controller. Then a practical
+    digital controller is designed that uses only joint position measurements
+    from an encoder, reconstructing the velocities needed for computing the
+    control law.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+232                                            Computed-Torque Control
+
+
+
+
+Figure 4.5.5: Joint tracking error on sampling the CT controller: (a) T=5
+ms; (b) T=20 ms.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                   233
+
+
+
+
+                         Figure 4.5.5: (Cont.) (c) T=50 ms; (d) T=100 ms.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+234                                           Computed-Torque Control
+
+
+
+
+Figure 4.5.6: Link 2 torque input in the digital CT controller: (a) T=5
+ms; (b) T=50 ms.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                     235
+
+
+
+
+                                   Figure 4.5.6: (Cont.) (c) T=100 ms.
+
+
+
+    a. Effect of Sample Period on Digital Computed-Torque Controller
+    In Example 4.4.1 were given the subroutines needed for use with TRESP
+    (Appendix B) to simulate the continuous-time PD CT controller. To simulate
+    a digitized version of PD CT control, it is necessary to remove the controller
+    subroutine [called CTL(x) in that example] from the continuous dynamics
+    and place it into the subroutine DIG (IK, T, x) that is called by TRESP. This
+    is in keeping with Figure 4.5.1 and the technique given in Section 4.3 for
+    digital controller simulation.
+       In Figure 4.5.4 are shown the modified subroutines DIG(IK, TD, x) and
+    F(t, x, xp) needed for digital CT controller simulation with TRESP.
+    Subroutines SYSINP(IT, x, t) for trajectory generation and ARM(x, xp)
+    containing the arm dynamics are the same as in Example 4.4.1.
+       Running now program TRESP with different sample periods T yields
+    the tracking error plots shown in Figure 4.5.5. The Runge-Kutta integration
+    period was 5 ms for all plots. The graphs show that for T=5 ms the error
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+236                                                   Computed-Torque Control
+
+    was very small, in fact very similar to that in Example 4.4.1. However, as
+    the sampling period T increased the tracking performance deteriorated.
+       The torque input for joint 2 is depicted in Figure 4.5.6. For small T is is
+    virtually identical to the continuous CT controller in Example 4.4.1. A
+    very interesting phenomenon occurs when T=0.1 s. According to the plot
+    in Figure 4.5.6(c), there is a limit cycle, a form of nonlinear oscillation. It
+    is well known that sampling can induce such nonlinear effects in the closed-
+    loop system [Lewis 1992]. According to Figure 4.5.5(d), the limit cycle is
+    reflected in the tracking error as a periodic oscillation about e(t)=0. The
+    appearance of limit cycles is closely tied to a loss of observability in the
+    sampled system.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                      237
+
+
+
+
+    Figure 4.5–7: Digital control subroutine that uses only joint position
+    measurements.
+
+
+    b. Digital Controller with Only Position Measurements
+    In part a we assumed that joint positions and velocities are both available
+    as measurements. In practical situations, only the joint positions are
+    available, often from optical encoder measurements. Therefore, here we
+    should like to design a realistic digital CT controller that reconstructs the
+    velocities.
+        The subroutines in Figure 4.5.7 uses only position measurements,
+    estimating the joint velocities using the derivative filter (4.5.7). The
+    resultant tracking error is shown in Figure 4.5.8. The performance is
+    comparable to the controller in part a that used velocity measurements,
+    with the exception of a larger initial error transient. The value of the
+    filter pole v was taken as 0.1.
+        Some implementation details are worthy of note. First, it is very
+    important how the digital controller is initialized. Note the code lines that
+    zero the velocity estimates in the first iteration (IK=0). It is a good exercise
+    to repeat this simulation deleting these lines (see the Problems).
+        Second, it might be thought that a reasonable procedure for finding the
+    velocity error k= (kT) is to find an estimate vk of the joint velocity k and
+    then use
+
+                                                                                 (1)
+
+    There are two disadvantages to this. First, it requires the storage in memory
+    of the desired velocity as well as the desired trajectory Second, it does
+    not work.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+238                                                      Computed-Torque Control
+
+
+
+
+    Figure 4.5.8: Tracking error for digital controller using no velocity measurements:
+    (a) T=5 ms; (b) T=20 ms.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                      239
+
+   Instead, it is necessary to use two derivative filters, one for estimating joint
+velocities and one for providing an estimate for the velocity error k. A
+simulation that attempts to use 1 makes the point quite well.
+   Note that the velocity estimates are also used instead of in computing
+the nonlinear terms
+
+                                                                                 䊏
+
+
+EXAMPLE 4.5–2: Digital PI Controller with Anti-windup Compensation
+    A general digital PI controller with sampling period of T seconds is
+    given by
+
+
+                                                                                (1)
+
+
+    We have sampled the continuous PI controller by the modified matched-
+    polezero (MPZ) method [Lewis 1992] to obtain a delay of T seconds in the
+    integrator to allow for computation time. The proportional gain is k and
+    the reset time is TI; both are fixed in the design stage. The tracking error is
+    ek .
+         Multiply by (1-z-1) to write
+
+                                                                                (2)
+
+    which is in the transfer function form (4.5.21). The corresponding difference
+    equation form for implementation is
+
+                                                                                (3)
+
+    This controller will experience windup problems since the autoregressive
+    polynomial R=1- z-1 has a root at z=1, making it marginally stable. Thus,
+    when uk is limited, the integrator will continue to integrate, “winding up”
+    beyond the saturation level.
+
+
+    a. Antiwindup Compensation
+    To correct this problem, select an observer polynomial of
+
+                                                                                (4)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+240                                                Computed-Torque Control
+
+    which has a pole at some desirable location |α|<1. The design parameter α
+    may be selected by simulation studies. Then the controller with antiwindup
+    protection (4.5.23), (4.5.24) is given by
+
+
+                                                                            (5)
+
+
+
+                                                                            (6)
+
+The corresponding difference equations for implementation are
+
+                                                                            (7)
+
+
+                                                                            (8)
+
+A few lines of FORTRAN code implementing this digital controller are given
+in Figure 4.5.9. This subroutine may be used as the control update routine
+DIG for the digital simulation driver program TRESP in Appendix B.
+
+
+
+
+    Figure 4.5–9: FORTRAN code implementing PI controller with antiwindup
+    compensation.
+
+       If α=1 we obtain the special case (2), which is called the position form
+    and has no antiwindup compensation. If α=0, we obtain the deadbeat
+    antiwindup compensation
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.5 Digital Robot Control                                                    241
+
+
+                                                                              (9)
+
+    with corresponding difference equation implementation
+
+                                                                            (10)
+
+    If uk is not in saturation, this amounts to updating the plant control by
+    adding the second and third terms on the right-hand side of (10) to uk-1.
+    These terms are, therefore, nothing but uk-uk-1. The compensator with α=0
+    is thus called the velocity form of the PI controller.
+
+
+    b. Digital Control of DC Motor
+    Consider the simplified model for a do motor given by
+
+                                                                            (11)
+
+    with  the angular velocity. A motor speed controller has the form
+
+                                                                            (12)
+
+where e=r-w is the tracking error, with r the desired command angular velocity.
+Taking a=1 and b=1, with k1=k2=-3.318, we obtain poles at s=-1, -3.318. The
+slower pole is canceled by a zero, so that the step response is fast, having only
+a mode like e-3.318t.
+     Writing the PI controller as
+
+                                                                            (13)
+
+    we see that
+
+
+                                                                            (14)
+
+
+    The digital controller obtained using the modified MPZ is given by (1).
+       The time constant of the closed-loop system is                     so
+    that a sampling period of T=0.05 s is reasonable. The sampling period
+    should be about one-tenth the time constant.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+242                                                     Computed-Torque Control
+
+       Program TRESP in Appendix B was used to obtain the response shown
+    in Figure 4.5.10(a). No saturation limits were imposed on uk.
+       Next, a saturation limit of uH=1.5 V was imposed on the control uk. No
+    antiwindup compensation was used (i.e., α=1 in Figure 4.5.9). The resulting
+    behavior shown in Figure 4.5.10(b) displays an unacceptable overshoot.
+       Figure 4.5.10(c) shows that the overshoot problem is easily corrected
+    using α=0.9 in the digital PI controller with antiwindup protection in Figure
+    4.5.9. In this example, as a decreases the step response slows down. The
+    value of α=0.9 was selected after several simulation runs with different
+    values of α.
+
+
+
+
+Figure 4.5.10: Angular velocity step responses using digital controller: (a) digital PI
+controller with no saturation limits; (b) digital PI controller with saturation limit
+uH=1.5V and no antiwindup compensation; (c) digital PI controller with saturation
+limit uH=1.5V and antiwindup compensation with α=0.9.
+
+
+    c. Antiwindup Compensation in Robotics
+    To implement the antiwindup compensation, it is necessary to know the
+    maximum and minimum values uH and uL of the integrator output.
+    Unfortunately, in a robot arm the motor torques are limited. These torque
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.6 Optimal Outer-Loop Design                                                    243
+
+    limits must be mapped using the feedback linearization input transformation
+    to determine the limits on the integrator outputs see [Bobrow et al. 1983].
+    Thus the saturation limits needed by the antiwindup compensator are
+    functions of the joint position q, the desired acceleration and so on. This
+    issue is explored in the problems.
+                                                                             䊏
+
+4.6 Optimal Outer-Loop Design
+
+In Section 4.4 we discussed computed-torque control, showing how to select
+the inner control loop using exact techniques involving the inverse manipulator
+dynamics, as well as by a variety of approximate means. We also discussed
+several schemes for designing the outer linear feedback (tracking) loop. The
+results of our discussions are summarized in Table 4.4.1. In this section we
+intend to present a modern control optimal technique for selecting the outer
+feedback loop. Modern optimal design yields improved robustness in the
+presence of disturbances and unmodeled dynamics.
+   Several papers have dealt with “optimal” or “suboptimal” control of robot
+manipulators [Vukobratovic and Stokic 1983], [Lee et al. 1983], [Luo and
+Saridis 1985], [Johansson 1990]. Although they are not all based on a
+computed-torque-like approach, we would like here to present the flavor of
+this work by using optimal techniques to design the computed-torque outer
+feedback loop.
+
+Linear Quadratic Optimal Control
+First, it is necessary to review modern linear-quadratic (LQ) design. Suppose
+that we are given the linear time-invariant system in state-space form
+
+                                                                              (4.6.1)
+
+with                                      It is desired to compute the state-feedback
+gain in
+
+                                                                              (4.6.2)
+
+so that the closed-loop system
+
+                                                                              (4.6.3)
+
+is asymptotically stable. Moreover, we do not want to use too much control
+energy to stabilize the system, since in many modern systems (e.g., automobile,
+spacecraft), fuel or energy is limited.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+244                                                  Computed-Torque Control
+
+   This is a complex multivariable design problem, for the feedback gain
+matrix K is of dimension m×n. A classical controls approach might involve,
+for instance, performing mn root locus designs to close the feedback loops one
+at a time. On the other hand, a solution that guarantees stability can be found
+using modern controls techniques simply by solving some standard matrix
+design equations. This modern approach closes all the feedback loops
+simultaneously and guarantees a good gain and phase margin.
+   The feedback matrix is found using modern control theory as follows.
+First, define a quadratic performance index (PI) of the form
+
+
+                                                                          (4.6.4)
+
+
+where Q is a symmetric positive semidefinite n×n matrix (denoted Q0) and
+R is a symmetric positive definite m×m matrix (R>0). That is, all eigenvalues
+of R are greater than zero and those of Q are greater than or equal to zero. Q
+is called the state-weighting matrix and R the control-weighting matrix. These
+matrices are design parameters that are selected by the engineer depending,
+for instance, on the desired form of the closed-loop time responses.
+    The optimal LQ feedback gain K is the one that minimizes the PI J. The
+motivation follows. The quadratic terms xTQx and uTRu in the PI are
+generalized energy functions (e.g., the energy in a capacitor is ½Cv2, the
+kinetic energy of motion is ½mv2). Suppose, then, that J is minimized in the
+closed-loop system (4.6.3). This means that the infinite integral of
+[xT(t)Qx(t)+uT(t)Ru(t)] is finite, so that this function of time goes to zero as t
+becomes large. However,
+
+
+
+
+with the square root of a matrix defined as                       . Since these
+norms vanish with t and |R|0, the functions                   and u(t) both go
+to zero. Under the assumption that          is observable [Kailath 1980], x(t)
+goes to zero if y(t) does.
+   Therefore, the optimal gain K guarantees that all signals go to zero with
+time in the closed-loop system (4.6.3). That is, K stabilizes (A-BK).
+   The determination of the optimal K is easy and is a standard result in
+modern control theory (see, e.g., [Lewis 1986a], [Lewis 1986b]). The optimal
+feedback gain is simply found by solving the matrix design equations
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.6 Optimal Outer-Loop Design                                                  245
+
+                                                                            (4.6.5)
+
+                                                                            (4.6.6)
+
+where P is a symmetric n×n auxiliary design matrix on which the optimal
+gain depends. The second of these is a nonlinear matrix quadratic equation
+known as the Riccati equation; it is easy to solve this equation for the auxiliary
+matrix P using standard routines in, for instance, MATLAB, [MATRIXx 1989],
+and other software design packages.
+   The next result is of prime importance in modern control theory and
+formalizes the stability discussion just given.
+
+THEOREM 4.6–1: Let                        be observable and (A, B) be controllable.
+Then:
+
+(a) There is a unique positive definite solution P to the Riccati equation.
+(b) The closed-loop system (A-BK) is asymptotically stable.
+(c) The closed-loop system has an infinite gain margin and 60° of phase
+margin.
+                                                                                䊏
+Controllability was discussed in Chapter 1. Observability means roughly
+speaking that all the system modes have an independent effect in the PI, so
+that if J is bounded, all the modes independently go to zero with t. To verify
+these properties is easy. The system is controllable if the controllability matrix
+                                                                            (4.6.7)
+
+has full rank n. The system (A, C) is observable if the observability matrix
+
+
+
+
+                                                                            (4.6.8)
+
+
+
+
+has full rank n. MATLAB, for instance, provides routines for these tests.
+Therefore, the state-weighting matrix Q may be chosen to satisfy the
+observability requirement.
+  The theorem makes this modern design approach very powerful. No matter
+how many inputs and states, a stabilizing feedback gain can always be found
+under the hypotheses that stabilizes the system. The gain is found by closing
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+246                                               Computed-Torque Control
+
+all the nm feedback loops simultaneously by solving the matrix design
+equations.
+
+Linear Quadratic Computed-Torque Design
+Now we apply these results to the control of the robot manipulator dynamics
+                                                                      (4.6.9)
+According to Section 4.4, the computed-torque control law
+
+                                                                     (4.6.10)
+
+yields the error system
+
+                                                                     (4.6.11)
+
+
+which we may write as
+                                                                     (4.6.12)
+with the state defined as
+
+
+                                                                     (4.6.13)
+
+
+Now, select the outer-loop PD feedback
+
+                                                                     (4.6.14)
+
+To find a stabilizing gain K, select the design parameter Q in the PI as
+
+
+
+so that the position and velocity errors are independently weighted. Then,
+due to the simple form of the A and B matrices, which represent n de-coupled
+Newton’s law (i.e., double integrator) systems, the solution of the Riccati
+equation is easily found (see the Problems). Using this solution in (4.6.5)
+yields the formula for the optimal stabilizing gains
+
+                                                                     (4.6.15)
+
+This LQ approach reveals the relation between the PD gains and some design
+parameters Q and R that determine the total energy in the closed-loop system.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.6 Optimal Outer-Loop Design                                                247
+
+Note particularly that the relative magnitudes of x(t) and u(t) in the closed-
+loop system can be traded off. Indeed, if R is relatively larger than Qp and Qv,
+the control effort in the PI (4.6.4) is weighted more heavily that the state.
+Then the optimal control will attempt to keep u(t) smaller by selecting smaller
+control gains; thus the response time will increase. On the other hand, selecting
+a smaller R will increase the PD gains and make the error vanish more quickly.
+   If Qp, Qν, and R are diagonal, so then are the PD gains Kp, Kv. The LQ
+approach with nondiagonal Qp, Qv, and R affords the possibility of outer
+feedback loops that are coupled between the joints, which can sometimes
+improve performance. Another important feature of LQ design is the
+guaranteed robustness mentioned in the theorem. This can be very useful in
+approximate computed-torque design where
+
+                                                                        (4.6.16)
+
+and and can be simplified versions of M(q) and N(q, ). The performance
+of such a controller with an LQ-design outer loop can be expected to surpass
+that of a controller designed using arbitrary choices for Kp and Kv. This robust
+aspect of LQ design is explored in the problems.
+   It is important to note that this LQ design results in minimum closed-loop
+energy in terms of e(t), (t), and u(t). However, the actual control input into
+the robot arm is
+
+                                                                        (4.6.17)
+
+Although the energy in τ(t) is not minimized using this approach, we can use
+some norm inequalities to write
+
+                                                                        (4.6.18)
+
+so that keeping small ||u(t)|| might be expected to make      smaller. A more
+formal statement can be made taking into account the bounds on ||M(q)|| and
+           given in Table 3.3.1.
+   Since the energy in is not formally minimized in this approach, it is
+considered as a suboptimal approach with respect to the actual arm dynamics,
+although with respect to the error system and u(t) it is optimal. An optimal
+control approach that weights e(t) τ(t) and in the PI is given in [Johansson
+1990].
+   We have derived an LQ controller using a computed-torque (i.e., feedback
+linearization) approach. An alternative approach that yields the same Riccati-
+equation-based design is to employ the full nonlinear arm dynamics and find
+an approximate (i.e., time-invariant) solution to the Hamilton-Jacobi-Bellman
+equation [Luo and Saridis 1985]; [Luo et al. 1986].
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+248                                                 Computed-Torque Control
+
+
+4.7 Cartesian Control
+
+We have seen how to make a robot manipulator track a desired joint space
+trajectory qd(t). However, in any practical application the desired trajectories
+of a robot arm are given in the workspace or Cartesian coordinates. An important
+series of papers dealt with resolved motion manipulator control [Whitney 1969];
+[Luh et al. 1980], [Wu and Paul 1982]. There the joint motions were resolved
+into the Cartesian coordinates, where the control objectives are specified. The
+result is that an operator can use a joystick to specify Cartesian motion (e.g.,
+for a prosthetic device), with the arm following the specified motion. Older
+teleoperator devices used joysticks that directly controlled the motion of the
+actuators, resulting in long training times and very awkward manipulability.
+   There are several approaches to Cartesian robot control. For instance, one
+might:
+
+1. Use the Cartesian dynamics in Section 3.5 for controls design (see the
+   Problems).
+2. Convert the desired Cartesian trajectory yd(t) to a joint-space trajectory
+   qd(t) using the inverse kinematics. Then use the joint-space computed-
+   torque control schemes in Table 4.4.1.
+3. Use Cartesian computed-torque control.
+
+Let us discuss the last of these.
+
+
+Cartesian Computed-Torque Control
+This approach begins with the joint space dynamics
+                                                                         (4.7.1)
+
+In Section 3.4 we discussed a general feedback-linearization approach for
+linearizing the arm dynamics with respect to a general output. In this section
+the output we are interested in is the Cartesian error
+
+                                                                         (4.7.2)
+
+with yd(t) the desired Cartesian trajectory and y(t) the end-effector Cartesian
+position.
+   The problems associated with specifying the Cartesian position of the end
+effector are covered in Appendix A. There we see that y(t) is not necessarily a
+6-vector, but could in fact be the 4×4 arm T matrix. Then yd(t) is a 4×4 matrix
+given by
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.7 Cartesian Control                                                         249
+
+
+                                                                          (4.7.3)
+
+containing the desired orientation (nd(t), od(t), ad(t)) and position pd(t) of the
+end effector with respect to base coordinates. On the other hand, y(t) could be
+specified (nonuniquely) using Euler angles as a 6-vector, or using quaternions
+as a 7-vector, or using the encoded tool configuration vector which gives y(t)
+ R6.
+   Although there are problems with specifying y(t) as a 6-vector, the
+Cartesian error is easily specified (see the next subsection) as the 6-vector
+
+                                                                          (4.7.4)
+
+with ep(t) the position error and eo(t) the orientation error. Thus equation
+(4.7.2) is generally valid only as a loose notational convenience.
+   Let us assume that
+                                                                          (4.7.5)
+
+with h(q) the transformation from q(t) to y(t), which is a modification of the
+kinematics transformation, depending on the form decided on for y(t). Then
+the associated Jacobian is J=¶h/¶q and
+                                                                          (4.7.6)
+
+Now, the approach of Section 3.4, or a small modification of the derivation
+in Section 4.4, shows that the computed-torque control relative to ey(t) is
+given by
+
+                                                                          (4.7.7)
+
+which results in the error system
+                                                                          (4.7.8)
+
+with the disturbance
+
+                                                                          (4.7.9)
+
+We call (4.7.7) the Cartesian computed-torque control law.
+   The outer-loop control u(t) may be selected using any of the
+techniques already mentioned for joint-space computed-torque control (see
+Table 4.4.1). For PD control, for instance, the complete control law is
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+250                                                   Computed-Torque Control
+
+
+                                                                          (4.7.10)
+
+A disadvantage with Cartesian computed-torque control is the necessity to
+compute the inverse Jacobian. To avoid inverting the Jacobian at each sample
+period, we might propose the approximate Cartesian computedtorque controller
+
+                                                                          (4.7.11)
+
+where and are approximations to MJ-1 and N, respectively. The error
+system for this control law is not difficult to compute (cf. the joint space
+approximation in Table 4.4.1 and see the Problems).
+   A PD outer feedback loop yields
+                                                                          (4.7.12)
+
+A special case of this control law is obtained by setting                      =I,
+ =               which yields the Cartesian PD-gravity controller
+
+
+                                                                          (4.7.13)
+
+The robustness properties of computed-torque control make this a successful
+control law for many applications.
+   Simulations like those presented in this section could be carried out for
+Cartesian computed-torque control. The basic principles would be the same
+as for joint space computed-torque control (see the Problems).
+
+Cartesian Error Computation
+The actual Cartesian position may be computed from the measured joint
+variables using the arm kinematics in terms of the arm T matrix
+
+                                                                          (4.7.14)
+
+and the desired Cartesian position may likewise be expressed as (4.7.3). Then
+a Cartesian position error and velocity error suitable for computedtorque
+control may be computed as follows [Luh et al. 1980], [Wu and Paul 1982].
+Define
+
+                                                                          (4.7.15)
+
+with v(t), vd(t) the actual and desired linear velocity, and ω(t), ωd(t) the actual
+and desired angular velocities. Then
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4.8 Summary                                                                    251
+
+                                                                           (4.7.16)
+
+is easy to compute, since (t) may be determined from the measured joint
+variables using (4.7.6).
+   The linear position error is simply given by
+                                                                           (4.7.17)
+
+An orientation error eo(t) suitable for feedback purposes is more difficult to
+obtain, but may be defined as follows.
+   Denote the rotation transformation portions of (4.7.14) and (4.7.3),
+respectively, as R(t), Rd(t). The orientation error can be expressed in terms of
+a rotation of φ(t) rads about an Euler axis of k(t) that takes R(t) into Rd(t)
+(Appendix A). In fact, one may define the 3-vector
+
+                                                                           (4.7.18)
+
+where eo(t) may be assumed small. With this definition, it can be shown that
+eo(t) is found from T(t) and Td(t) using
+
+                                                                           (4.7.19)
+
+The overall Cartesian error is now given by (4.7.4). Unfortunately, with this
+definition of eo, it happens that ey is not the derivative of ey; however, the
+control law (4.7.10) still yields suitable results. Alternative definitions of ey(t)
+and y(t) are given in [Wu and Paul 1982]; they are closely tied to the cross-
+product matrix O, in Appendix A and require the selection of a sampling
+period T.
+
+
+4.8 Summary
+
+In this chapter we showed how to generate smooth trajectories defining robot
+end-effector motion that passes through a set of specified points. Then we
+covered the important class of computed-torque controllers, which subsumes
+many types of robot control algorithms. Both classical and modern control
+algorithms are described by this class, so that computed torque provides a
+bridge between older and more modern algorithms for motion control.
+   As special types of computed-torque algorithms, we mentioned PD control,
+PID control, PD-plus-gravity, classical joint control, and digital control. Most
+robot control algorithms are implemented digitally, and computedtorque
+provides a rigorous framework for analyzing the effects of digitization and
+the size of the sampling period. This is approached by considering digital
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+252                                             Computed-Torque Control
+
+control as an approximate computed-torque law and studying the error system
+(cf. subsequent chapters).
+   We showed some aspects of modern linear quadratic outer-loop design,
+and concluded with a discussion of Cartesian control.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+                                                                                253
+
+
+
+
+REFERENCES
+[Arimoto and Miyazaki 1984] Arimoto, S., and F Miyazaki, “Stability and robustness
+     of PID feedback control for robot manipulators of sensory capability,” Proc.
+     First Int. Symp., pp. 783–799, MIT, 1984.
+
+[Åström and Wittenmark 1984] Åström, K.J., and B.Wittenmark, Computer
+      Controlled Systems. Englewood Cliffs, NJ: Prentice Hall, 1984.
+
+[Bobrow et al. 1983] Bobrow, J.E., S.Dubowsky, and J.S.Gibson, “On the optimal
+     control of robotic manipulators with actuator constraints,” Proc. Am. Control
+     Conf, pp. 782–787, June 1983.
+
+[Chen 1989] Chen, Y.-C., “On the structure of the time-optimal controls for robotic
+     manipulators,” IEEE Trans. Autom. Control, vol. 34, no. 1, pp. 115–116,
+     Jan. 1989.
+
+[Dawson 1990] Dawson, D.M., “Uncertainties in the control of robot manipulators,”
+     Ph.D. thesis, School of Electrical Engineering, Georgia Institute of Technology,
+     Mar. 1990.
+
+[Elliott 1990] Elliott, D.L., “Discrete-time systems on manifolds,” Proc. IEEE Conf
+       Decision Control, pp. 1908–1909, Dec. 1990.
+
+[Franklin et al. 1986] Franklin, G.F:, J.D.Powell, and A.Emami-Naeini, Feedback
+      Control of Dynamic Systems. Reading, MA: Addison-Wesley, 1986.
+
+[Geering 1986] Geering, H.P., L.Guzzella, S.A.R.Hepner, and C.H. Onder, “Time-
+      optimal motions of robots in assembly tasks,” IEEE Trans. Autom. Control,
+      vol. AC-31, no. 6, pp. 512–518, June 1986.
+
+[Gilbert and Ha 1984] Gilbert, E.G., and I.J.Ha, “An approach to nonlinear feedback
+      control with applications to robotics,” IEEE Trans. Syst. Man Cybern., vol.
+      SMC-14, no. 6, pp. s 879–884, Nov./Dec. 1984.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+254                                                                     REFERENCES
+
+[Gourdeau and Schwartz 1989] Gourdeau, R., and H.M.Schwartz, “Optimal control
+     of a robot manipulator using a weighted time-energy cost function,” Proc.
+     IEEE Conf. Decision Control, pp. 1628–1631, Dec. 1989.
+
+[Hunt et al. 1983] Hunt, L.R., R.Su, and G.Meyer, “Global transformations of
+     nonlinear systems,” IEEE Trans. Autom. Control, vol. AC-28, no. 1, pp. 24–
+     31, Jan. 1983.
+
+[IMSL] IMSL, Library Contents Document, 8th ed. Houston, TX: International
+     Mathematical and Statistical Libraries.
+
+[Jayasuriya and Suh 1985] Jayasuriya, S., and M.-S.Suh, “Sub-optimal control
+      strategies for manipulators with actuator constraints: the near minimum-time
+      problem,” Proc. Am. Control Conf., pp. 61–62, June 1985.
+
+[Johansson 1990] Johansson, R., “Quadratic optimization of motion coordination
+      and control,” IEEE Trans. Autom. Control, vol. 35, no. 11, pp. 1197–1208,
+      Nov. 1990.
+
+[Kahn and Roth 1971] Kahn, M.E., and B.Roth, “The near-minimum-time control of
+     open-loop articulated kinematic chains,” Trans. ASMEJ. Dyn. Syst. Meas.
+     Control, pp. 164–172, Sept. 1971.
+
+[Kailath 1980] Kailath, T. Linear Systems. Englewood Cliffs, NJ: Prentice Hall, 1980.
+
+[Kim and Shin 1985] Kim, B.K., and K.G.Shin, “Suboptimal control of industrial
+     manipulators with a weighted minimum time-fuel criterion,” IEEE Trans.
+     Autom. Control, vol. AC30, no. 1, pp. 1–10, Jan. 1985.
+
+[LaSalle and Lefschetz 1961] LaSalle, J., and S.Lefschetz, Stability by Liapunov’s Direct
+      Method. New York: Academic Press, 1961.
+
+[Lee et al. 1983] Lee, C.S.G., and M.H.Chen, “A suboptimal control design for
+      mechanical manipulators,” Proc. Am. Control Conf., pp. 1056–1061, June
+      1983.
+
+[Lewis 1986a] Lewis, F.L., Optimal Control. New York: Wiley, 1986 (a).
+
+[Lewis 1986b] Lewis, F.L., Optimal Estimation. New York: Wiley, 1986 (b).
+
+[Lewis 1992] Lewis, F.L., Applied Optimal Control and Estimation. Englewood Cliffs,
+      NJ: Prentice Hall, 1992.
+
+[LINPACK] LINPACK, User’s Guide, J.J.Dongarra, C.B.Moler, J.R. Bunch, and
+     G.W.Stewart. Philadelphia: SIAM Press, 1979.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                      255
+
+[Lowe and Lewis 1991] Lowe, J.A., and F.L.Lewis, “Digital signal processor
+     implementation of a Kalman filter for disk drive head-positioning mechanism,”
+     in Microprocessors in Robotic and Manufacturing Systems, S.Tzafestas ed.,
+     pp. 369–383, 1991.
+
+[Luh et al. 1980] Luh, J.Y.S., M.W.Walker, and R.P.C.Paul, “Resolved-acceleration
+      control of mechanical manipulators,” IEEE Trans. Autom. Control, vol. AC-
+      25, no. 3, pp. 195–200, June 1980.
+
+[Luo and Saridis 1985] Luo, G.L., and G.N.Saridis, “L-Q design of PID controllers
+      for robot arms,” IEEE J. Robot. Autom., vol. RA-1, no. 3, pp. 152–159, Sept.
+      1985.
+
+[Luo et al. 1986] Luo, G.L., G.N.Saridis, and C.Z.Wang, “A dual-mode control for
+      robotic manipulators,” Proc. IEEE Conf. Decision Control, pp. 409–414,
+      Dec. 1986.
+
+[MATRIXx 1989] MATRIXX, Santa Clara, CA: Integrated Systems, Inc., 1989.
+
+[Moler 1987] Moler, C., J.Little, and S.Bangert, PC-Matlab. Sherborn, MA: The
+     Mathworks, 1987.
+
+[Neuman and Tourassis 1985] Neuman, C.P., and V.D.Tourassis, “Discrete dynamic
+     robot models,” IEEE Trans. Syst. Man and Cybern., vol. SMC-15, no. 2, pp.
+     193–204, Mar./Apr. 1985.
+
+[Paul 1981] Paul, R.P., Robot Manipulators. Cambridge, MA: MIT Press, 1981.
+
+[Schilling 1990] Schilling, R.J., Fundamentals of Robotics. Englewood Cliffs, NJ:
+       Prentice Hall, 1990.
+
+[Shin and McKay 1985] Shin, K.G., and N.D.McKay, “Minimum-time control of
+      robotic manipulators with geometric path constraints,” IEEE Trans. Autom.
+      Control, vol. AC-30, no. 6, pp. 531–541, June 1985.
+
+[Slotine and Li 1991] Slotine, J.-J.E, and W.Li, Applied Nonlinear Control. Englewood
+       Cliffs, NJ: Prentice Hall, 1991.
+
+[Vukobratovic and Stokic 1983] Vukobratovic and Stokic, “Contribution to the
+     suboptimal control of manipulation robots,” IEEE Trans. Autom. Control,
+     vol. AC-28, no. 10, pp. 981–985, Oct. 1983.
+
+[Whitney 1969] Whitney, D.E., “Resolved motion rate control of manipulators and
+     human prostheses,” IEEE Trans. Man Machine Syst., vol. MMS-10, no. 2, pp.
+     47–53, June 1969.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+256                                                             REFERENCES
+
+[Wu and Paul 1982] Wu, C.-H., and R.P.Paul, “Resolved motion force control of
+     robot manipulator,” IEEE Trans. Syst. Man Cybern., vol. SMC-12, no. 3, pp.
+     266–275, June 1982.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                              257
+
+
+PROBLEMS
+Section 4.2
+4.2–1 Minimum-Time Control. Derive the minimum-time control switching time ts
+         [cf. (4.2.11)] when the initial and final velocities are not zero.
+4.2–2       Polynomial Path Interpolation. It is desired to move a single joint from q(0)=0,
+             (0)=0 through the point q(l)=5, (l)=40 to a final position/velocity of (2)=10,
+            Determine the cubic interpolating polynomials required in this two-interval
+            path. Plot the path generated and verify that it meets the specified requirements
+            on q(t) and (t) Plot (t) versus q(t).
+
+4.2–3       LFPB. Repeat Problem 4.2–2 using LFPB.
+
+4.2–4       Polynomial Path for Acceleration Matching. Derive the interpolating
+            polynomial required to match positions, velocities, and accelerations at the
+            via points.
+
+Section 4.3
+
+4.3–1       Simulation of Flexible Coupling System. Use computer simulation to reproduce
+            the results for the motor with flexible coupling shaft in Example 3.6.1.
+
+4.3–2       Simulation of Nonlinear System. The Van der Pol oscillator is a nonlinear
+            system with some interesting properties. The state equation is
+
+
+
+
+            Simulate the dynamics for initial conditions of x1(0)=0.1, x2(0)= 0.1. Use
+            values for the parameter of α=0.1 and then α=0.8. Plot x1(t) and x2(t), as well
+            as x2(t) vs. x1(t) in the phase plane. For each simulation you should clearly see
+            the limit cycle that is characteristic of the Van der Pol oscillator.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+258                                                                      REFERENCES
+
+Section 4.4
+4.4–1 Prove (4.4.32).
+4.4–2       PD Computed-Torque Simulation. Repeat Example 4.4.1 using various values
+            for the PD gains. Try both critical damping and underdamping to examine
+            the effects of overshoot on the joint trajectories.
+4.4–3       Classical Joint Control. Prove (4.4.55), (4.4.57), (4.4.60), and (4.4.62). See
+            [Franklin et al. 1986].
+4.4–4       PD Computed Torque with Payload Uncertainty. The CT controller is
+            inherently robust. In Example 4.4.1, suppose that m2 changes from 1 kg to 2
+            kg at t=5 s, corresponding to a payload mass being picked up. The CT
+            controller, however, still uses a value of m2=1. Use simulation to plot the
+            error time history. Does the performance improve with larger PD gains?
+4.4–5       PID Computed Torque with Payload Uncertainty. Repeat Problem 4.4–4
+            using a PID outer loop. Does the integral term help in rejecting the mass
+            uncertainty?
+4.4–6       PD Computed Torque with Friction Uncertainty. Repeat Problem 4.4–4
+            assuming now that m2=1 kg stays constant and is known to the controller.
+            However, add friction of the form F(q, ) = Fv +Kdsgn( )(see Table 3.3.1) to
+            the arm dynamics, but not to the CT controller. Use vi=0.1, ki=0.1. Simulate
+            the performance for different PD gains.
+4.4–7       PID Computed Torque with Friction Uncertainty. Repeat Problem 4.4–6
+            using a PID outer loop.
+4.4–8       PD Computed Torque with Actuator Dynamics
+            (a) Design a CT control law for the two-link planar elbow arm with actuator
+                dynamics (Section 3.6) of the form
+
+
+
+            Take the link masses and lengths as 1 kg, 1 m. Take motor parameters
+            of J m =0.1 kg-m 2 , b m=0.2 N-m/rad/s, and R=5Ω, Set the gear ratio
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                        259
+
+            r=0.1.
+            (b) Simulate the controller for various values of PD gains.
+4.4–9       PD Computed Torque with Neglected Actuator Dynamics. Consider the
+            arm-plus-dynamics in Problem 4.4–8. Suppose, however, that the CT
+            controller was designed using only the arm dynamics and neglecting the
+            actuator dynamics. Use the PD gains in Example 4.4.1. Simulate the control
+            law on the arm-plus-dynamics for various values of gear ratio r. As r
+            decreases, the performance should deteriorate.
+4.4–10 PD Computed Torque Using Only Actuator Dynamics. Consider the arm-
+       plus-dynamics in Problem 4.4–8. Design a CT controller using only the
+       actuator dynamics and no arm dynamics. Simulate the control law on the
+       arm-plus-dynamics for various values of gear ratio r. As r decreases, the
+       performance should improve. For fixed r, it is also instructive to try different
+       PD gains.
+4.4–11 Classical Joint Control with Actuator Dynamics. Repeat Example 4.4.4
+       including actuator dynamics like those in Problem 4.4–8. Try different values
+       of gear ratio r. Compare to Problem 4.4–10.
+4.4–12 PD Computed Torque with Flexible Coupling. Combine the flexible shaft in
+       Example 3.6.1 with the two-link arm in Example 4.4.1 to study the effects of
+       using CT control on a robot with compliant motor coupling. Try different
+       values of the coupling shaft parameters.
+4.4–13 Error Dynamics with Approximate CT Control. Considzer the two-link
+       polar arm in Example 3.2.1 with friction of the form Find the error
+       dynamics (4.4.44) for the cases:
+       (a) Friction is not included in the CT control law.
+       (b) Payload mass m2 is not exactly known in the CT control law.
+       (c) PD-gravity CT is used.
+       (d) PD classical joint control is used with no nonlinear terms.
+Section 4.5
+4.5–1       Digital Control Simulation
+            (a) Repeat Example 4.5.1 using a desired trajectory with period of 1
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+260                                                                          REFERENCES
+
+                s instead of 2 s. Plot as well the Cartesian position (x2(t), y2(t)) of the end
+                effector in base coordinates.
+            (b) Redo the simulation deleting the lines in Figure 4.5.7 that zero the initial
+                velocity estimates.
+            (c) Try to simulate the digital CT controller using the alternative technique
+                to compute k from and vk, as given in equation (1) in the example.
+
+4.5–2       Digital Control Simulation. Convert the PD-gravity CT controller in Example
+            4.4.3 to a digital controller. Try several sample periods.
+4.5–3       Error Dynamics for Digital Control. Find the error system in Table 4.4.1
+            using digital control of the form (4.5.3).
+4.5–4       Antiwindup Protection. In Example 4.4.4 we saw the deleterious effects in
+            robot control of integrator windup due to actuator saturation. In Example
+            4.5.2 we showed how to implement antiwindup protection on a simple PI
+            controller. Implement antiwindup protection on the robot controller in
+            Example 4.4.4. The issue is determining the limits on the integrator outputs
+            given the motor torque limits. Successful and thorough completion of this
+            problem might lead to a nice conference paper.
+Section 4.6
+4.6–1 Optimal LQ Outer-Loop PD Gains. Verify (4.6.15). To do this, select the
+         Riccati solution matrix as
+
+
+
+
+            with Pi  Rn Substitute P, A, B, Q, R into the Riccati equation (4.6.6). You will
+            obtain three n×n equations that can be solved for Pi. Now use (4.6.5).
+4.6–2       Robust Control Using LQ Outer-Loop Design. Redo the PDgravity simulation
+            in Example 4.4.3 using PD gains found from LQ design. Does the LQ
+            robustness property improve the responses found in Example 4.4.3 using
+            nonoptimal gains? Try various choices for Qp, Qv, and R, both diagonal and
+            nondiagonal.
+Section 4.7
+4.7–1       Direct Cartesian Computed-Torque Design. Begin with the Cartesian
+            dynamics in Section 3.5 and design a computed-torque controller. Compare
+            it to (4.7.10).
+4.7–2       Approximate Cartesian Computed-Torque. Derive the error system dynamics
+            associated with the approximate control law (4.7.11).
+4.7–3       Cartesian PD-Plus-Gravity Control. Repeat Example 4.4.3 using Cartesian
+            computed-torque control, where the trajectory is given in workspace
+            coordinates.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

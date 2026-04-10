@@ -1,0 +1,2459 @@
+Chapter 3
+
+Robot Dynamics
+This chapter provides the background required for the study of robot
+manipulator control The arm dynamical equations are derived both in the
+second-order differential equation formulation and several state-variable
+formulations. Some important properties of the dynamics are introduced. We
+show how to include the dynamics of the arm actuators, which may be electric
+or hydraulic motors.
+
+
+3.1 Introduction
+
+Robotics is a complex field involving many diverse disciplines, such as physics,
+properties of materials, statics and dynamics, electronics, control theory, vision,
+signal processing, computer programming, and manufacturing. In this book
+our main interest is control of robot manipulators. The purpose of this chapter
+is to study the dynamical equations needed for the study of robot control.
+    For those desiring a background in control theory, Chapter 2 is provided.
+For those desiring a background in the basics of robot manipulators, in Appendix
+A we examine the geometric structure of robot manipulators, covering basic
+manipulator configurations, kinematics, and inverse kinematics. There we
+review as well the manipulator Jacobian, which is essential for control in
+Cartesian or workspace coordinates, where the desired trajectories of the arm
+are usually specified to begin with.
+    The robot dynamics are derived in Section 3.2. Lagrangian mechanics are
+used in this derivation. In Section 3.3 we review some fundamental properties
+of the arm dynamical equation that are essential in subsequent chapters for
+the derivation of robot control schemes. These are summarized in Table 3.3.1,
+which is referred to throughout the text.
+    The arm dynamics in Section 3.2 are in the form of a second-order vector
+
+                                                                              107
+Copyright © 2004 by Marcel Dekker, Inc.
+108                                                           Robot Dynamics
+
+differential equation. In Section 3.4 we show several ways to convert this
+formulation to a state-variable description. The state-variable description is a
+first-order vector differential equation that is extremely useful for developing
+many arm control schemes. Feedback linearization techniques and Hamiltonian
+mechanics are used in this section.
+    The robot arm dynamics in Section 3.2 are given in joint-space coordinates.
+In Section 3.5 we show a very general approach to obtaining the arm
+dynamical description in any desired coordinates, including Cartesian or
+workspace coordinates and the coordinates of a camera frame or reference.
+    In Section 3.6 we analyze the electrical or hydraulic actuators that perform
+the work required to move the links of a robot arm. It is shown how to
+incorporate dynamical models for the actuators into the arm dynamics to
+provide a complete dynamical description of the arm-plus-actuator system.
+This finally leaves us in a position to move on to the next chapters, where
+robot manipulator control design is discussed.
+
+
+3.2 Lagrange-Euler Dynamics
+
+For control design purposes, it is necessary to have a mathematical model
+that reveals the dynamical behavior of a system. Therefore, in this section we
+derive the dynamical equations of motion for a robot manipulator. Our
+approach is to derive the kinetic and potential energy of the manipulator and
+then use Lagrange’s equations of motion.
+   In this section we ignore the dynamics of the electric or hydraulic motors
+that drive the robot arm; actuator dynamics is covered in Section 3.6.
+
+Force, Inertia, and Energy
+Let us review some basic concepts from physics that will enable us to better
+understand the arm dynamics [Marion 1965]. In this subsection we use boldface
+to denote vectors and normal type to denote their magnitudes.
+   The centripetal force of a mass m orbiting a point at a radius r and angular
+velocity ω is given by
+
+                                                                         (3.2.1)
+
+See Figure 3.2.1. The linear velocity is given by
+
+                                          v=w×r,                         (3.2.2)
+
+which in this case means simply that v=ωr.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.2 Lagrange-Euler Dynamics                                                     109
+
+
+
+
+                                          Figure 3.2.1: Centripetal force.
+
+
+
+   Imagine a sphere (i.e., the earth) rotating about its center with an angular
+velocity of ω0. See Figure 3.2.2. The Coriolis force on a body of mass m
+moving with velocity v on the surface of the sphere is given by
+
+                                                  Fcor=-2mω0×v               (3.2.3)
+
+Using the right-handed screw rule (i.e., if the fingers rotate ω0 into v, the
+thumb points in the direction of ω0×v, we see that, in the figure, the Coriolis
+force acts to deflect m to the right.
+   In a low-pressure weather system, the air mass moves toward the center
+of the low. The Coriolis force is responsible for deflecting the air mass to the
+right and so causing a counterclockwise circulation known as cyclonic flow.
+The result is the swirling motion in a hurricane. A brief examination of
+Figure 3.2.2 reveals that in the southern hemisphere Fcor deflects a moving
+mass to the left, so that a low-pressure system would have a clockwise wind
+motion.
+   Since          and          we may write
+
+                                                                             (3.2.4)
+
+It is important to note that the centripetal force involves the square of a
+single angular velocity, while the Coriolis force involves the product of two
+distinct angular velocities.
+    The kinetic energy of a mass moving with a linear velocity of v is
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+110                                                                       Robot Dynamics
+
+
+
+
+                                          Figure 3.2.2: Coriolis force.
+
+
+
+
+                                                                                  (3.2.5)
+
+The rotational kinetic energy of the mass in Figure 3.2.1 is given by
+
+                                                                                  (3.2.6)
+
+where the moment of inertia is
+
+
+                                                                                  (3.2.7)
+
+
+with ρ(r) the mass distribution at radius r in a volume. In the simple case
+shown where m is a point mass, this becomes
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.2 Lagrange-Euler Dynamics                                                  111
+
+                                           I=mr2.                         (3.2.8)
+Therefore,
+                                                                         (3.2.9)
+
+The potential energy of a mass m at a height h in a gravitational field with
+constant g is given by
+
+                                           P=mgh.                       (3.2.10)
+
+The origin, corresponding to zero potential energy, may be selected arbitrarily
+since only differences in potential energy are meaningful in terms of physical
+forces.
+   The momentum of a mass m moving with velocity v is given by
+
+                                           p=mv.                        (3.2.11)
+
+The angular momentum of a mass m with respect to an origin from which
+the mass has distance r is
+
+                                          Pang=r×p.                     (3.2.12)
+
+The torque or moment of a force F with respect to the same origin is defined
+to be
+
+                                           N=r×F.                       (3.2.13)
+
+
+Lagrange’s Equations of Motion
+Lagrange’s equation of motion for a conservative system are given by [Marion
+1965]
+
+                                                                        (3.2.14)
+
+where q is an n-vector of generalized coordinates qi, ␶ is an n-vector of
+generalized forces ␶i, and the Lagrangian is the difference between the kinetic
+and potential energies
+
+                                           L=K-P.                       (3.2.15)
+
+In our usage, q will be the joint-variable vector, consisting of joint angles θi;
+(in degrees or radians) and joint offsets di (in meters). Then τ is a vector that
+has components ni of torque (newton-meters) corresponding to the joint
+angles, and fi of force (newtons) corresponding to the joint offsets. Note that
+we denote the scalar components of τ by lowercase letters.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+112                                                             Robot Dynamics
+
+  We shall use Lagrange’s equation to derive the general robot arm dynamics.
+Let us first get a feel for what is going on by considering some examples.
+
+EXAMPLE 3.2–1: Dynamics of a Two-Link Polar Arm
+      The kinematics for a two-link planar revolute/prismatic (RP) arm are
+      given in Example A.2–3. To determine its dynamics examine Figure 3.2.3,
+      where the joint-variable and joint-velocity vectors are
+
+
+                                                                           (1)
+
+
+The corresponding generalized force vector is
+
+
+                                                                           (2)
+
+
+
+
+                        Figure 3.2.3: Two-link planar RP arm.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.2 Lagrange-Euler Dynamics                                                113
+
+with n a torque and fa force. The torque n and force f may be provided by
+either motors or hydraulic actuators. We discuss the dynamics of actuators in
+Section 3.6.
+   To determine the arm dynamics, we must now compute the quantities
+required for the Lagrange equation.
+
+a. Kinetic and Potential Energy
+The total kinetic energy due to the angular motion      and the linear motion
+  is
+                                                                           (3)
+
+and the potential energy is
+
+                                                                           (4)
+
+
+b. Lagrange’s Equation
+The Lagrangian is
+
+                                                                           (5)
+
+
+Now we obtain
+
+                                                                           (6)
+
+
+
+                                                                           (7)
+
+
+
+                                                                           (8)
+
+
+Therefore, (3.2.14) shows that the arm dynamical equations are
+
+                                                                           (9)
+
+
+                                                                          (10)
+
+This is a set of coupled nonlinear differential equations which describe the
+motion q(t)=[θ(t) r(t)]T given the control input torque n(t) and force f(t). We
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+114                                                            Robot Dynamics
+
+shall show how to determine q(t) given the control inputs n(t) and f(t) by
+computer simulation in Chapter 4.
+   Given our discussion on forces and inertias it is easy to identify the terms
+in the dynamical equations. The first terms in each equation are acceleration
+terms involving masses and inertias. The second term in (9) is a Coriolis
+term, while the second term in (10) is a centripetal term. The third terms are
+gravity terms.
+
+c. Manipulator Dynamics
+By using vectors, the arm equations may be written in a convenient form.
+Indeed, note that
+
+
+
+
+                                                                            (11)
+
+
+We symbolize this vector equation as
+
+                                                                            (12)
+
+Note that, indeed, the inertia matrix M(q) is a function of q (i.e., of θ and r),
+the Coriolis/centripetal vector V(q, ) is a function of q and , and the gravity
+vector G(q) is a function of q.
+
+
+
+
+EXAMPLE 3.2–2: Dynamics of a Two-Link Planar Elbow Arm
+      In Example A.2–2 are given the kinematics for a two-link planar RR
+      arm. To determine its dynamics, examine Figure 3.2.4, where we have
+      assumed that the link masses are concentrated at the ends of the links.
+      The joint variable is
+
+                                          q=[θ1 θ2]T                         (1)
+
+and the generalized force vector is
+
+                                                                             (2)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.2 Lagrange-Euler Dynamics                                              115
+
+
+
+
+                                 Figure 3.2.4: Two-link planar RR arm.
+
+
+
+with τ1, and τ2 torques supplied by the actuators.
+
+a. Kinetic and Potential Energy
+For link 1 the kinetic and potential energies are
+
+                                                                          (3)
+                                                                          (4)
+
+For link 2 we have
+
+                                                                          (5)
+                                                                          (6)
+                                                                          (7)
+                                                                          (8)
+
+so that the velocity squared is
+
+
+                                                                         (9)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+116                                                                      Robot Dynamics
+
+Therefore, the kinetic energy for link 2 is
+
+
+
+
+                                                                                   (10)
+
+
+
+
+The potential energy for link 2 is
+
+
+
+
+                                P2=m2gy2=m2g[a1 sin θ1+a2 sin(θ1+θ2)].             (11)
+
+
+
+
+b. Lagrange’s Equation
+
+
+The Lagrangian for the entire arm is
+
+
+
+
+                                                                                   (12)
+
+
+
+
+The terms needed for (3.2.14) are
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.2 Lagrange-Euler Dynamics                                             117
+
+
+
+
+Finally, according to Lagrange’s equation, the arm dynamics are given by the
+two coupled nonlinear differential equations
+
+
+
+
+                                                                        (13)
+
+
+                                                                       (14)
+
+
+c. Manipulator Dynamics
+
+
+Writing the arm dynamics in vector form yields
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+118                                                          Robot Dynamics
+
+
+
+
+                                                                          (15)
+
+
+
+where
+
+
+
+
+                                                                         (16)
+
+These manipulator dynamics are in the standard form
+
+
+                                                                          (17)
+
+
+
+with M(q) the inertia matrix, V(q, ) the Coriolis/centripetal vector, and G(q)
+the gravity vector. Note that M(q) is symmetric.
+
+
+
+
+EXERCISE 3.2–3: Dynamics of a Three-Link Cylindrical Arm
+      We study the kinematics of a three-link cylindrical arm in Example A.2–
+      1. In Figure 3.2.5 the joint variable vector is
+
+
+                                          q=[θ h r]T                       (1)
+
+
+Show that the manipulator dynamics are given by
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.2 Lagrange-Euler Dynamics                                               119
+
+
+
+
+                                                                          (2)
+
+
+with J the inertia of the base link and the force vector
+
+                                                                           (3)
+
+
+
+
+                          Figure 3.2.5: Three-link cylindrical arm.
+
+
+
+Derivation of Manipulator Dynamics
+We have shown in several examples how to apply Lagrange’s equation to
+compute the dynamical equations of any given robot manipulator. In the
+examples the dynamics we found always had the special form
+
+                                                                      (3.2.16)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+120                                                           Robot Dynamics
+
+with q the joint-variable vector and τ the generalized force/torque vector. In
+this subsection we derive the dynamics for a general robot manipulator. They
+will be of this same form.
+   To obtain the general robot arm dynamical equation, we determine the
+arm kinetic and potential energies, then the Lagrangian, and then substitute
+into Lagrange’s Equation (3.2.14) to obtain the final result [Paul 1981, Lee
+et al. 1983, Asada and Slotine 1986, Spong and Vidyasagar 1989].
+Arm Kinetic Energy. Given a point on link i with coordinates of ir with respect
+to frame i attached to that link, the base coordinates of the point are
+
+                                                                      (3.2.17)
+
+where Ti is the 4×4 homogeneous transformation defined in Appendix A.
+Note that Ti is a function of joint variables q1, q2,…, qi. Consequently, the
+velocity of the point in base coordinates is
+
+
+                                                                      (3.2.18)
+
+
+Since ∂Ti/∂qj=0, j>i, we may replace the upper summation limit by n, the
+number of links. The 4×4 matrices ∂Ti/∂qj may be computed if the arm matrices
+Ti are known.
+
+The kinetic energy of an infinitesimal mass dm at ir that has a velocity of
+v=[vx vy vz]T is
+
+
+
+
+                                                                      (3.2.19)
+
+
+Thus the total kinetic energy for link i is given by
+
+
+
+
+Substituting for dKi from (3.2.19), we may move the integral inside the
+summations. Then, defining the 4×4 pseudo-inertia matrix for link i as
+
+                                                                      (3.2.20)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.2 Lagrange-Euler Dynamics                                                121
+
+we may write the kinetic energy of link i as
+
+
+
+                                                                      (3.2.21)
+
+
+
+Let us briefly discuss the pseudo-inertia matrix before proceeding to find the
+arm total kinetic energy. Let
+
+                                          i
+                                          r=[x y z 1]T
+
+be the coordinates in frame i of the infinitesimal mass dm. Then, expanding
+(3.2.20) yields
+
+
+
+
+                                                                      (3.2.22)
+
+
+
+where the integrals are taken over the volume of link i. This is a constant
+matrix that is evaluated once for each link. It depends on the geometry and
+mass distribution of link i. In fact, in terms of the link i moments of inertia
+
+
+
+
+                                                                      (3.2.23)
+
+
+
+
+cross-products of inertia
+
+
+
+
+                                                                      (3.2.24)
+
+
+
+
+and first moments
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+122                                                          Robot Dynamics
+
+
+
+
+                                                                      (3.2.25)
+
+
+
+with m the total mass of link i, and
+
+                                                                      (3.2.26)
+
+the coordinates in frame i of the center of gravity of link i, we may write
+
+
+
+                                                                      (3.2.27)
+
+
+
+These quantities are either tabulated in the arm manufacturer’s specifications
+or may be computed from quantities tabulated there.
+   Returning now to our development, the total arm kinetic energy may be
+written as
+
+
+                                                                      (3.2.28)
+
+
+Since the trace of a sum of matrices is the sum of the individual traces, we
+may interchange summations and the trace operator to obtain
+
+
+
+
+or
+                                                                      (3.2.29)
+
+where the n×n arm inertia matrix M(q) has elements defined as
+
+
+                                                                      (3.2.30)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.2 Lagrange-Euler Dynamics                                                    123
+
+Since ∂Ti/∂qj=0 for j>i, we may write this more efficiently as
+
+
+                                                                           (3.2.31)
+
+
+Equation (3.2.29) is what we have been seeking; it provides a convenient
+expression for the arm kinetic energy in terms of known quantities and the
+joint variables q. Since mjk=mkj, the inertia matrix M(q) is symmetric. Since
+the kinetic energy is positive, vanishing only when the generalized velocity
+equal zero, the inertia matrix M(q) is also positive definite. Note that the
+kinetic energy depends on q and .
+
+Arm Potential Energy. If link i has a mass mi and a center of gravity
+expressed in the coordinates of its frame i, the potential energy of the link is
+given by
+
+                                                                           (3.2.32)
+
+where the gravity vector is expressed in base coordinates as
+
+                                                                           (3.2.33)
+
+
+If the arm is level, at sea level, and the base z-axis is directed vertically
+upward, then
+                                                                           (3.2.34)
+
+with units of m/s2.
+  The total arm potential energy, therefore, is
+
+                                                                           (3.2.35)
+
+Note that P depends only on the joint variables q, not on the joint velocities
+ .
+   Noting that     is the last column of the link i pseudo-inertia matrix Ti,
+we may write
+
+                                                                           (3.2.36)
+
+with e4 the last column of the 4×4 identity matrix (i.e., e4=[0 0 0 1]T). Lagrange’s
+Equation. The arm Lagrangian is
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+124                                                           Robot Dynamics
+
+                                                                      (3.2.37)
+
+It is a fundamental property that the kinetic energy is a quadratic function of
+the joint velocity vector and the potential energy is independent of .
+    The terms required in Lagrange’s Equation (3.2.14) are now given by
+
+
+                                                                      (3.2.38)
+
+
+
+                                                                      (3.2.39)
+
+
+
+                                                                      (3.2.40)
+
+
+Therefore, the arm dynamical equation is
+
+
+                                                                      (3.2.41)
+
+Defining the Coriolis/centripetal vector
+
+
+                                                                      (3.2.42)
+
+and the gravity vector
+
+                                                                      (3.2.43)
+
+we may write
+                                                                      (3.2.44)
+
+which is the final form of the robot dynamical equation we have been seeking.
+   The units of elements of M(q) corresponding to revolute joint variables
+qi=θi are kg-m2. The units of the elements of M(q) corresponding to prismatic
+joint variables qi=di are kilograms. The units of elements of V(q, )and G(q)
+corresponding to revolute joint variables are kg-m2/s2. The units of elements
+of V(q, ) and G(q) corresponding to prismatic joint variables are kg-m/s2.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.3 Structure and Properties of the Robot Equation                            125
+
+
+3.3 Structure and Properties of the Robot Equation
+
+In this section we investigate the detailed structure and properties of the
+dynamical arm equations, for this structure should be reflected in the form of
+the control law. The controller is simpler and more effective if the known
+properties of the arm are incorporated in the design stage.
+
+In reality, a robot arm is always affected by friction and disturbances. Therefore,
+we shall generalize the arm model we have just derived by writing the
+manipulator dynamics as
+
+                                                                           (3.3.1)
+
+with q the joint variable n-vector and τ the n-vector of generalized forces.
+M(q) is the inertia matrix, V(q, ) the Coriolis/centripetal vector, and G(q)
+the gravity vector. We have added a friction term
+
+                                                                           (3.3.2)
+
+with Fv the coefficient matrix of viscous friction and Fd a dynamic friction
+term. Also added is a disturbance τd, which could represent, for instance, any
+inaccurately modeled dynamics.
+   Friction is not an easy term to model, and indeed, may be the most contrary
+term to describe in the manipulator dynamics model. Some more discussion
+on friction may be found in [Schilling 1990].
+   We shall sometimes write the arm dynamics as
+                                                                           (3.3.3)
+
+where
+                                                                           (3.3.4)
+represents nonlinear terms.
+   Let us examine the structure and properties of each of the terms in the
+robot dynamics equation. This study will offer us a great deal of insight
+which we use in deriving robot control schemes in subsequent chapters. A
+summary of the properties we discover is given in Table 3.3.1, to which we
+refer in the remainder of the book. As we develop each property, it will be
+worthwhile to refer to Examples 3.2.1 to 3.2.3 in order to verify that the
+properties indeed hold there. At the end of this section we illustrate in Example
+3.3.1 several of the properties for a two-link planar elbow arm.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+126                                                                    Robot Dynamics
+
+                       Table 3.3.1: The Robot Equation and Its Properties
+
+
+
+
+Properties of the Inertia Matrix
+As we have seen, M(q) is symmetric and positive definite. In fact, the arm
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.3 Structure and Properties of the Robot Equation                          127
+
+kinetic energy is
+
+                                                                         (3.3.5)
+
+
+Some expressions for M are given in the next subsection.
+    Another vital property of M(q) is that it is bounded above and below. That
+is,
+
+                                           µ1I≤M(q)≤µ2I                  (3.3.6)
+
+with µ1, and µ2 scalars that may be computed for any given arm (see Example
+3.3.1). When we say that µ1I≤M(q), for instance, we mean that (M(q)-µ1I) is
+positive semidefinite. That is,
+
+                                           xT(M-µ1I)x≥0
+
+for all xε Rn.
+   Likewise, the inverse of the inertia matrix is bounded, since
+
+
+                                                                         (3.3.7)
+
+
+If the arm is revolute, the bounds µ1 and µ2 are constants, since q appears only
+in M(q) through sin and cos terms, whose magnitudes are bounded by 1 (see
+Examples 3.2.2 and 3.3.1). On the other hand, if the arm has prismatic joints,
+then µ1 and µ2 may be scalar functions of q. See Example 3.2.1, where M(q) is
+bounded above by µ2=mr2 (if r>1).
+    The boundedness property of the inertia matrix may also be expressed as
+
+                                          m1≤||M(q)||≤m2,                (3.3.8)
+
+where any induced matrix norm can be used to define the positive scalars m1
+and m2.
+
+Properties of the Coriolis/Centripetal Term
+A glance at (3.2.42) reveals a problem that, if not understood, can make the
+study of robot dynamics confusing. Simplification of this V(q, ) term would
+require taking the derivative of a matrix [i.e., M(q)] with respect to the n-
+vector q. However, such derivatives are not matrices, but tensors of order
+three-that is, they must be represented by three indices, not two. There are
+several ways to get around this problem, involving several definitions of
+some new quantities.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+128                                                               Robot Dynamics
+
+   Kronecker Product Analysis of V(q, ) Let us first examine the term V(q,
+ ) from the point of view of the Kronecker product [Brewer 1978], defined for
+two matrices                         as
+                                                                              (3.3.9)
+
+where A has elements aij and [aijB] means the np×mq block matrix composed
+of the p×q blocks aijB. Thus, for           we, have
+
+
+
+
+For matrices A(q), B(q), with             , define the matrix derivative as
+
+
+
+                                                                           (3.3.10)
+
+
+Then we may prove the product rule
+
+                                                                           (3.3.11)
+
+with In the n×n identity.
+  Now we may examine the Coriolis/centripetal vector V(q, )[Koditschek
+1984, Gu and Loh 1988]. Using (3.3.11) twice on (3.2.42), we may obtain
+
+
+
+
+                                                                           (3.3.12)
+
+
+or
+                                                                           (3.3.13)
+
+where
+                                                                           (3.3.14)
+
+                                                                           (3.3.15)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.3 Structure and Properties of the Robot Equation                        129
+
+with the matrix coefficient given by
+                                                                      (3.3.16)
+
+To find an equivalent expression for Vm1, note that
+
+                                                                      (3.3.17)
+
+which may be written as
+
+
+
+
+                                                                      (3.3.18)
+
+
+
+or as
+
+
+
+
+(Note that ∂M/∂qi is symmetric.) Therefore,
+
+                                                                      (3.3.20)
+
+whence using appropriate definitions we may write
+                                                                      (3.3.21)
+
+It is also possible to write (see the Problems)
+                                                                      (3.3.22)
+
+Since Vv( ) is linear in it follows that V(q, ) is quadratic in q. In fact, it
+can be shown (see the Problems) that
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+130                                                                Robot Dynamics
+
+
+
+
+                                                                           (3.3.23)
+
+for appropriate definition of Vi(q) [Craig 1988]. Indeed, the Vi(q) are symmetric
+n×n matrices.
+   Since V(q, ) is quadratic in , it can be bounded above by a quadratic
+function of . That is,
+                                                                           (3.3.24)
+
+with vb(q) a known scalar function and ||·|| any appropriate norm. For a
+revolute arm, vb is a constant independent of q. See Examples 3.2.2 and
+3.3.1, where the quadratic terms in are multiplied by sin θ2, whose magnitude
+is bounded by 1. On the other hand, for an arm with prismatic joints vb(q)
+may be function of q; see Examples 3.2.1 and 3.2.3, where V(q, ) has a term
+in r multiplying the quadratic terms             .
+   To assist in determining vb(q) for a given robot arm, note that so that
+             so that
+
+
+
+where          (q) is defined in (3.3.23). Therefore, for a revolute arm
+
+                                                                           (3.3.25)
+
+We may note that
+
+
+
+                                                                           (3.3.26)
+
+
+
+This is an n2-vector consisting of all possible products of the components of .
+This and (3.3.19) allow us to demonstrate that
+
+                                                                           (3.3.27)
+
+In this proof, we also need the identity
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+Lagrange-Euler Dynamics                                                        131
+
+                                                                           (3.3.28)
+
+for any matrices A and B. Note: It is not true that
+   Now we may use these various identities to show that
+
+
+
+
+                                                                           (3.3.29)
+
+
+Thus
+                                                                           (3.3.30)
+
+with
+                                                                           (3.3.31)
+
+Note that, in general, Vm1≠Vm2.
+  In terms of M and U, the arm dynamics may be written as
+
+                                                                           (3.3.32)
+
+At this point we may prove an identity that is extremely useful in constructing
+advanced control schemes. We call it the skew-symmetric property; it shows
+that the derivative of M(q) and the Coriolis vector are related in a very particular
+way. In fact,
+
+
+                                                                           (3.3.33)
+
+
+since a matrix minus its transpose is always skew symmetric. This important
+identity holds also if Vm1 is used in place of Vm2.
+   It is important to note that the first equality in (3.3.33) holds because
+             multiplies . That is,            , so that it is not necessarily true
+that (M-2Vm2) itself is skew symmetric. However, it is possible to define a
+matrix          such that
+
+                                                                           (3.3.34)
+
+and
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+132                                                            Robot Dynamics
+
+                                                                        (3.3.35)
+
+                                                n
+is skew symmetric, so that xT Sx=0 for all x ⑀ R Indeed, according to (3.3.13),
+(3.3.27) we may define
+
+                                                                        (3.3.36)
+
+for then the skew-symmetric matrix is nothing but
+
+                                                                        (3.3.37)
+
+This Vm is the standard one used in several modern adaptive and robust
+control algorithms, and it is the definition we shall use in the remainder of the
+book. Thus we shall write the arm equation either as
+
+                                                                        (3.3.38)
+
+
+or
+
+                                                                        (3.3.39)
+
+Note that it is possible to split V(q,     ) into its Coriolis and centripetal
+components as
+
+                                                                        (3.3.40)
+
+where
+
+                                                                        (3.3.41)
+
+
+and         is (3.3.26) with all the square terms    removed [Craig 1988] (see
+the Problems).
+
+Componentwise Analysis of             . An alternative to the Kronecker product
+analysis of the Coriolis/centripetal vector is an analysis in terms of the scalar
+components of          , which yields additional insight.
+   In terms of the components mkj(q) of the inertia matrix M(q) we may write
+(3.2.38)–(3.2.40) componentwise as
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.3 Structure and Properties of the Robot Equation                      133
+
+
+
+
+                                                                    (3.3.42)
+
+
+
+
+                                                                    (3.3.43)
+
+                                                                    (3.3.44)
+
+
+
+where all sums are over the number of joints n. Now, the Lagrange equation
+shows that the arm dynamics are expressed componentwise as
+
+
+
+
+                                                                    (3.3.45)
+with n the number of joints.
+  By interchanging the order of summation and taking advantage of symmetry,
+
+
+                                                                    (3.3.46)
+
+
+Therefore, we may define
+
+                                                                    (3.3.47)
+
+and write the arm dynamics as
+
+                                                                    (3.3.48)
+
+The cyclic symmetry of the vijk is what allows us to derive the important
+properties of the Coriolis/centripetal vector V(q, )which corresponds to the
+second term in this equation. The quantities vijk are known as Christoffel
+symbols (of the first kind) [Borisenko and Tarapov 1968].
+   The matrix            defined in (3.3.36) has components vkj given by
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+134                                                                    Robot Dynamics
+
+
+                                                                               (3.3.49)
+
+
+
+Properties of the Gravity, Friction, and Disturbance
+Properties of the Gravity Term G(q). According to (3.2.43) and (3.2.36),
+
+
+
+
+whence using (3.3.11) twice reveals
+
+
+
+
+                                                                               (3.3.50)
+
+
+A bound on the gravity term may be derived for any given robot arm. Thus
+
+                                          ||G(q)||≤gb(q),                      (3.3.51)
+
+where ||·|| is any appropriate vector norm and gb is a scalar function that may
+be determined for any given arm (see Example 3.3.1). For a revolute arm, gb
+is a constant independent of the joint vector q, but for an arm with prismatic
+links, gb may depend on q. See the examples in Section 3.2 and Example
+3.3.1 to verify these claims.
+
+Properties of the Friction Term               . The friction in the arm Equation (3.3.1)
+is of the form
+
+                                                                               (3.3.52)
+
+with Fv the coefficient matrix of viscous friction, and Fd a dynamic friction
+term. The friction coefficients are among the parameters most difficult to
+determine for a given arm and, in fact, (3.3.52) represents only an approximate
+mathematical model for their influence. For more discussion, see [Craig 1988,
+Schilling 1990].
+   Since friction is a local effect, we may assume that F ( ) is uncoupled
+among the joints, so that
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.3 Structure and Properties of the Robot Equation                              135
+
+
+
+
+                                                                            (3.3.53)
+
+
+with fi(·) known scalar functions that may be determined for any given arm.
+We have defined the vec{·} function for future use.
+  The viscous friction may often be assumed to have the form
+                                                                            (3.3.54)
+
+with vi known constant coefficients. Then Fv=diag{vi}, a diagonal matrix with
+entries vi. The dynamic friction may often be assumed to have the form
+                                                                            (3.3.55)
+
+with ki known constant coefficients and the signum function defined for a
+scalar x by
+
+
+                                                                            (3.3.56)
+
+
+Then
+                                                                            (3.3.57)
+
+with Kd=diag{ki} the coefficient matrix of dynamic friction and the signum
+function defined for a vector x by
+                                                                            (3.3.58)
+
+A bound on the friction terms may be assumed of the form
+                                                                            (3.3.59)
+
+with v and k known for a specific arm and ||·|| a suitable norm.
+  Another friction term that may be included in F( )is the static friction,
+which has components of the form
+                                                                            (3.3.60)
+
+where ksi is the coefficient of static friction for joint i and ⑀ is a small positive
+parameter. We shall generally ignore this term.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+136                                                           Robot Dynamics
+
+Properties of the Disturbance Term. The arm Equation (3.3.1) has a disturbance
+term τd which could represent inaccurately modeled dynamics, and so on. We
+shall assume that it is bounded so that
+
+                                                                       (3.3.61)
+
+where d is a scalar constant that may be computed for a given arm and ||·|| is
+any suitable norm.
+
+Linearity in the Parameters
+The robot dynamical equation enjoys one last property that will be of great
+use to us in Chapter 5. Namely, it is linear in the parameters, a property first
+exploited in [Craig 1988] in adaptive control. This is important, since some
+or all of the parameters may be unknown; thus the dynamics are linear in the
+unknown terms.
+
+This property may be expressed as
+
+
+                                                                       (3.3.62)
+
+
+with ϕ the parameter vector and W(q, , ) a matrix of robot functions
+depending on the joint variables, joint velocities, and joint accelerations.
+This matrix may be computed for any given robot arm and so is known.
+See Example 3.3.1. Note that the disturbance τd is not included in this
+equation.
+
+EXAMPLE 3.3–1: Structure and Bounds for Two-Link Planar
+Elbow Arm
+The dynamics of a two-link planar arm are given in Example 3.2.2. We
+should now like to compute the structural matrices defined in this section,
+as well as the bounds needed in Table 3.3.1. The friction bounds are
+straightforward, so we do not mention them here. The dynamical matrices
+are
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.3 Structure and Properties of the Robot Equation                           137
+
+
+
+
+   The selection of a suitable norm in Table 3.3.1 is not always straightforward.
+In the control algorithms to be developed in subsequent chapters, we prove
+suitable performance in terms of some norm, which can often be any norm
+desired. For implementation of the controller, a specific norm must be selected
+and the bounds evaluated. This choice often depends simply on which norm
+makes it possible to evaluate the bounds in the table. For instance, choosing
+the 2—norm for vectors requires the evaluation of the maximum singular
+value of M(q), a very difficult task.
+
+Selecting the ∞—norm for vectors means determining at each sampling time
+the element [of V(q(t), (t)) for instance] with the largest magnitude. This
+requires decision logic, and the norm may not be continuous. Therefore, let
+us use the 1—norm in this example. The corresponding matrix induced norm
+is then the maximum absolute column sum (Chapter 2).
+
+a. Bounds on the Intertia Matrix
+The evaluation of µ1, and µ2 amounts to the determination of the minimum
+and maximum eigenvalues of M(q) over all q. This is not an easy affair and
+requires the solution of some quadratic equations, although it can be carried
+out without too much trouble using software such as Mathematica or Maple.
+Thus, let us find m1 and m2.
+
+The induced 1—norm for M(q) is the maximum absolute column sum. In
+determining bounds for this norm, it is important to consider the range of
+allowed motion of the joint angles. To illustrate, suppose that θ1, and θ2 are
+limited by ±π/2. Then the 1—norm is always given in terms of column 1 as
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+138                                                             Robot Dynamics
+
+which is bounded above for all θ2 by
+
+
+
+and below by
+
+
+
+
+Since the arm is revolute and cos θ2 is bounded above and below, M2 and M1
+are constants. It is important to note that if the arm is revolute/prismatic (RP),
+so that the joint variables are (θ1, a2), the bounds are functions of q.
+
+b. Bounds on the Coriolis and Gravity Terms
+The bound vb on the Coriolis/centripetal vector is found using
+
+
+
+
+whence vb=m2a1a2.
+  Similarly, for the gravity bound,
+
+
+
+
+Notice that if the arm is RP, then vb and gb are functions of q.
+
+c. Coriolis/Centripetal Structural Matrices
+We now list the various structural matrices for V(q, )discussed in this section.
+Their computation is left as an exercise (see the Problems).
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.3 Structure and Properties of the Robot Equation   139
+
+
+
+
+The Coriolis/centripetal matrices:
+
+
+
+
+The skew-symmetric matrix S(q, ):
+
+
+
+
+The symmetric matrices V1(q, ), V2(q, )
+
+
+
+
+The position/velocity decomposition matrices:
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+140                                                         Robot Dynamics
+
+
+
+
+d. The Robot Function Parameter Matrix W
+The robot dynamics are linear in the parameters. For the purposes of adaptive
+control, one should select the parameter vector ϕ in Table 3.3.1 so that it
+contains the unknown parameters.
+  The dynamics, including friction, can be written as
+
+
+
+
+The second mass m2 includes the mass of the payload. This and the friction
+coefficients are often unknown. Therefore, select
+
+
+
+
+Then the matrix W(q, , ) of known robot functions becomes
+
+
+
+
+with
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.3 Structure and Properties of the Robot Equation                      141
+
+
+
+
+The reader should verify that with these definitions, the dynamics may be
+expressed as τ=Wϕ The matrix W is computed from measured joint positions,
+and their velocities and accelerations.
+                                                                          䊏
+
+Passivity and Conservation of Energy
+The “Newtonian” form of the manipulator dynamics given in Table 3.3.1
+obscures some important physical properties, which we should like to explore
+here [Koditschek 1984], [Ortega and Spong 1988], [Johansson 1990], [Slotine
+and Li 1987], [Slotine 1988]. Note that the dynamics can be written in terms
+of the skew-symmetric matrix S(q, ) as
+
+
+                                                                    (3.3.63)
+
+where friction and τd are ignored. Now, with K the
+
+
+
+
+whence (3.3.63) yields
+
+                                                                    (3.3.64)
+
+or
+
+                                                                    (3.3.65)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+142                                                                Robot Dynamics
+
+This is a statement of the conservation of energy, with the right-hand side
+representing the power input from the net external forces. The skew symmetry
+of                 is nothing more than a statement that the fictitious forces
+S(q, ) do no work. The work done by the external forces is given by
+
+
+                                                                             (3.3.66)
+
+
+Recall at this point the passivity property of the robot arm from τ(t)to (Section
+1.5), which merely states that the arm cannot create energy. From a controls
+point of view, a passive system cannot go unstable. A problem with some
+popular control schemes (e.g., standard computed torque, Section 3.4) is that
+they destroy the passivity property, resulting in possible instability if the system
+parameters are not exactly known or disturbances are present. Passivity-based
+designs ensure that the closed-loop system is passive (see Section 4.3, the
+references cited above, and [Anderson 1989]).
+   This analysis does not include the friction terms. A reasonable assumption
+regardless of the form of f ( ) is that friction is dissipative, so that fi(x) lies in
+the first and third quadrants only. This is equivalent to
+                                                                             (3.3.67)
+
+Under this assumption, friction does not destroy the passivity of the
+manipulator. It is then simple to modify a controller designed for (3.3.63) to
+include the friction [Slotine 1988]. The dissipative nature of friction allows
+one to increase the system’s bandwidth beyond classical limits.
+
+
+3.4 State-Variable Representations and Feedback
+    Linearization
+
+The robot arm dynamical equation in Table 3.3.1 is
+
+                                                                              (3.4.1)
+
+with q(t) ⑀ Rn the joint variable vector τ(t)and the control input. M(q) is the
+inertia matrix, V(q, ) the Coriolis/centripetal vector, Fv( ) the viscous friction,
+Fd( ) the dynamic friction, G(q) the gravity, and τd a disturbance. These
+terms satisfy the properties shown in Table 3.3.1. We may also write the
+dynamics as
+                                                                              (3.4.2)
+
+with the nonlinear terms represented by
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.4 State-Variable Representations and Feedback Linearization                143
+
+                                                                          (3.4.3)
+
+In this section we intend to show some equivalent formulations of the arm
+dynamical equation.
+   The nonlinear state-variable representation discussed in Chapter 2,
+
+                                                                          (3.4.4)
+
+has many properties which are useful from a controls point of view. The
+function u(t) is the control input and x(t) is the state vector, which describes
+how the energy is stored in a system. We show here how to place (3.4.1) into
+such a form. In Chapter 4 we show how to use computers to simulate the
+behavior of a robot arm using this nonlinear state-variable form. Throughout
+the book we shall use the state-space formulation repeatedly for controls design,
+either in the nonlinear form or in the linear form
+
+                                                                          (3.4.5)
+
+In this section we also present a general approach to feedback linearization
+for the nonlinear robot equation, which involves redefining variables in a
+methodical way to yield a linear state equation in terms of a dynamical
+variable we are interested in. This variable could be, for instance, the joint
+variable q(t), a Cartesian position, or the position in a camera frame of
+reference.
+
+Hamiltonian Formulation
+The arm equation was derived using Lagrangian mechanics. Here, let us use
+Hamiltonian mechanics [Marion 1965] to derive a state-variable formulation
+of the manipulator dynamics [Arimoto and Miyazaki 1984], [Gu and Loh
+1985]. Let us neglect the friction terms                          and the
+disturbance τd for simplicity; they may easily be added at the end of our
+development.
+   In Section 3.2 we expressed the arm Lagrangian as
+
+                                                                          (3.4.6)
+
+                     n
+with q(t) ⑀ R the joint variable, K the kinetic energy, P the potential energy,
+and M(q) the arm inertia matrix. Define the generalized momentum by
+
+
+                                                                          (3.4.7)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+144                                                        Robot Dynamics
+
+Then we have
+                                                                     (3.4.8)
+
+and the kinetic energy in terms of p(t) is
+                                                                     (3.4.9)
+
+It is worth noting that
+                                                                    (3.4.10)
+
+    Defining the manipulator Hamiltonian by
+                                                                   (3. 4.11)
+
+Hamilton’s equations of motion are
+
+                                                                    (3.4.12)
+
+
+                                                                    (3.4.13)
+
+Note that
+                                                                    (3.4.14)
+
+    Evaluating (3.4.13) yields
+
+
+
+which may be expressed (see the Problems) as
+
+                                                                    (3.4.15)
+
+where G(q) is the gravity vector and ⊗ is the Kronecker product (see Section
+3.3).
+   Defining the state vector as x ⑀ R2n as
+                                                                    (3.4.16)
+
+we see that the arm dynamics may be expressed as
+
+
+                                                                    (3.4.17)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.4 State-Variable Representations and Feedback Linearization              145
+
+with the control input defined by
+                                                                      (3.4.18)
+
+This is a nonlinear state equation of the form (3.4.4). It is important to note
+that this dynamical equation is linear in the control input u, which excites
+each component of the generalized momentum p(t).
+   This Hamiltonian state-space formulation was used to derive a PID control,
+law using the Lyapunov approach in [Arimoto and Miyazaki 1984] and to
+derive a trajectory-following control in [Gu and Loh 1985].
+
+Position/Velocity Formulations
+Alternative state-space formulations of the arm dynamics may be obtained by
+defining the position/velocity state x ⑀ R2n as
+                                                                      (3.4.19)
+
+For simplicity, neglect the disturbance τd and friction Fv +Fd( )and note that
+according to (3.4.2), we may write
+
+                                                                      (3.4.20)
+
+Now, we may directly write the position/velocity state-space representation
+
+                                                                      (3.4.21)
+
+which is in the form of (3.4.4) with u(t)=τ(t)
+  An alternative linear state equation of the form (3.4.5) may be written as
+
+                                                                      (3.4.22)
+
+with control input defined by
+                                                                      (3.4.23)
+
+Both of these position/velocity state-space formulations will prove useful in
+later chapters.
+
+Feedback Linearization
+Let us now develop a general approach to the determination of linear state-
+space representations of the arm dynamics (3.4.1)–(3.4.2). The technique
+involves a linearization transformation that removes the manipulator
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+146                                                              Robot Dynamics
+
+nonlinearities. It is a simplified version of the feedback linearization technique
+in [Hunt et al. 1983, Gilbert and Ha 1984]. See also [Kreutz 1989].
+                                                          n
+   The robot dynamics are given by (3.4.2) with q ⑀ R Let us define a general
+sort of output by
+
+                                                                          (3.4.24)
+
+                                                                         n
+with h(q) a general predetermined function of the joint variable q ⑀ R and s(t)
+a general predetermined time function. The control problem, then, will be to
+select the joint torque and force inputs τ(t) in order to make the output y(t) go
+to zero.
+   The selection of h(q) and s(t) is based on the control objectives we have in
+mind. For instance, if h(q)=-q and s(t)=qd(t), the desired joint space trajectory
+we would like the arm to follow, then y(t)=qd(t)-q(t)=e(t) the joint space tracking
+error. Forcing y(t) to zero in this case would cause the joint variables q(t) to
+track their desired values qd(t), resulting in arm trajectory following.
+   As another example,                       could represent the Cartesian space
+tracking error, with             the position error and e0 ⑀ R3 the orientation
+error. Controlling y(t) to zero would then result in trajectory following directly
+in Cartesian space, which is, after all, where the desired motion is usually
+specified.
+   Finally, -h(q) could represent the nonlinear transformation to a camera
+frame of reference and s(t) the desired trajectory in that frame. Then y(t) is the
+camera frame tracking error. Forcing y(t) to zero would then result in tracking
+motion in camera space.
+
+Feedback Linearizing Transformation. To determine a linear state-variable
+model for robot controller design, let us simply differentiate the output y(t)
+twice to obtain
+
+
+                                                                          (3.4.25)
+
+
+
+                                                                          (3.4.26)
+
+where we have defined the Jacobian
+
+
+                                                                          (3.4.27)
+
+                p
+    If y ⑀ R , the Jacobian is a p×n matrix of the form
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.4 State-Variable Representations and Feedback Linearization                 147
+
+
+                                                                         (3.4.28)
+
+Given the function h(q), it is straightforward to compute the Jacobian J(q)
+associated with h(q). In the special case where represents the Cartesian velocity,
+J(q) is the arm Jacobian discussed in Appendix A. Then, if all joints are
+revolute, the units of J are those of length.
+   According to (3.4.2),
+                                                                         (3.4.29)
+
+so that (3.4.26) yields
+                                                                         (3.4.30)
+
+Define the control input function
+                                                                         (3.4.31)
+
+and the disturbance function
+                                                                         (3.4.32)
+
+Now we may define a state x(t) ⑀ R2p by
+                                                                         (3.4.33)
+
+and write the robot dynamics as
+
+                                                                         (3.4.34)
+
+This is a linear state-space system of the form
+                                                                         (3.4.35)
+
+driven both by the control input u(t) and the disturbance v(t). Due to the
+special form of A and B, this system is said to be in Brunovsky canonical
+form (Chapter 2). The reader should determine the controllability matrix to
+verify that it is always controllable from u(t).
+   Equation (3.4.31) is said to be a linearizing transformation for the robot
+dynamical equation. We may invert this transformation to obtain
+
+
+                                                                         (3.4.36)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+148                                                              Robot Dynamics
+
+where J+ is the Moore-Penrose inverse [Rao and Mitra 1971] of the Jacobian
+J(q). If J(q) is square (i.e., p=n) and nonsingular, then J+(q)=J-1(q) and we may
+write
+
+                                                                          (3.4.37)
+
+
+As we shall see in Chapter 4, feedback linearization provides a powerful
+controls design technique. In fact, if we select u(t) so that (3.4.34) is stable
+(e.g., a possibility is the PD feedback                     ), then the control
+input torque τ(t) defined by (3.4.36) makes the robot arm move in such a way
+that y(t) goes to zero.
+   In the special case y(t)=q(t), then J=I and (3.4.34) reduces to the linear
+position/velocity form (3.4.22).
+
+
+3.5 Cartesian and Other Dynamics
+
+In Section 3.2 we derived the robot dynamics in terms of the time behavior of
+q(t). According to Table 3.3.1,
+
+                                                                           (3.5.1)
+
+or
+
+                                                                           (3.5.2)
+
+where the nonlinear terms are
+                                                                           (3.5.3)
+
+We call this the dynamics of the arm formulated in joint space, or simply the
+joint-space dynamics.
+
+Cartesian Arm Dynamics
+It is often useful to have a description of the dynamical development of variables
+other than the joint variable q(t). Consequently, define
+                                                                           (3.5.4)
+
+with h(q) a generally nonlinear transformation. Although y(t) could be any
+variable of interest, let us think of it here as the Cartesian or task space
+position of the end effector (i.e., position and orientation of the end effector in
+base coordinates).
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.5 Cartesian and Other Dynamics                                               149
+
+   The derivation of the Cartesian dynamics from the joint-space dynamics is
+akin to the feedback linearization in Section 3.4. Differentiating (3.5.4) twice
+yields
+                                                                            (3.5.5)
+
+                                                                            (3.5.6)
+
+where the Jacobian is
+
+                                                                            (3.5.7)
+
+The Cartesian velocity vector is                            , with v ⑀ R3 the linear
+velocity and ω ⑀ R the angular velocity. Let us assume that the number of
+                      3
+
+links is n=6, so that J is square. Assuming also that we are away from workspace
+singularities so that |J|≠0, according to (3.5.6), we may write
+                                                                            (3.5.8)
+
+which is the “inverse acceleration” transformation. Substituting this into (3.5.2)
+yields
+
+
+
+Recalling now the force transformation τ=JTF, with F the Cartesian force vector
+(see Appendix A) we have
+
+                                                                            (3.5.9)
+
+This may be written as
+                                                                           (3.5.10)
+
+where we have defined the Cartesian inertia matrix, nonlinear terms, and
+disturbance by
+                                                                           (3.5.11)
+
+
+                                                                           (3.5.12)
+
+
+                                                                           (3.5.13)
+
+Equation (3.5.9)–(3.5.10) gives the Cartesian or workspace dynamics of the
+robot manipulator.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+150                                                           Robot Dynamics
+
+   Note that , , and fd depend on q and , so that strictly speaking, the
+Cartesian dynamics are not completely given in terms of            However.
+           , and given y(t) we could use the inverse kinematics to determine
+q(t), so that , , fd can be computed as functions of y and using computer
+subroutines.
+
+Structure and Properties of the Cartesian Dynamics
+It is important to realize that all the properties of the joint-space dynamics
+listed in Table 3.3.1 carry over to the Cartesian dynamics as long as J is
+nonsingular [Slotine and Li 1987]. Note particularly that          is symmetric
+and positive definite. For a revolute arm the Jacobian has units of length and
+is bounded. In that case,     is bounded above and below.
+    Defining
+
+                                                                      (3.5.14)
+
+it follows that
+                                                                      (3.5.15)
+
+with
+
+                                                                      (3.5.16)
+
+where Vm was defined in Section 3.3.
+  It is easy to show that
+                                                                      (3.5.17)
+
+is skew-symmetric. Indeed, use the identity
+
+                                                                      (3.5.18)
+
+to see that
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.5 Cartesian and Other Dynamics                                               151
+
+which is skew symmetric since            is.
+  The friction terms in the Cartesian dynamics are
+
+                                                                           (3.5.19)
+
+and they satisfy bounds like those in Table 3.3.1. Notice that in Cartesian
+coordinates the friction effects are not decoupled (e.g., J-TFvJ-1 is not diagonal).
+The Cartesian gravity vector
+
+                                                                           (3.5.20)
+
+is bounded.
+    The property of linearity in the parameters holds and is expressed as
+
+                                                                           (3.5.21)
+
+where the known Cartesian function of robot functions is
+
+                                                                           (3.5.22)
+
+and ϕ is the vector of arm parameters.
+
+EXAMPLE 3.5–1: Cartesian Dynamics for Three-Link Cylindrical Arm
+Let us show how to convert the joint space dynamics found in Example
+3.2.3 to Cartesian dynamics. From Example A.3–1, the arm Jacobian is
+
+
+                                                                                 (1)
+
+
+whence its inverse is
+
+
+                                                                                 (2)
+
+
+From Example 3.2.3 the arm inertia matrix is
+
+
+                                                                                 (3)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+152                                                           Robot Dynamics
+
+Applying (3.5.11) yields (verify!)
+
+
+
+                                                                             (4)
+
+
+
+where                     .
+    In a similar fashion, one may compute     .
+                                                                             䊏
+
+
+3.6 Actuator Dynamics
+
+We have discussed the dynamics of a rigid-robot manipulator in joint space
+and Cartesian coordinates. However, the robot needs actuators to move it;
+these are generally either electric or hydraulic motors. It is now required,
+therefore, to add the actuator dynamics to the arm dynamics to obtain a
+complete dynamical description of the arm plus actuators. A good reference
+on actuators and sensors is provided by [de Silva 1989].
+
+Dynamics of a Robot Arm with Actuators
+We shall consider the case of electric actuators, assuming that the motors are
+armature controlled. Hydraulic actuators are described by similar equations.
+In this subsection we suppose that the armature inductance is negligible.
+   The equations of the n—link robot arm from Table 3.3.1 are given by
+
+                                                                         (3.6.1)
+
+where q ⑀ Rn is the arm joint variable. The dynamics or the armature-controlled
+do motors that drive the links are given by the n decoupled equations
+
+                                                                         (3.6.2)
+
+where                        with, qMi, the ith rotor position angle and vec{αi}
+denoting a vector with components αi. The control input is the motor voltage
+vector v ⑀ Rn
+   The actuator coefficient matrices are all constants given by
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.6 Actuator Dynamics                                                          153
+
+    The actuator coefficient matrices are all constants given by
+
+
+
+
+                                                                            (3.6.3)
+
+
+where the ith motor has inertia JMi, rotor damping constant BMi, back emf
+constant Kbi, torque constant KMi, and armature resistance Rai.
+  The gear ratio of the coupling from the ith motor to the ith arm link is ri,
+which we define so that
+
+                                          qi=riqMi or q=RqM.                (3.6.4)
+
+If the ith joint is revolute, then ri is a dimensionless constant less than 1. If qi
+is prismatic, then ri has units of m/rad.
+    The actuator friction vector is given by
+
+                                             FM=vec{FMi}
+
+with FMi the friction of the ith rotor.
+   Note that capital “M” denotes motor constants and variables, while Vm is
+the arm Coriolis/centripetal vector defined in terms of Christoffel symbols.
+   Using (3.6.4) to eliminate qM in (3.6.2), and then substituting for τ from
+(3.6.1) results in the dynamics in terms of joint variables
+
+                                                                            (3.6.5)
+
+or, by appropriate definition of symbols,
+
+                                                                            (3.6.6)
+
+Properties of the Complete Arm-Plus-Actuator Dynamics. The complete
+dynamics (3.6.6) has the same form as the robot dynamics (3.6.1). It is very
+easy to verify that the complete arm-plus-actuator dynamics enjoys the same
+properties as the arm dynamics that are listed in Table 3.3.1 (see the Problems).
+In particular, V’ is one-half the difference between     and a skew-symmetric
+matrix, all the boundedness assumptions hold, and linearity in the parameters
+holds. Thus, in future work where we design controllers, we may assume that
+the actuators have been included in the arm equation in Table 3.3.1
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+154                                                           Robot Dynamics
+
+   Independent Joint Dynamics. In many commercial robot arms the gear
+ratios ri are very small, providing a large torque advantage in the actuator/
+link coupling. This has important ramifications that greatly simplify the design
+of robot arm controllers.
+   To explore this, let us write the complete dynamics by components as
+
+
+                                                                        (3.6.7)
+
+
+where B≡diag{Bi} and di is a disturbance given by
+
+
+                                                                         (3.6.8)
+
+
+with mij the off-diagonal elements of M’, Vjki the tensor components of
+the friction of the ith link, and Gi the ith gravity component.
+   This equations reveals that if r i is small, the arm dynamics are
+approximately given by n decoupled second-order equations with constant
+coefficients. The dynamical effects of joint coupling and gravity appear only
+as disturbance terms multiplied by . That is, robot controls design is virtually
+the problem of simply controlling the actuator dynamics.
+   Unfortunately, modern high-performance tasks make the Coriolis and
+centripetal terms large, so that di is not small. Moreover, modern high-
+performance arms have near-unity gear ratios (e.g., direct drive arms), so
+that the nonlinearities must be taken into account in any conscientious controls
+design.
+
+Third-Order Arm-Plus-Actuator Dynamics
+An alternative model of the complete robot arm is sometimes used in controls
+design [Tarn et al. 1991]. It is a third-order differential equation that should
+be used when the motor armature inductance is not negligible.
+   When the armature inductances Li are not negligible, instead of (3.6.2) we
+must use the armature-controlled do motor equations
+
+                                                                         (3.6.9)
+
+
+
+                                                                       (3.6.10)
+
+with I ⑀ Rn the vector of armature currents,
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.6 Actuator Dynamics                                                        155
+
+
+
+
+                                                                        (3.6.11)
+
+
+It is important to note that T is a matrix of motor electric time constants. In
+the preceding subsection, these time constants were assume negligibly small
+in comparison to the motor mechanical time constant.
+    To determine the overall dynamics of the arm plus do motor actuators,
+eliminate τ between (3.6.1) and (3.6.10) to obtain an expression for I. Then,
+differentiate to expose explicitly . Substitute these expressions into (3.6.9)
+(see the Problems) to obtain dynamics of the form
+
+
+                                                                        (3.6.12)
+
+
+The coefficient matrix D is given by
+
+                                          D(q)=TM’(q),                  (3.6.13)
+
+so that it is negligible when Li are small.
+
+Dynamics with Joint Flexibility
+We have assumed that the coupling between between the actuators and the
+robot links is provided through rigid gear trains with gear ratios of ri. In
+actual practice, the coupling suffers from backlash and gear train flexibility
+or elasticity. Here we include the flexibility of the joints in the arm dynamic
+model, assuming for simplicity that ri=1.
+   This is not difficult to do. Indeed, suppose that the coupling flexibility is
+modeled as a stiff spring. Then the torque mentioned in Equations (3.6.1),
+(3.6.2) is nothing but
+                                                                        (3.6.14)
+
+with Bs=diag{bsi}, Ks=diag{ksi}, and bsi and ksi the damping and spring constants
+of the ith gear train. Thus the dynamical equations become
+
+
+
+                                                                        (3.6.15)
+
+
+                                                                        (3.6.16)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+156                                                                   Robot Dynamics
+
+   The structure of these equations is very different from the rigid joint arm
+described in Table 3.3.1. We discuss the control of robot manipulators with
+joint flexibility in Chapter 6 (see [Spong 1987]). The next example shows the
+problems that can occur in controlling flexible joint robots.
+
+EXAMPLE 3.6–1: DC Motor with Flexible Coupling Shaft
+    To focus on the effects of joint flexibility, let us examine a single armature-
+    controlled do motor coupled to a load through a shaft that has significant
+    flexibility. The electrical and mechanical subsystems are shown in Figure
+    3.6.1.
+       The motor electrical equation is
+
+                                                                                   (1)
+
+    with i(t), u(t) the armature current and voltage, respectively. The back emf
+    is             .
+
+    The interaction force exerted by the flexible shaft is given by
+    f=                       , where the shaft damping and spring constants
+    are denoted by b and k. Thus the mechanical equations of motion may be
+    written down as
+
+                                                                                   (2)
+
+
+                                                                                   (3)
+
+
+    with subscripts m and L referring, respectively, to motor parameters and
+    load parameters. The load inertia JL is assumed constant. The definitions
+    of the remaining symbols may be inferred from the foregoing text.
+       To place these equations into state-space form, define the state as
+
+                                                                                   (4)
+
+
+    with                                  the motor and load angular velocities. Then
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.6 Actuator Dynamics                                                            157
+
+
+
+
+Figure 3.6.1: DC motor with shaft compliance: (a) electrical subsystem; (b) mechanical
+subsystem.
+
+
+
+
+                                                                                   (5)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+158                                                           Robot Dynamics
+
+a. Rigid Coupling Shaft
+If there is no compliance in the coupling shaft, ωm=ωL=ω and the state equations
+reduce to (see the Problems)
+
+
+                                                                             (6)
+
+
+where x=[i ω]T, J=Jm+JL. Defining the output as the motor speed gives
+
+
+
+
+The transfer function is computed to be
+
+
+                                                                             (7)
+
+
+Using parameter values of Jm=JL=0.1 kg-m2,                           L=0.5 H,
+bm=0.2 N-m/rad/s, and R=5 Ω yields
+
+
+                                                                             (8)
+
+
+so that there are two real poles at s=-2.3, s=-8.7.
+Using Program TRESP in Appendix B to perform a simulation (see Section
+3.3) yields the step response for w shown in Figure 3.6.2.
+
+b. Very Flexible Coupling Shaft
+Coupling shaft parameters of k=2 N-m/rad and b=0.2 N-m/rad/s correspond
+to a very flexible shaft. Using these values, software like PC-MATLAB can be
+employed to obtain the two transfer functions
+
+
+
+                                                                             (9)
+
+
+
+
+                                                                           (10)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.6 Actuator Dynamics                                                              159
+
+
+
+
+Figure 3.6.2: Step response of dc motor with no shaft flexibility. Motor speed in rad/s.
+
+
+The shaft flexible mode has the poles s=-3.4 ± j5.6, and so has a damping
+ration of ζ=0.52 and a natural frequency of ω=6.55 rad/s. Note that the system
+is marginally stable, with a pole at s=0. It is BIBO stable due to pole-zero
+cancellation.
+
+Program TRESP yielded the step response shown in Figure 3.6.3. Several
+points are worthy of note. Initially, the motor speed ω m rises more
+quickly than in Figure 3.6.2, since the shaft flexibility means that only
+the rotor moment of inertia J m initially affects the speed. Then, as the
+load J L is coupled back to the motor through the shaft, the rate of
+increase of ω m slows. Note also that the load speed ω L exhibits a delay
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+160                                                                     Robot Dynamics
+
+
+
+
+                 Figure 3.6.3: Step response of motor with very flexible shaft.
+
+
+of approximately 0.1 s due to the flexibility in the shaft.
+   It is extremely interesting to note that the shaft flexibility has the effect of
+speeding up the slowest motor real pole [compare (8) and (9)], so that wL
+approaches its steady-state value more quickly than in the rigid-shaft case.
+This is due to the “whipping” action of the flexible shaft.
+   The shaft dynamics make the control of θL, which corresponds in a robot
+arm to the joint angle qi, very difficult without some sort of specially designed
+controller.
+
+                                                                                   䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+3.7 Summary                                                                  161
+
+
+3.7 Summary
+
+In this chapter we have laid the foundation for a study of robot control systems.
+Using Lagrangian mechanics in Section 3.2, we derived the dynamics of some
+robot arms that will be used for demonstration designs throughout the text.
+We provided expressions for the general robot arm dynamics for any serial-
+link arm.
+   In Section 3.3 we studied the properties of the robot dynamics such as
+boundedness, linearity in the parameters, and skew symmetry that are needed
+in controls design. Table 3.3.1 gives a summary of our findings. We used a
+Kronecker product approach that yields great insight into the relations between
+the terms in the robot equation.
+   A vital form in modern control systems design is the state-variable
+formulation. In Section 3.4 we derived several state-space forms of the arm
+dynamics, setting the stage for several design techniques to be provided in
+subsequent chapters. The state formulation is also useful in computer simulation
+of robot controllers, as we see in Section 3.3.
+   The dynamics in Cartesian form were given in Section 3.5. The dynamics
+of the actuators that drive the robot manipulator links were analyzed and
+included in Section 3.6.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+[Anderson 1989] Anderson, R.J., “Passive computed torque algorithms for robots,”
+    Proc. IEEE Conf. Decision Control, pp. 1638–1644, Dec. 1989.
+
+[Arimoto and Miyazaki 1984] Arimoto, S., and F.Miyazaki, “Stability and robustness
+    of PID feedback control for robot manipulators of sensory capability,” Proc.
+    First Int. Symp., pp. 783–799, MIT, Cambridge, MA, 1984.
+
+[Asada and Slotine 1986] Asada, H., and J.-J.E.Slotine, Robot Analysis and Control,
+    New York: Wiley, 1986.
+
+[Borisenko and Tarapov 1968] Borisenko, A.I., and I.E.Tarapov, Vector and Tensor
+    Analysis with Applications. Englewood Cliffs, NJ: Prentice Hall, 1968.
+
+[Brewer 1978] Brewer, J.W., “Kronecker products and matrix calculus in system
+    theory,” IEEE Trans. Circuits Syst., vol. CAS-25, no. 9, pp. 772–781, Sept.
+    1978.
+
+[Craig 1988] Craig, J.J., Adaptive Control of Mechanical Manipulators. Reading,
+    MA: Addison-Wesley, 1988.
+
+[de Silva 1989] de Silva, C.W., Control Sensors and Actuators. Englewood Cliffs, NJ:
+     Prentice Hall, 1989.
+
+[Gilbert and Ha 1984] Gilbert, E.G., and I.J.Ha, “An approach to nonlinear feedback
+     control with applications to robotics,” IEEE Trans. Syst. Man Cybern., vol.
+     SMC-14, no. 6, pp. 879–884, Nov./Dec. 1984.
+
+[Gu and Loh 1985] Gu, Y.-L., and N.K.Loh, “Dynamic model for industrial robots
+    based on a compact Lagrangian formulation,” Proc. IEEE Conf. Decision
+    Control, pp. 1497–1501, 1985.
+
+[Gu and Loh 1988] Gu, Y-L., and N.K.Loh, “Dynamic modeling and control by
+    utilizing an imaginary robot model,” IEEE J. Robot. Autom., vol. 4, no. 5, pp.
+    532–534, Oct. 1988.
+
+
+
+                                                                               163
+Copyright © 2004 by Marcel Dekker, Inc.
+164                                                                   REFERENCES
+
+[Hunt et al. 1983] Hunt, L.R., R.Su, and G.Meyer, “Global transformations of
+   nonlinear systems,” IEEE Trans. Autom. Control, vol. AC-28, no. 1, pp. 24–31,
+   Jan. 1983.
+
+[Johansson 1990] Johansson, R., “Quadratic optimization of motion coordination
+    and control,” IEEE Trans. Autom. Control, vol. 35, no. 11, pp. 1197–1208,
+    Nov. 1990.
+
+[Koditschek 1984] Koditschek, D., “Natural motion for robot arms,” Proc. IEEE
+    Conf. Decision Control, pp. 733–735, Dec. 1984.
+
+[Kreutz 1989] Kreutz, K., “On manipulator control by exact linearization,” IEEE
+    Trans. Autom. Control, vol. 34, no. 7, pp. 763–767, July 1989.
+
+[Lee et al. 1983] Lee, C.S.G., R.C.Gonzalez, and K.S.Fu, Tutorial on Robotics. New
+     York: IEEE Press, 1983.
+
+[Marion 1965] Marion, J.B., Classical Dynamics. New York: Academic Press, 1965.
+
+[Ortega and Spong 1988] Ortega, R., and Spong, M.W., “Adaptive motion control of
+    rigid robots: a tutorial,” Proc. IEEE Conf. Decision Control, pp. 1575–1584,
+    Dec. 1988.
+
+[Paul 1981] Paul, R.P., Robot Manipulators. Cambridge, MA: MIT Press, 1981.
+
+[Rao and Mitra 1971] Rao, C.R., and S.K.Mitra, Generalized Inverse of Matrices and
+    Its Applications. New York: Wiley, 1971.
+
+[Schilling 1990] Schilling, R.J., Fundamentals of Robotics. Englewood Cliffs, NJ:
+     Prentice Hall, 1990.
+
+[Slotine 1988] Slotine, J.-J.E., “Putting physics in control: the example of robotics,”
+     IEEE Control Syst. Mag., pp. 12–17, Dec. 1988.
+
+[Slotine and Li 1987] Slotine, J.-J.E., and W.Li, “Adaptive strategies in constrained
+     manipulation,” Proc. IEEE Conf. Robot. Autom., pp. 595–601, 1987.
+
+[Spong 1987] Spong, M.W., “Modeling and control of elastic joint robots,” J. Dyn.
+    Syst. Meas. Control, vol. 109, pp. 310–319, Dec. 1987.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                       165
+
+[Spong and Vidyasagar 1989] Spong, M.W., and M.Vidyasagar, Robot Dynamics
+    and Control. New York: Wiley, 1989.
+
+[Tarn et al. 1991] Tarn, T.-J., A.K.Bejczy, X.Yun, and Z.Li, “Effect of motor dynamics
+    on nonlinear feedback robot arm control,” IEEE Trans. Robot. Autom., vol. 7,
+    no. 1, pp. 114–122, Feb. 1991.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+166                                                                 REFERENCES
+
+
+PROBLEMS
+Section 3.2
+3.2–1        Dynamics. Find the dynamics for the spherical wrist in Example
+             A.2–4.
+
+3.2–2        Dynamics from Derived Equations. In Example 3.2.2 we found the
+             dynamics of the two-link planar elbow arm from first principles. In
+             this problem, begin with the expressions for the kinetic and potential
+             energy in that example and:
+             (a) Write K in the form (3.2.29) to determine M(q).
+             (b) Use (3.2.42) and (3.2.43) to determine V(q, ) and G(q).
+
+3.2–3        Dynamics from Derived Equations. Repeat Problem 3.2–2 for the
+             three-link arm in Example 3.2.3.
+
+Section 3.3
+3.3–1        Prove (3.3.22) by finding Vp1(q) and Vv1(q).
+
+3.3–2        Prove (3.3.23) by finding the matrices Vi(q).
+
+3.3–3        Prove (3.3.27).
+
+3.3–4        Coriolis Term. Find Vcor(q) and Vcen(q) in (3.3.40).
+
+3.3–5        Coriolis Term. Demonstrate that the Coriolis/centripetal term in the
+             dynamics equation may be expressed [Paul 1981] as V(q, )= vec{V(q,
+              )}where
+
+
+
+
+             with
+
+
+
+
+             and Ti defined in Appendix A. Compare this to Vm1, Vm2, Vm as
+             defined in Section 3.2.
+
+3.3–6        Bounds and Structure. Derive in detail the results in Example 3.3.1.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                    167
+
+3.3–7        Bounds and Structure. Derive the bounds and structural matrices for
+             the two-link polar arm in Example 3.2.1. Use:
+             (a) The 1—norm.
+             (b) The 2-norm .
+             (c) The ∞—norm.
+
+3.3–8        Bounds and Structure. Repeat Problem 3.3–7 for the three-link
+             cylindrical arm in Exercise 3.2.3.
+
+3.3–9        Bounds Using 2-Norm. Derive the bounds for the two-link planar
+             elbow arm in Example 3.3.1 using the 2—norm.
+Section 3.4
+3.4–1        Prove (3.4.15).
+
+3.4–2        Hamiltonian State Formulation. Demonstrate that (3.4.15) is
+             equivalent to
+
+
+
+
+             with the skew-symmetric matrix defined in Section 3.3.
+
+3.4–3        Hamiltonian State Formulation. Use (3.4.17) to derive the
+             Hamiltonian state-variable formulation for the two-link polar arm
+             in Example 3.2.1.
+
+3.4–4        Hamiltonian State Formulation. Repeat Problem 3.4–3 for the two-
+             link planar elbow arm in Example 3.2.2.
+Section 3.5
+3.5–1        Cartesian Dynamics. Complete Example 3.5.1, computing the
+             nonlinear terms in Cartesian coordinates.
+
+3.5–2        Cartesian Dynamics. Find the Cartesian dynamics of the two-link
+             polar arm in Example 3.2.1.
+
+3.5–3        Cartesian Dynamics. Find the Cartesian dynamics of the two-link
+             planar elbow arm in Example 3.2.2.
+Section 3.6
+3.6–1        Actuator Dynamics. Verify that the arm-plus-actuator dynamics (3.6.6)
+             has the properties listed in Table 3.3.1.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+168                                                                 REFERENCES
+
+3.6–2        Actuator Dynamics. Derive the third-order dynamics (3.6.12),
+             providing explicit expressions for   Verify that they reduce to
+             (3.6.5) when Li is negligible.
+
+3.6–3        Flexible Coupling Shaft. Verify the state equation for the rigid-shaft
+             case in Example 3.6.1.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

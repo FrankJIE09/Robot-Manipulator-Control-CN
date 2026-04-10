@@ -1,0 +1,164 @@
+{
+  "per_chapter": [
+    {
+      "id": "00",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-00.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/00-前言与系列介绍.tex",
+      "source_nonempty_lines": 411,
+      "tex_nonempty_lines": 123,
+      "source_chars": 28155,
+      "tex_chars": 5326,
+      "tex_over_source_char_ratio": 0.1892,
+      "tex_section_cmds": 3,
+      "flag": "LOW_RATIO_REVIEW"
+    },
+    {
+      "id": "01",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-01.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/01-第一章-商用机器人操作器.tex",
+      "source_nonempty_lines": 579,
+      "tex_nonempty_lines": 105,
+      "source_chars": 38979,
+      "tex_chars": 12382,
+      "tex_over_source_char_ratio": 0.3177,
+      "tex_section_cmds": 15,
+      "flag": "LOW_RATIO_REVIEW"
+    },
+    {
+      "id": "02",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-02.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/02-第二章-控制理论导论.tex",
+      "source_nonempty_lines": 1781,
+      "tex_nonempty_lines": 1005,
+      "source_chars": 108082,
+      "tex_chars": 38422,
+      "tex_over_source_char_ratio": 0.3555,
+      "tex_section_cmds": 40,
+      "flag": "LOW_RATIO_REVIEW"
+    },
+    {
+      "id": "03",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-03.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/03-第三章-机器人动力学.tex",
+      "source_nonempty_lines": 1359,
+      "tex_nonempty_lines": 1322,
+      "source_chars": 86157,
+      "tex_chars": 57847,
+      "tex_over_source_char_ratio": 0.6714,
+      "tex_section_cmds": 25
+    },
+    {
+      "id": "04",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-04.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/04-第四章-计算力矩控制.tex",
+      "source_nonempty_lines": 2023,
+      "tex_nonempty_lines": 967,
+      "source_chars": 134143,
+      "tex_chars": 45259,
+      "tex_over_source_char_ratio": 0.3374,
+      "tex_section_cmds": 26,
+      "flag": "LOW_RATIO_REVIEW"
+    },
+    {
+      "id": "05",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-05.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/05-第五章-鲁棒控制.tex",
+      "source_nonempty_lines": 1303,
+      "tex_nonempty_lines": 995,
+      "source_chars": 82891,
+      "tex_chars": 44579,
+      "tex_over_source_char_ratio": 0.5378,
+      "tex_section_cmds": 14
+    },
+    {
+      "id": "06",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-06.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/06-第六章-自适应控制.tex",
+      "source_nonempty_lines": 1355,
+      "tex_nonempty_lines": 1064,
+      "source_chars": 89793,
+      "tex_chars": 51025,
+      "tex_over_source_char_ratio": 0.5683,
+      "tex_section_cmds": 8
+    },
+    {
+      "id": "07",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-07.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/07-第七章-先进控制技术.tex",
+      "source_nonempty_lines": 1102,
+      "tex_nonempty_lines": 959,
+      "source_chars": 72691,
+      "tex_chars": 46312,
+      "tex_over_source_char_ratio": 0.6371,
+      "tex_section_cmds": 0
+    },
+    {
+      "id": "08",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-08.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/08-第八章-神经网络控制.tex",
+      "source_nonempty_lines": 916,
+      "tex_nonempty_lines": 545,
+      "source_chars": 59975,
+      "tex_chars": 40114,
+      "tex_over_source_char_ratio": 0.6688,
+      "tex_section_cmds": 13
+    },
+    {
+      "id": "09",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-09.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/09-第九章-力控制.tex",
+      "source_nonempty_lines": 1321,
+      "tex_nonempty_lines": 826,
+      "source_chars": 87763,
+      "tex_chars": 37066,
+      "tex_over_source_char_ratio": 0.4223,
+      "tex_section_cmds": 16
+    },
+    {
+      "id": "10",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-10.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/10-第十章-控制实现与软件.tex",
+      "source_nonempty_lines": 956,
+      "tex_nonempty_lines": 457,
+      "source_chars": 63344,
+      "tex_chars": 30187,
+      "tex_over_source_char_ratio": 0.4766,
+      "tex_section_cmds": 22
+    },
+    {
+      "id": "A",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-A.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/A-附录A-运动学与雅可比矩阵.tex",
+      "source_nonempty_lines": 833,
+      "tex_nonempty_lines": 273,
+      "source_chars": 55252,
+      "tex_chars": 11332,
+      "tex_over_source_char_ratio": 0.2051,
+      "tex_section_cmds": 11,
+      "flag": "LOW_RATIO_REVIEW"
+    },
+    {
+      "id": "B",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-B.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/B-附录B-仿真软件.tex",
+      "source_nonempty_lines": 68,
+      "tex_nonempty_lines": 32,
+      "source_chars": 4298,
+      "tex_chars": 1887,
+      "tex_over_source_char_ratio": 0.439,
+      "tex_section_cmds": 0
+    },
+    {
+      "id": "C",
+      "source": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/source/chap-C.txt",
+      "tex": "/home/lenovo/Frank/doc/Robot_Manipulator_Control/Robot_Manipulator_Control_zh_latex/chapters/C-附录C-常见机器人动力学.tex",
+      "source_nonempty_lines": 60,
+      "tex_nonempty_lines": 120,
+      "source_chars": 3134,
+      "tex_chars": 5356,
+      "tex_over_source_char_ratio": 1.709,
+      "tex_section_cmds": 0
+    }
+  ],
+  "pass": false
+}

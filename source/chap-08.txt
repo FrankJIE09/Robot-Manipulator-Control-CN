@@ -1,0 +1,1360 @@
+Chapter 8
+
+Neural Network Control
+of Robots
+A framework is given for controller design using neural networks. These
+structures possess a universal approximation property that allows them to be
+used in feedback control of unknown systems without requirements for linearity
+in the system parameters or finding a regression matrix. Feedback control
+topologies and weight tuning algorithms are given here that guarantee closed-
+loop stability and bounded weights.
+
+
+8.1        Introduction
+
+In recent years, there has been a great deal of effort to design feedback control
+systems that mimic the functions of living biological systems [White and
+Sofge 1992], [Miller et al. 1991]. There has been great interest recently in
+‘universal model-free controllers’ that do not need a mathematical model of
+the controlled plant, but mimic the functions of biological processes to learn
+about the systems they are controlling on-line, so that performance improves
+automatically. Techniques include fuzzy logic control, which mimics linguistic
+and reasoning functions, and artificial neural networks, which are based on
+biological neuronal structures of interconnected nodes. Neural networks (NNs)
+have achieved great success in classification, pattern recognition, and other
+open-loop applications in digital signal processing and elsewhere. Rigorous
+analyses have shown how to select NN topologies and weights, for instance,
+to discriminate between specified exemplar patterns. By now, the theory and
+applications of NN in open-loop applications are well understood, so that
+
+                                                                             431
+Copyright © 2004 by Marcel Dekker, Inc.
+432                                        Neural Network Control of Robots
+
+NN have become an important tool in the repertoire of the signal processor
+and computer scientist.
+   There is a large literature on NN for feedback control of unknown plants.
+Until the 1990’s, design and analysis techniques were ad hoc, with no repeatable
+design algorithms or proofs of stability and guaranteed performance. In spite
+of this, simulation results appearing in the literature showed good performance.
+Most of the early approaches used standard backpropagation weight tuning
+[Werbos 1992] since rigorous derivations of tuning algorithms suitable for
+closed-loop control purposes were not available. Many NN design techniques
+mimicked adaptive control approaches, where rigorous analysis results were
+available [Åström and Wittenmark 1989], [Landau 1979], [Goodwin et al.
+1984], proposing NN feedback control topologies such as indirect
+identification-based control, inverse dynamics control, series-parallel
+techniques, etc.
+   In keeping with the philosophy of those working in control system theory
+since Maxwell, Lyapunov, A.N.Whitehead, von Bertalanffy, and others, to
+address such issues it is necessary to begin with the knowledge available
+about the system being controlled. Narendra [Narendra 1991], [Narendra
+and Parthasarathy 1991] and others [Miller et al. 1991], [White and Sofge
+1992], [Werbos 1992] pioneered rigorous NN controls applications by
+studying the dynamical behavior of NN in closed-loop systems, including
+computation of the gradients needed for backprop tuning. Other groups
+providing rigorous analysis and design techniques for closed-loop NN
+controllers included [Sanner and Slotine 1991] who showed how to use radial
+basis function NN in feedback control, [Chen and Khalil 1992], [Chen and
+Liu 1994] who provided NN tuning algorithms based on dead-zone methods,
+[Polycarpou and Ioannou 1991], [Polycarpou 1996] who used projection
+methods, [Lewis et al. 1993], [Lewis et al. 1995] who used an e-mod approach,
+[Sadegh 1993] who provided NN controllers for discrete-time systems, and
+[Rovithakis and Christodoulou 1994] who used dynamic NN for feedback
+control.
+   In this chapter is given an approach to the design and analysis of neural
+network controllers based on several PhD dissertations and a body of published
+work, including [Lewis et al. 1999], [Kim and Lewis 1998]. The control
+structures discussed here are multiloop controllers with NN in some of the
+loops and an outer tracking unity-gain PD loop. There are repeatable design
+algorithms and guarantees of system performance including both small tracking
+errors and bounded NN weights. It is shown that as uncertainty about the
+controlled system increases or performance requirements increase, the NN
+controllers require more and more structure. An exposition of this material in
+greater depth appears in [Lewis 1999], which also shows relationships with
+Fuzzy Logic Systems.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.2 Background in Neural Networks                                             433
+
+
+8.2 Background in Neural Networks
+
+In this section is provided the background in neural network structures required
+for feedback control. For more details see [Haykin 1994], [Lewis et al. 1999],
+[Lewis and Kim 1998]. Two key features that make NN useful for feedback
+control are their universal approximation property and their learning
+capability, which arises due to the fact that their weights are tunable parameters
+that can be updated to improve controller performance. The universal
+approximation property is the main feature that makes non-linear network
+structures more suitable for robot control than adaptive robot controllers,
+which have generally relied upon the determination of a regression matrix,
+which in turn requires linearity in the tunable parameters (LIP).
+
+Multilayer Neural Networks
+A multilayer neural network is shown in Figure 8.2.1. This NN has two
+layers of adjustable weights, and is called here a ‘two-layer’ net. This NN
+has no internal feedback connections and so is termed feedforward, and no
+internal dynamics and so is said to be static. The NN output y is a vector with
+m components that are determined in terms of the n components of the input
+vector x by the recall equation
+
+
+                                                                          (8.2.1)
+
+
+where (·) are the activation functions and L is the number of hidden-layer
+neurons. The first-layer interconnections weights are denoted vjk and the second-
+layer interconnection weights by wij. The threshold offsets are denoted by vj,
+wi.
+   Many different activation functions (·) are in common use. For feed-back
+control using multilayer NN it is required that (·) be smooth enough so that
+at least its first derivative exists. Suitable choices include the sigmoid
+
+
+                                                                          (8.2.2)
+
+
+the hyperbolic tangent
+
+
+                                                                          (8.2.3)
+
+
+and other logistic-curve-type functions, as well as the gaussian and an assortment
+of other functions.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+434                                                Neural Network Control of Robots
+
+
+
+
+                      Figure 8.2.1: Two-layer feedforward neural network.
+
+
+
+   By collecting all the NN weights vjk, wij into matrices of weights VT, WT,
+the NN recall equation may be written in terms of vectors as
+
+                                                                            (8.2.4)
+
+The thresholds are included as the first columns of the weight matrices WT,
+VT; to accommodate this, the vectors x and  (·) need to be augmented by
+placing a ‘1’ as their first element (e.g. x=[1 x1 x2…xn]T). In this equation, to
+represent (8.2.1) one has sufficient generality if  (·) is taken as a diagonal
+function from ᑬL to ᑬL that is  (z)=diag{ (zj)} for a vector z=[z1 z2 …zL]T ∈ ᑬL.
+   Note that the recall equation is nonlinear in the first-layer weights and
+thresholds V.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.2 Background in Neural Networks                                             435
+
+Universal Function Approximation Property. NN satisfy many important
+properties. A main one of concern for feedback control purposes is the universal
+function approximation property [Hornik and Stinchombe 1989]. Let f(x) be
+a general smooth function from ᑬn to ᑬm. Then, it can be shown that, as long
+as x is restricted to a compact set S of ᑬn, there exist weights and thresholds
+such that one has
+
+
+                                                                          (8.2.5)
+
+
+for some number of hidden-layer neurons L. This holds for a large class of
+activation functions, including those just mentioned. The value  is called the
+NN functional approximation error, and it generally decreases as the net size
+L increases. In fact, for any choice of a positive number , one can find a
+feedforward NN such that
+
+
+                                                                          (8.2.6)
+
+
+for all x in S. The selection of the net size L for a prescribed accuracy  is an
+open question for general unstructured fully-connected NN. This problem
+can be solved for CMAC, FL nets, and other structured nonlinear nets as
+subsequently described.
+   The ideal NN weights in matrices W, V that are needed to best approximate
+a given nonlinear function f(x) are difficult to determine. In fact, they may not
+even be unique. However, all one needs to know for controls purposes is that,
+for a specified value of  some ideal approximating NN weights exist. Then,
+an estimate of f(x) can be given by
+
+
+                                                                          (8.2.7)
+
+
+where W, V are estimates of the ideal NN weights that are provided by some
+on-line weight tuning algorithms subsequently to be detailed. Note that all
+‘hat’ quantities are known, since they may be computed using measurable
+signals and current NN weight estimates.
+   The assumption that there exist ideal weights such that the approximation
+property holds is very much like various similar assumptions in adaptive
+control [Åström and Wittenmark 1989], [Landau 1979], including Erzberger’s
+assumptions and linearity in the parameters. The very important difference is
+that in the NN case, the universal approximation property always holds,
+while in adaptive control such assumptions often do not hold in practice, and
+so they imply restrictions on the form of the systems that can be controlled.
+Overcoming the NLIP Problem. Multilayer NN are nonlinear in the weights
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+436                                       Neural Network Control of Robots
+
+V and so weight tuning algorithms that yield guaranteed stability and bounded
+weights in closed-loop feedback systems have been difficult to discover until a
+few years ago. The NLIP problem is easily overcome if a correct and rigorous
+approach is taken. One approach is the following appropriate use of the
+Taylor series [Lewis et al. 1996].
+   Define the functional estimation error
+
+                                                                        (8.2.8)
+
+the weight estimation errors
+
+                                                                        (8.2.9)
+
+and the hidden-layer output error
+
+                                                                      (8.2.10)
+
+    For any z one may write the Taylor series
+
+                                                                      (8.2.11)
+
+where ’ is the jacobian and the last term means terms of order z2.Therefore,
+
+                                                                      (8.2.12)
+
+This key equation allows one to write the functional estimation error as
+
+
+
+
+                                                                      (8.2.13)
+
+The first term has W multiplied by a known quantity (in square braces), and
+the second term has V multipled by a known quantity. When used subsequently
+in the closed-loop error dynamics, this form allows one to derive tuning laws
+for V and W that guarantee closed-loop stability.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.2 Background in Neural Networks                                            437
+
+Linear-in-the-parameter neural nets
+If the first-layer weights and thresholds V in (8.2.4) are fixed and only the
+second-layer weights and thresholds W are tuned, then the NN has only one
+layer of tunable weights. One may then define the fixed function
+so that such a 1-layer NN has the recall equation
+
+                                                                        (8.2.14)
+
+where                                       and L is the number of hidden-layer
+neurons. This NN is linear in the tunable parameters W, so that it is far easier
+to tune. In fact, standard adaptive control proofs can be used to derive suitable
+tuning algorithms.
+   Though LIP, these NN still offer an enormous advantage over standard
+adaptive control approaches that require the determination of a regression
+matrix since they satisfy a universal approximation property if the functions
+(.) are correctly chosen. Note that adaptive controllers are linear in the
+system parameters, while 1-layer NN are linear in the NN weights. An
+advantage of 1-layer NN over 2-layer NN is that firm results exist for the
+former on the selection of the number of hidden layer neurons L for a specified
+approximation accuracy. A disadvantage of LIP networks is that Barron [Barron
+1993] has shown a lower bound on the approximation accuracy.
+
+Functional-Link Basis Neural Networks. More generality is gained if (·) is
+not diagonal, but (.) is allowed to be a general function from ᑬn to ᑬL. This
+is called a functional-link neural net (FLNN) [Sadegh 1993]. For LIP NN, the
+functional approximation property does not generally hold. However, a 1-
+layer NN can still approximate functions as long as the activation functions
+(.) are selected as a basis, which must satisfy the following two requirements
+on a compact simply-connected set of S of ᑬn:
+
+1. A constant function on S can be expressed as (8.2.14) for a finite number
+   L of hidden-layer neurons.
+2. The functional range of (8.2.14) is dense in the space of continuous functions
+   from S to ᑬm for countable L.
+
+If (.) provides a basis, then a smooth function f(x) from ᑬn to ᑬm can be
+approximated on a compact set S of ᑬn, by
+
+                                                                        (8.2.15)
+
+for some ideal weights and thresholds W and some number of hidden layer
+neurons L. In fact, for any choice of a positive number , one can find a
+feedforward NN such that            for all x in S.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+438                                          Neural Network Control of Robots
+
+    The approximation for f(x) is given by
+
+
+                                                                      (8.2.16)
+
+
+where W are the NN weight and threshold estimates given by the tuning
+algorithm. For LIP NN, the functional estimation error is given by
+
+
+
+
+                                                                      (8.2.17)
+
+which, when used subsequently in the error dynamics, directly yields tuning
+algorithms for W that guarantee closed-loop stability.
+   Barron [Barron 1993] has shown that for all LIP approximators there is a
+fundamental lower bound, so that  is bounded below by terms on the order of
+1/L2/n. Thus, as the number of NN inputs n increases, increasing L to improve
+the approximation accuracy becomes less effective. As shown subsequently,
+this is not a major limitation on adaptive controllers designed using 1-layer
+NN. This lower bound problem does not occur in the NLIP multilayer nonlinear
+nets.
+   A special FLNN is now discussed. We often use (·) in place of (.), with
+the understanding that, for LIP nets, this activation function vector is not
+diagonal, but is a general function from ᑬL to ᑬL.
+
+Gaussian or Radial Basis Function (RBF) Networks. The selection of a basis
+set of activation functions is considerably simplified in various sorts of
+structured nonlinear networks, including radial basis function, CMAC, and
+fuzzy logic nets. It will be shown here that the key to the design of such
+structured nonlinear nets lies in a more general set of NN thresholds than
+allowed in the standard equation (8.2.1), and in their appropriate selection.
+   A NN activation function often used is the gaussian or radial basis function
+(RBF) [Sanner and Slotine 1991] given when x is a scalar as
+
+
+                                                                      (8.2.18)
+
+
+where x is the mean and p the variance. RBF NN can be written as (8.2.4),
+but have an advantage over the usual sigmoid NN in that the n-dimensional
+gaussian function is well understood from probability theory, Kalman filtering,
+and elsewhere, so that n-dimensional RBF are easy to conceptualize.
+  The j-th activation function can be written as
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.2 Background in Neural Networks                                               439
+
+                                                                          (8.2.19)
+
+with              . Define the vector of activation functions as (x)⬅[1(x)
+2(x)…L(x)]T. If the covariance matrix is diagonal so that Pj=diag{pjk}, then
+(8.2.19) becomes separable and may be decomposed into components as
+
+
+                                                                          (8.2.20)
+
+
+
+
+       Figure 8.2.2:2-dimensional separable gaussian functions for an RBF NN.
+
+
+where            are the k-th components of           . Thus, the n-dimensional
+activation functions are the product of n scalar functions. Note that this equation
+is of the form of the activation functions in (8.2.1), but with more general
+thresholds, as a threshold is required for each different component of x at
+each hidden layer neuron j; that is, the threshold at each hidden-layer neuron
+in Figure 8.2.1 is a vector. The RBF variances pjk and offsets xjk are usually
+selected in designing the RBF NN and left fixed; only the output-layer weights
+W T are generally tuned. Therefore, the RBF NN is a special sort of FLNN
+(8.2.14) (where (x)=(x)).
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+440                                         Neural Network Control of Robots
+
+    Figure 8.2.2 shows separable gaussians for the case x 僆ᑬ 2. In this figure,
+all the variances pjk are identical, and the mean values xjk are chosen in a
+special way that spaces the activation functions at the node points of a 2-D
+grid. To form an RBF NN that approximates functions over the region {-
+1<x11, -1<x21} one has here selected L=5×5=25 hidden-layer neurons,
+corresponding to 5 cells along x1 and 5 along x2. Nine of these neurons have
+2-D gaussian activation functions, while those along the boundary require the
+illustrated ‘one-sided’ activation functions.
+
+
+8.3        Tracking Control Using Static Neural
+           Networks
+In this section is discussed feedback tracking control design using nonlinear
+nets and assuming full state-variable feedback. For more details see [Lewis et
+al. 1999] and other listed references. If full state feedback is available, then a
+static feedforward NN suffices for control. A control topology and net tuning
+algorithms are provided here that guarantee closed-loop stability and bounded
+weights. The techniques to be discussed apply for general nonlinear nets
+including both neural networks and fuzzy logic systems [Wang 1997], [Lewis
+et al. 1997], so that the abbreviation NN might henceforth be construed as
+meaning ‘nonlinear network’. The resulting multiloop control topology has
+an outer PD tracking loop and an inner NN feedback linearization or action
+generating loop. It is found that backprop tuning does not generally suffice,
+but modified tuning algorithms are needed for guaranteed closed-loop
+performance.
+    Many industrial mechanical systems, as well as automobiles, aircraft, and
+spacecraft, have dynamics in the Lagrangian form, which are exemplified by
+the class of rigid robot systems. Therefore, the Lagrangian robot dynamics
+will be considered [Lewis et al. 1993], [Lewis et al. 1996]. The NN control
+techniques presented may also be applied to other unknown systems including
+certain important classes of nonlinear systems [Lewis et al. 1999].
+
+
+Robot Arm Dynamics and Error System
+The dynamics of rigid Lagrangian systems, including robot arms, have some
+important physical, structural, and passivity properties [Craig 1988], [Lewis
+et al. 1993], [Slotine 1988], [Spong and Vidyasagar 1989] that make it very
+natural to use NN in their control. These properties should be taken into
+account in the design of any controller—in fact, they provide the foundation
+for rigorous design algorithms for NN controllers.
+   The dynamics of an n-link rigid (i.e. no flexible links or high-frequency
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.3 Tracking Control Using Static Neural Networks                             441
+
+joint/motor dynamics) robot manipulator may be expressed in the Lagrange
+form
+
+                                                                           (8.3.1)
+
+with q(t)僆ᑬn the joint variable vector, whose entries are the robot arm joint
+angles or link extensions. M(q) is the inertia matrix, Vm(q,q) the coriolis/
+centripetal matrix, G(q) the gravity vector, and F(q) the friction. Bounded
+unknown disturbances (including e.g. unstructured unmodelled dynamics) are
+denoted by d , and the control input torque is  (t) The robot dynamics have
+the following standard properties:
+
+Property 1: M(q) is a positive definite symmetric matrix bounded by
+m1I<M(q)<m2I, with m1, m2 positive constants.
+
+Property 2: The norm of the matrix Vm(q, q) is bounded by vb(q)||q||, for some
+function vb(q).
+
+Property 3: The matrix M–2Vm is skew-symmetric. This is equivalent to the
+fact that the internal forces do no work.
+
+Property 4: The unknown disturbance satisfies                  with bD a positive
+constant.
+
+Given a desired arm trajectory qd(t)僆ᑬn the tracking error is
+
+                                                                           (8.3.2)
+
+and the filtered tracking error is
+
+                                                                           (8.3.3)
+
+where is a symmetric positive definite design parameter matrix, usually
+selected diagonal. If a controller is found such that r(t) is bounded, then e(t) is
+also bounded; in fact                                            , with
+the minimum singular value of .
+   Differentiating r(t) and using (8.3.1), the arm dynamics may be written in
+terms of the filtered tracking error as
+
+                                                                           (8.3.4)
+
+where the nonlinear robot function is
+
+                                                                           (8.3.5)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+442                                        Neural Network Control of Robots
+
+    The vector x required to compute f(x) can be defined, for instance, as
+
+                                                                       (8.3.6)
+
+which can be measured. Function f(x) contains potentially unknown robot
+parameters including pay load mass and complex forms of friction.
+   A suitable control input for trajectory following is given by the computed-
+torque-like control
+
+                                                                       (8.3.7)
+
+with                   a gain matrix, generally chosen diagonal, and f(x) an
+estimate of the robot function f(x) that is provided by some means. The
+robustifying signal v(t) is needed to compensate for unmodelled unstructured
+disturbances. Using this control, the closed-loop error dynamics is
+
+                                                                       (8.3.8)
+
+   In computing the control signal, the estimate f can be provided by several
+techniques, including adaptive control or neural or fuzzy networks. The
+auxiliary control signal v(t) can be selected by several techniques, including
+sliding-mode methods and others under the general aegis of robust control
+methods.
+   The desired trajectory is assumed bounded so that
+
+
+
+                                                                       (8.3.9)
+
+
+with qB a known scalar bound. It is easy to show that for each time t, x(t) is
+bounded by
+
+                                                                      (8.3.10)
+
+for computable positive constants c0, c1, c2.
+
+Adaptive Control
+Standard adaptive control techniques in robotics [Craig 1988], [Slotine 1988],
+[Spong and Vidyasagar 1989], [Lewis et al. 1993] use the assumption that the
+nonlinear robot function is linear in the tunable parameters so that
+
+                                                                      (8.3.11)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.3 Tracking Control Using Static Neural Networks                             443
+
+where p is a vector of unknown parameters and         (x) is a known regression
+matrix. The control is selected as
+
+                                                                         (8.3.12)
+
+and tuning algorithms are determined for the parameter estimates P. This is
+facilitated by the LIP assumption. If the approximation error  is non-zero,
+then the tuning algorithm must be modified in order to guarantee bounded
+parameter estimates. Various robustifying techniques may be used for this
+including the  -mod [Ioannou and Kokotovic 1984], the e-modification
+[Narendra and Annaswamy 1987], or the dead-zone techniques [Kreisselmeier
+and Anderson 1986]. There are adaptive control techniques by now that do
+not require LIP or the determination of a regression matrix [Colbaugh and
+Seraji 1994]. It is interesting to compare the complexity of these to the NN
+controllers to be discussed herein.
+
+
+Neural Net Feedback Tracking Controller
+A NN will be used in the control (t) in (8.3.7) to provide the estimate f for the
+unknown robot function f(x). The NN approximation property assures us that
+there always exists a NN that can accomplish this within a given accuracy
+N . For 2-layer NLIP NN the approximation is
+
+                                                                         (8.3.13)
+
+while for 1-layer LIP NN it is
+
+                                                                         (8.3.14)
+
+with (.) selected as a basis.
+   The structure of the NN controller appears in Figure 8.3.1, where e⬅
+                           . The neural network that provides the estimate for
+f(x) appears in an inner control loop, and there is an outer tracking loop
+provided by the PD term Kvr. In control theory terminology, the inner loop is
+a feedback linearization controller [Slotine and Li 1991], while in computer
+science terms it is the action generating loop [Werbos 1992], [Miller et al.
+1991], [White and Sofge 1992]. This multiloop intelligent control structure is
+derived naturally from robot control notions, and is not ad hoc. As such, it is
+immune to philosophical deliberations concerning suitable NN control
+topologies including the common discussions on feed-forward vs. feedback,
+direct vs. indirect, and so on. It is to be noted that the static feedforward NN
+in this diagram is turned into a dynamic NN by closing a feedback loop
+around it (c.f. [Narendra 1991]).
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+444                                         Neural Network Control of Robots
+
+
+
+
+Figure 8.3.1: Neural net robot controller, showing nonlinear neural network loop
+and outer tracking loop.
+
+
+
+Advantage of NN over LIP Adaptive Control. Each robotic system has its
+own regression matrix, so that a different (x) must be determined for each
+system. This regression matrix is often complicated and determining it can be
+time consuming. One notes that the regression matrix effectively provides a
+basis for function approximation for a specific given system. On the other
+hand, the universal approximation property of non-linear networks shows
+that NN provide a basis for all sufficiently smooth systems. Therefore, NN
+can be used to approximate smooth f(x) for all rigid robotic systems, effectively
+allowing the design of a single tunable controller for a class of systems. No
+regression matrix need be determined, for the same NN activation functions
+suffice for the whole class of plants.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.4 Tuning Algorithms for Linear-in-the-Parameters NN                         445
+
+   Even the 1-layer NN, which is LIP, has this advantage. Note that the 1-layer
+NN is linear not in the system parameters, but in the NN weights. Even the LIP
+NN has a universal approximation property so that no regression matrix is
+needed.
+
+Initial Tracking Errors and Initial NN Weights. It is now required to determine
+how to tune the NN weights to yield guaranteed closed-loop stability. Several
+cases are considered for NN controller design in this section. All of them need
+the following construction.
+   Since the NN approximation property holds on a compact set, one must
+define an allowable initial condition set as follows. Let the NN approximation
+property hold for the function f(x) given in (8.3.5) with a given accuracy N in
+(8.2.6) for all x inside the ball of radius bx>qB. Define the set of allowable
+initial tracking errors as
+
+                                                                         (8.3.15)
+
+    Note that the approximation accuracy of the NN determines size of Sr. For
+a larger NN (i.e. more hidden-layer units), N is small for a larger radius bx.
+Thus, the allowed initial condition set Sr is larger. On the other hand, a more
+active desired trajectory (e.g. containing higher frequency components) results
+in a larger acceleration qd(t), which yields a larger bound qB, thereby decreasing
+Sr. It is important to note the dependence of Sr on the PD design ratio —both
+c0 and c2 depend on .
+    A key feature of our the Initial Condition Requirement is its independence
+of the NN initial weights. This is in stark contrast to other techniques in the
+literature where the proofs of stability depend on selecting some initial
+stabilizing NN weights, which is very difficult to do.
+
+
+8.4        Tuning Algorithms for Linear-in-the-
+           Parameters NN
+
+Suppose now that a LIP FLNN is used to approximate the nonlinear robot
+function (8.3.5) according to (8.2.15) with              on a compact set, the
+ideal approximating weights W constant, and (x) selected as a basis. An
+estimate of f(x) is given by (8.3.14). Then the control law (8.3.7) becomes
+
+                                                                          (8.4.1)
+
+and the closed-loop filtered error dynamics (8.3.8) are
+
+                                                                          (8.4.2)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+446                                         Neural Network Control of Robots
+
+The next theorem derives the tuning law for a NN controller that is augmented
+by an e-mod term as in [Narendra and Annaswamy 1987].
+   It must now be assumed that the ideal weights W are constant and bounded
+so that
+
+                                                                          (8.4.3)
+
+with the bound WB known. In [Polycarpou 1996] it is shown how to use
+standard adaptive robust techniques to avoid the assumption that the bound
+WB is known.
+
+THEOREM 8.4–1: (NN Weight Tuning Algorithm).
+   Let the desired trajectory qd(t) be bounded by qB and the initial tracking
+error r(0) be in Sr. Let the NN reconstruction error bound N and the disturbance
+bound dB be constants. Assume the ideal NN target weights are bounded by
+WB as in (8.4.3). Let the control input for the robot arm be given by (8.4–1)
+with v(t)=0 and gain
+
+
+                                                                              (1)
+
+
+Let the weight tuning be
+
+                                                                              (2)
+
+with F=FT>0 and >0 a small design parameter. Then the filtered tracking
+error r(t) and the NN weight estimates W(t) are UUB with practical bounds
+given respectively by the right-hand sides of (8), (9). Moreover, the tracking
+error may be made as small as desired by increasing the tracking gain Kv.
+
+Proof:
+   Let the NN approximation property (8.2.15) hold for the function f(x)
+given in (8.3.5) with a given accuracy N for all x in the compact set
+                     with bx>qB. Let r(0)僆Sr. Then the approximation
+property holds at time 0.
+  Define the Lyapunov function candidate
+
+
+                                                                              (3)
+
+
+Differentiating yields
+
+                                                                              (4)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.4 Tuning Algorithms for Linear-in-the-Parameters NN                       447
+
+whence substitution from (8.4.2) yields
+
+
+                                                                             (5)
+
+
+Then, using tuning rule (2) yields
+
+                                                                             (6)
+
+Since
+
+
+
+
+there results
+
+
+
+                                                                             (7)
+
+which is negative as long as the term in braces is positive. Completing the
+square yields
+
+
+
+
+which is guaranteed positive as long as
+
+
+                                                                             (8)
+
+or
+
+                                                                             (9)
+
+Thus, L is negative outside a compact set. Selecting the gain according to (1)
+ensures that the compact set defined by ||r||br is contained in Sr, so that the
+approximation property holds throughout. This demonstrates the UUB of
+both ||r|| and ||W||F .                                                      䊏
+   This proof is similar to [Narendra and Annaswamy 1987] but is modified
+to reflect the fact that the NN approximates only on a compact set. In this
+result one now requires the bound WB on the ideal weights W, which appears
+in the PD gain condition (1). Now, bounds are discovered both for the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+448                                         Neural Network Control of Robots
+
+tracking error r(t) and the weights W(t). Note that no persistence of exictation
+condition is needed to establish the bounds on W with the modified weight
+tuning algorithm.
+   The NN weight tuning algorithm (2) consists of a backpropagation through
+time term plus a new second term. The importance of the , term, called the
+e-modification, is that it adds a quadratric term in         in (7), so that it is
+possible to establish that L is negative outside a compact set in the
+              plane [Narendra and Annaswamy 1987]. The e-mod term
+makes the tuning law robust to unmodelled dynamics so that the PE condition
+is not needed. In [Polycarpou and Ioannou 1991] a projection algorithm is
+used to keep the NN weights bounded. In [Chen and Khalil 1992], [Chen
+and Liu 1994] a deadzone technique is employed.
+
+
+
+
+Weight Initialization and On-Line Tuning. In the NN control schemes derived
+in this paper there is no preliminary off-line learning phase. The weights are
+simply initialized at zero, for then Figure 8.3.1 shows that the controller is
+just a PD controller. Standard results in the robotics literature [Dawson et al.
+1990] show that a PD controller gives bounded errors if Kv is large enough.
+Therefore, the closed-loop system remains stable until the NN begins to learn.
+The weights are tuned on-line in real-time as the system tracks the desired
+trajectory. As the NN learns f(x), the tracking performance improves. This is
+a significant improvement over other NN control techniques where one must
+find some initial stabilizing weights, generally an impossible feat for complex
+nonlinear systems.
+
+
+
+
+Bounds on the Tracking Error and NN Weight Estimation Errors. The right-
+hand side of (8) can be taken as a practical bound on the tracking error in
+the sense that r(t) will never stray far above it. It is important to note from
+this equation that the tracking error increases with the NN reconstruction
+error N and robot disturbances dB, yet arbitrarily small tracking errors
+may be achieved by selecting large gains Kv. This is in spite of Barron’s
+lower bound on  .
+   Note that the NN weights W are not guaranteed to approach the ideal
+unknown weights W that give good approximation of f(x). However, this is of
+no concern as long as W–W is bounded, as the proof guarantees. This
+guarantees bounded control inputs so that the tracking objective can be
+achieved.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.5 Tuning Algorithms for Nonlinear-In-The-Parameters NN                      449
+
+
+8.5 Tuning Algorithms for Nonlinear-in-the-Parameters NN
+
+Now suppose that a 2-layer NN is used to approximate the robot function
+according to (8.2.5) with || ||  on a compact set, and the ideal approximating
+weights W, V constant. Then the control law (8.3.7) becomes
+
+                                                                          (8.5.1)
+
+The proposed NN control structure is shown in Figure 8.3.1.
+    The NLIP NN controller is far more powerful than the 1-layer FLNN as it
+is not necessary to select a basis of activation functions. In effect, the weights
+V are adjusted on-line to automatically provide a suitable basis. The control
+is nonlinear in the first-layer weights V, which presents complications in
+deriving suitable weight tuning laws. Auxiliary signal v(t) is a function to be
+detailed subsequently that provides robustness in the face of higher-order terms
+in the Taylor series arising from the NLIP problem.
+    Using the result (8.2.13) to properly address the NLIP problem, the closed-
+loop error dynamics (8.3.8) can be written as
+
+                                                                          (8.5.2)
+
+where the disturbance terms are
+
+                                                                          (8.5.3)
+
+Define
+
+                                                                          (8.5.4)
+
+
+and Z, Z equivalently. It is not difficult to show that
+
+                                                                          (8.5.5)
+
+with Ci known positive constants.
+  It is assumed that the ideal weights are bounded so that
+
+                                                                          (8.5.6)
+
+with ZB known. (Standard adaptive robust control techniques can be used to
+lift the assumption that ZB is known [Polycarpou 1996].)
+    The next theorem presents the most powerful NN controller in this
+chapter.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+450                                       Neural Network Control of Robots
+
+THEOREM 8.5–1: (Augmented Backprop Weight Tuning for Multi-layer NN
+Controller).
+   Let the desired trajectory qd(t) be bounded by qB and the initial tracking
+error r(0) be in Sr. Let the ideal target NN weights be bounded by known ZB.
+Take the control input for the robot dynamics (8.3.1) as (8.5.1) with PD gain
+satisfying
+
+
+                                                                          (1)
+
+
+where C3 is defined in the proof. Let the robustifying term be
+
+                                                                          (2)
+
+with gain
+
+                                                                          (3)
+
+    Let NN weight tuning be provided by
+
+                                                                          (4)
+
+
+                                                                          (5)
+
+with any constant matrices F=FT>0, G=GT>0, and >0 a small scalar design
+parameter. Then the filtered tracking error r(t) and NN weight estimates V, W
+are UUB, with the bounds given specifically by (10) and (11). Moreover, the
+tracking error may be kept as small as desired by increasing the gains Kv in
+(8.5.1).
+
+Proof:
+   Let the NN approximation property (8.2.5) hold for the function f(x) given
+in (8.3.5) with a given accuracy ε N for all x in the compact set
+                    with bx>qB. Let r(0)僆Sr. Then the approximation property
+holds at time 0.
+   Define the Lyapunov function candidate
+
+                                                                          (6)
+
+Differentiating yields
+
+                                                                          (7)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.5 Tuning Algorithms for Nonlinear-In-The-Parameters NN                  451
+
+Substituting now from the error system (8.5.2) yields
+
+
+
+
+                                                                           (8)
+
+
+The tuning rules give
+
+
+
+
+Since
+
+
+
+there results
+
+
+
+
+where Kvmin is the minimum singular value of Kv, and the last inequality holds
+due to (3).
+  L is negative as long as the term in braces is positive. Defining C3=
+ZB+C1/ and completing the square yields
+
+
+
+                                                                           (9)
+
+which is guaranteed positive as long as either
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+452                                          Neural Network Control of Robots
+
+
+                                                                              (10)
+
+
+or
+
+                                                                              (11)
+
+   Thus, L is negative outside a compact set. According to the LaSalle
+extension [Lewis et al. 1993] this demonstrates the UUB of both ||r|| and ||Z||F
+as long as the control remains valid within this set. However, the PD gain
+condition (1) shows that the compact set defined by ||r||br is contained in Sr,
+so that the approximation property holds throughout. 䊏
+   The first terms in the tuning algorithms (4), (5) are nothing but back-
+propagation of the tracking error through time. The last terms are the Narendra
+e-mod, and the second term in (4) is a novel second-order term needed due to
+the NLIP of the NN. The robustifying term v(t) is required also due to the
+NLIP problem.
+   The comments appearing after Theorem 8.4.1 are germane here.
+Specifically, there is no preliminary off-line tuning phase and NN weight
+tuning occurs on-line in real-time simultaneously with control action. Weight
+initialization is not an issue in the proof and it is not necessary to provide
+initial stabilizing weights; the weights are simply initialized so that the NN
+output is equal to zero, for then the PD loop keeps the system stable until the
+NN begins to learn. However, practical experiments [Gutierrez and Lewis
+1998] show that it is important to initialize the weights suitably. A good
+choice is to select V(0) randomly and W(0) equal to zero.
+   In practice it is not necessary to compute the constants c0, c1, c2, C0, C1, C2,
+ZB nor determine Sr. The size L of the NN and the PD gains Kv are simply
+selected large and a simulation is performed. The simulation is then repeated
+with a different L and Kv. Based on the difference in behavior between the two
+simulations, L and Kv can be modified.
+
+Straight Backpropagation Weight Tuning. The backprop algorithm (usually
+in discrete-time form) has been proposed innumerable times in the literature
+for closed-loop control. It can be shown that if the NN approximation error 
+is zero, the disturbances are d(t) zero, and there are no higher-order terms in
+the Taylor series (8.2.12), then the straight backprop algorithm
+
+
+
+
+                                                                           (8.5.7)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.5 Tuning Algorithms for Nonlinear-In-The-Parameters NN                                  453
+
+may be used for closed-loop control instead of (4), (5). PE is required to show
+that the NN weights are bounded using straight backprop. The conditions
+mentioned are very restrictive and do not occur in practice; they essentially
+require the robot arm to be linear (e.g. 1=link). Moreover, PE conditions are
+not easy to guarantee in NN.
+
+Passivity Properties of NN Controllers
+The NN used in this paper are static feedforward nets, but since they appear
+in a closed feedback loop and are tuned using differential equations, they are
+dynamical systems. Therefore, one can discuss the passivity of these NN. In
+general a NN cannot be guaranteed to be passive. However, the NN controllers
+in this paper have some important passivity properties that result in robust
+closed-loop performance.
+   The system x=f (x, u),y=h(x, u) is said to be passive if it verifies an equality
+of the so-called power form [Slotine and Li 1991]
+
+                                                                                       (8.5.8)
+
+for some lower-bounded L(t) and some g(t) 0. That is,
+
+                                                                                       (8.5.9)
+
+for all T 0 and some                      0. The system is dissipative if it is passive and in
+addition
+
+
+                                                                                     (8.5.10)
+
+   A special sort of dissipativity occurs if g(t) is a quadratic function of ||x||
+with bounded coefficients. We call this state strict passivity (SSP); then, the
+norm of the internal states is bounded in terms of the power delivered to the
+system. Somewhat surprisingly, the concept of SSP has not been extensively
+used in the literature [Lewis et al. 1993], [Seron et al. 1994], though see
+[Goodwin et al. 1984] where input and output strict pasivity are defined. SSP
+turns out to be pivotal in studying the passivity properties of NN controllers,
+and allows one to conclude some internal boundedness properties without
+any assumptions of persistence of excitation.
+
+Passivity of the Robot Tracking Error Dynamics
+The error dynamics in this paper (e.g. (8.5.2)) appear in Figure 8.5.1 and
+have the form
+                                                                                     (8.5.11)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+454                                               Neural Network Control of Robots
+
+
+
+
+                 Figure 8.5.1: Two-layer neural net closed-loop error system.
+
+
+
+
+where r(t) is the filtered tracking error and 0(t) is appropriately defined. This
+system satisfies the following strong passivity property.
+
+THEOREM 8.5–2: (SSP of Robot Error Dynamics).
+The dynamics (8.5.11) from 0(t) to r(t) are a state strict passive system.
+Proof:
+  Take the nonnegative function
+
+
+
+
+so that, using (8.5.11), one obtains
+
+
+
+
+whence, the skew-symmetry property yields the power form
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.5 Tuning Algorithms for Nonlinear-In-The-Parameters NN                 455
+
+   This is the power delivered to the system minus a quadratic term in ||r||,
+verifying state strict passivity.                                       䊏
+
+
+Passivity Properties of 2-layer NN Controllers
+The closed-loop system is in Figure 8.3.1, where the NN appears in an inner
+feedback linearization loop. The error dynamics for the 2-layer NN controller
+are given by (8.5.2). The closed-loop error system appears in Figure 8.5.1,
+with the signal 1 defined as
+
+                                                                     (8.5.12)
+
+Note the role of the NN in the error dynamics, where it is decomposed into
+two effective blocks appearing in a typical feedback configuration.
+  We now reveal the passivity properties engendered by straight back-
+propagation tuning (8.5.7). To prove this algorithm, one uses the error
+dynaqmics in a different form than (8.5.2), so that in Figure 8.5.1 one has
+                .
+
+THEOREM 8.5–3: (Passivity of Backprop NN Tuning Algorithm).
+The simple backprop weight tuning algorithm (8.5.7) makes the map from
+              , and the map from r(t)               , both passive maps.
+
+Proof:
+  The dynamics with respect W, V are
+
+                                                                          (1)
+
+
+                                                                          (2)
+
+1. Selecting the nonnegative function
+
+
+
+    and evaluating L along the trajectories of (1) yields
+
+
+
+   which is in power form (8.5.8).
+2. Selecting the nonnegative function
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+456                                         Neural Network Control of Robots
+
+    and evaluating along the trajectories of (2) yields
+
+
+
+    which is in power form.                                                   䊏
+
+Thus, the robot error system in Figure 8.5.1 is state strict passive (SSP) and
+the weight error blocks are passive; this guarantees the passivity of the closed-
+loop system. Using the passivity theorem [Slotine and Li 1991] one may now
+conclude that the input/output signals of each block are bounded as long as
+the external inputs are bounded.
+   Unfortunately, though passive, the closed-loop system cannot be guaranteed
+to be SSP, so that when disturbances are nonzero, this does not yield boundedness
+of the internal states of the weight blocks (i.e. W, V) unless those blocks are
+observable, that is persistently exciting (PE).
+   The next result shows why a PE condition is not needed with the modified
+weight update algorithm given in Theorem 8.5.1.
+
+THEOREM 8.5–4: (SSP of Augmented Backprop NN Tuning Algorithm).
+The modified weight tuning algorithms in Theorem 8.5.1 make the map from
+                             , and the map from                   , both
+state strict passive (SSP) maps.
+
+Proof:
+   The dynamics relative to W, V using the tuning algorithms in Theorem
+8.5.1 are given by
+
+
+
+
+1. Selecting the nonnegative function
+
+
+
+
+    and evaluating L yields
+
+
+
+
+    Since
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8.5 Tuning Algorithms for Nonlinear-In-The-Parameters NN                    457
+
+
+
+
+    there results
+
+
+
+
+   which is in power form with the last function quadratic in
+2. Selecting the nonnegative function
+
+
+
+
+    and evaluating L yields
+
+
+
+
+    which is in power form with the last function quadratic in ||V||F .    䊏
+
+The SSP of both the robot dynamics and the weight tuning blocks does guarantee
+SSP of the closed-loop system, so that the norms of the internal states are
+bounded in terms of the power delivered to each block. Then, boundedness of
+input/output signals assures state boundedness without any sort of observability
+or PE requirement.
+
+Definition of Passive NN and Robust NN. We define a dynamically tuned
+NN as passive if, in the error formulation, the tuning guarantees the passivity
+of the weight tuning subsystems. Then, an extra PE condition is needed to
+guarantee boundedness of the weights. This PE condition is generally in terms
+of the outputs of the hidden layers of the NN. We define a dynamically tuned
+NN as robust if, in the error formulation, the tuning guarantees the SSP of the
+weight tuning subsystem. Then, no extra PE condition is needed for boundedness
+of the weights. Note that (1) SSP of the open-loop plant error system is needed
+in addition for tracking stability, and (2) the NN passivity properties are
+dependent on the weight tuning algorithm used.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+458                                       Neural Network Control of Robots
+
+Passivity Properties of 1-Layer NN Controllers
+In a similar fashion, it is shown that the FLNN controller tuning algorithm
+makes the system passive, so that an additional PE condition is needed to
+verify internal stability of the NN weights. On the other hand, the augmented
+tuning algorithm in Theorem 8.4.1 yields SSP, so that no PE is needed.
+
+
+8.6        Summary
+Neural network controller design algorithms were given for a general class of
+industrial Lagrangian motion systems characterized by the rigid robot arms.
+The design procedures are based on rigorous nonlinear derivations and stability
+proofs, and yield a multiloop intelligent control structure with NN in some of
+the loops. NN weight tuning algorithms were given that do not require
+complicated initialization procedures or any off-line learning phase, work
+on-line in real-time, and offer guaranteed tracking and bounded NN weights
+and control signals. The NN controllers given here are model-free controllers
+in that they work for any system in a prescribed class without the need for
+extensive modeling and preliminary analysis to find a ‘regression matrix’.
+Unlike standard robot adaptive controllers, they do not require linearity in
+the parameters (see also [Colbaugh and Seraji 1994] which does not need
+LIP). Proper design allows the NN controllers to avoid requirements such as
+persistence of excitation and certainty equivalence. NN passivity and
+robustness properties are defined and studied here.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+
+[Åström and Wittenmark 1989] K.J.Åström and B.Wittenmark, Adaptive
+    Control, Addision Wesley, Reading, MA, 1989.
+[Barron 1993] Barren, A.R., “Universal approximation bounds for
+    superpositions of a sigmoidal function,” IEEE Trans. Info. Theory, vol.
+    39, no. 3, pp. 930–945, May 1993.
+[Chen and Khalil 1992] F.-C.Chen and H.K.Khalil, “Adaptive control of
+   nonlinear systems using neural networks,” Int. J. Control, vol. 55, no. 6,
+   pp. 1299–1317, 1992.
+[Chen and Liu 1994] F.-C.Chen and C.-C.Liu, “Adaptively controlling nonlinear
+    continuous-time systems using multilayer neural networks,” IEEE Trans.
+    Automat. Control, vol. 39, no. 6, pp. 1306–1310, June 1994.
+[Colbaugh and Seraji 1994] R.Colbaugh, H.Seraji, and K.Glass, “A new class
+    of adaptive controllers for robot trajectory tracking,” J. Robotic Systems,
+    vol. 11, no. 8, pp. 761–772, 1994.
+[Craig 1988] Craig, J.J., Adaptive Control of Mechanical Manipulators,
+    Reading, MA: Addison-Wesley, 1988.
+[Dawson et al. 1990] Dawson, D.M., Z.Qu, F.L.Lewis, and J.F.Dorsey, “Robust
+   control for the tracking of robot motion,” Int. J. Control, vol. 52, no. 3,
+   pp. 581–595, 1990.
+[Goodwin et al. 1984] Goodwin, C.G., and K.S.Sin, Adaptive Filtering,
+   Prediction, and Control, Prentice-Hall, New Jersey, 1984.
+[Gorinevsky 1995] D.Gorinevsky, “On the persistency of excitation in radial
+   basis function network identificaiton of nonlinear systems,” IEEE Trans.
+   Neural Networks, vol. 6, no. 5, pp. 1237–1244, Sept. 1995.
+[Gutierrez and Lewis 1998] L.B.Gutierrez and F.L.Lewis, “Implementation of
+   a neural net tracking controller for a single flexible link: comparison
+
+
+                                                                           459
+Copyright © 2004 by Marcel Dekker, Inc.
+460                                                            REFERENCES
+
+      with PD and PID controllers,” IEEE Trans. Industrial Electronics, to
+      appear, April 1998.
+[Haykin 1994] S.Haykin, Neural Networks, IEEE Press, New York, 1994.
+[Hornik and Stinchombe 1989] K.Hornik, M.Stinchombe, and H.White,
+   “Multilayer feedforward networks are universal approximators,” Neural
+   Networks, vol. 2, pp. 359–366, 1989.
+[Ioannou and Kokotovic 1984] P.A.Ioannou and P.V.Kokotovic, “Instability
+    analysis and improvement of robustness of adaptive control,” Automatica,
+    vol. 20, no. 5, pp. 583–594, 1984.
+[Kim and Lewis 1998] Y.H.Kim and F.L.Lewis, High-Level Feedback Control
+    with Neural Networks, World Scientific, Singapore, 1998.
+[Kreisselmeier and Anderson 1986] Kreisselmeier, G., and B.Anderson, “Robust
+    model reference adaptive control,” IEEE Trans. Automat. Control, vol.
+    AC-31, no. 2, pp. 127–133, Feb. 1986.
+[Landau 1979] Y.D.Landau, Adaptive Control, Marcel Dekker, Basel, 1979.
+[Lewis 1999] F.L.Lewis, “Nonlinear Network Structures for Feedback Control”,
+    Asian Journal of Control, vol. 1, no. 4, pp.205–228, December 1999.
+[Lewis et al. 1993] F.L.Lewis, C.T.Abdallah, and D.M.Dawson, Control of
+    Robot Manipulators, New York: Macmillam, 1993.
+[Lewis et al. 1999] F.L.Lewis, S.Jagannathan, and A.Yesildirek, Neural Network
+    Control of Robot Manipulators and Nonlinear Systems, Taylor and
+    Francis, London, 1999.
+[Lewis and Kim 1998] F.L.Lewis and Y.H.Kim, “Neural Networks for Feedback
+    Control,” Encyclopedia of Electrical and Electronics Engineering, ed.
+    J.G.Webster, New York: Wiley, 1998. To appear.
+[Lewis et al. 1993] Lewis, F.L., K.Liu, and A.Yesildirek, “Neural net robot
+    controller with guaranteed tracking performance,” Proc. Int. Symp.
+    Intelligent Control, pp. 225–231, Chicago., Aug. 1993.
+[Lewis et al. 1995] Lewis, F.L., K.Liu, and A.Yesildirek, “Neural net robot
+    controller with guaranteed tracking performance,” IEEE Trans. Neural
+    Networks, vol. 6, no. 3, pp. 703–715, 1995.
+[Lewis et al. 1997] F.L.Lewis, K.Liu, and S.Commuri, “Neural networks and
+    fuzzy logic systems for robot control,” in Fuzzy Logic and Neural Network
+    Applications, ed. F.Wang, World Scientific Pub., to appear, 1997.
+[Lewis et al. 1996] F.L.Lewis, A.Yesildirek, and K.Liu, “Multilayer neural
+    net robot controller: structure and stability proofs,” IEEE Trans. Neural
+    Networks, vol. 7, no. 2, pp. 1–12, Mar. 1996.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                  461
+
+[Miller et al. 1991] W.T.Miller, R.S.Sutton, P.J.Werbos, ed., Neural Networks
+    for Control, Cambridge: MIT Press, 1991.
+[Narendra 1991] K.S.Narendra, “Adaptive Control Using Neural Networks,”
+   Neural Networks for Control, pp 115–142. ed. W.T.Miller, R.S.Sutton,
+   P.J.Werbos, Cambridge: MIT Press, 1991.
+[Narendra and Annaswamy 1987] K.S.Narendra and A.M.Annaswamy, “A
+   new adaptive law for robust adaptive control without persistent excitation,”
+   IEEE Trans. Automat. Control, vol. 32, pp. 134–145, Feb., 1987.
+[Narendra and Parthasarathy 1991] Narendra, K.S., and K. Parthasarathy,
+   “Gradient methods for the optimization of dynamical systems containing
+   neural networks,” IEEE Trans. Neural Networks, vol. 2, no. 2, pp. 252–
+   262, Mar. 1991.
+[Polycarpou 1996] M.M.Polycarpou, “Stable adaptive neural control scheme
+    for nonlinear systems,” IEEE Trans. Automat. Control, vol. 41, no. 3,
+    pp. 447–451, Mar. 1996.
+[Polycarpou and Ioannou 1991] M.M.Polycarpou and P.A.Ioannou,
+    “Identification and control using neural network models: design and
+    stability analysis,” Tech. Report 91–09–01, Dept. Elect. Eng. Sys., Univ.
+    S. Cal., Sept. 1991.
+[Rovithakis and Christodoulou 1994] G.A.Rovithakis and M.A. Christodoulou,
+    “Adaptive control of unknown plants using dynamical neural networks,”
+    IEEE Trans. Systems, Man, and Cybernetics, vol. 24, no. 3, pp. 400–
+    412, Mar. 1994.
+[Sadegh 1993] N.Sadegh, “A perceptron network for functional identification
+    and control of nonlinear systems,” IEEE Trans. Neural Networks, vol.
+    4, no. 6, pp. 982–988, Nov. 1993.
+[Sanner and Slotine 1991] R.M.Sanner and J.-J.E.Slotine, “Stable adaptive
+    control and recursive identification using radial gaussian networks,” Proc.
+    IEEE Conf. Decision and Control, Brighton, 1991.
+[Seron et al. 1994] Seron, M.M., D.J.Hill, and A.L.Fradkov, “Adaptive
+    passification of nonlinear systems,” Proc. IEEE Conf. Decision and
+    Control, pp. 190–195, Dec. 1994.
+[Slotine 1988] Slotine, J.-J.E., “Putting physics in control the example of
+    robotics,” IEEE Control Systems Magazine, pp. 12–17, Dec. 1988.
+[Slotine and Li 1991] J.-J.Slotine and W.Li, Applied Nonlinear Control, Prentice
+     Hall, New Jersey, 1991.
+[Spong and Vidyasagar 1989] Spong, M.W., and M.Vidyasagar, Robot
+    Dynamics and Control, New York: Wiley, 1989.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+462                                                          REFERENCES
+
+[Wang 1997] L.-X.Wang, A course in fuzzy systems and control, Prentice-
+   Hall, New Jersey, 1997.
+[Werbos 1989] P.J.Werbos, “Back propagation: past and future,” Proc. 1988
+   Int. Conf. Neural Nets, vol. 1, pp. I343-I353, 1989.
+[Werbos 1992] P.J.Werbos, “Neurocontrol and supervised learning: an overview
+   and evaluation,” in Handbook of Intelligent Control, ed. D.A. White and
+   D.A.Sofge, New York: Van Nostrand Reinhold, 1992.
+[White and Sofge 1992] D.A.White and D.A.Sofge, ed. Handbook of Intelligent
+   Control, New York: Van Nostrand Reinhold, 1992.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

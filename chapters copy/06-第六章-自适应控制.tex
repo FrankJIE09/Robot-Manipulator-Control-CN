@@ -1,0 +1,1606 @@
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{bm}
+
+\geometry{a4paper, margin=2.5cm}
+
+\title{第六章 机器人机械臂的自适应控制}
+\author{Robot Manipulator Control - Theory and Practice 中文翻译}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{本章概述}
+
+在本章中，我们通过将未知常参数与机器人动力学方程中的已知函数分离，来构建自适应控制器。本章将详细讨论每种自适应控制策略的稳定性类型，以激励控制器的构建。本章还将讨论参数误差收敛、持续激励和鲁棒性等相关问题。
+
+%========================================
+\section{引言}\label{sec:intro}
+%========================================
+
+设计确保渐近轨迹跟踪的刚性机器人机械臂自适应控制律的问题已经引起研究人员多年的关注。开发有效的自适应控制器代表着向高速/高精度机器人应用迈出的重要一步。即使在结构良好的工业设施中，机器人也可能面临描述抓取负载动力学特性的参数不确定性（例如，未知的惯性矩）。由于这些参数难以计算或测量，它们限制了机器人准确操纵大尺寸和大重量物体的潜力。最近已经认识到，在高速应用中，传统方法的准确性受到参数不确定性的严重影响。
+
+为了补偿这种参数不确定性，许多研究人员提出了用于机器人机械臂控制的自适应策略。与第5章中讨论的鲁棒控制策略相比，自适应方法的一个优势是，携带未知负载的机械臂的精度会随着时间的推移而提高，因为自适应机制持续从跟踪误差中提取信息。因此，自适应控制器能够在负载变化的情况下提供一致的性能。
+
+直到最近，自适应控制结果才包含跟踪误差全局收敛的严格证明。现在既然已经建立了全局收敛自适应控制律的存在性，就很难证明基于近似模型、局部线性化技术或慢时变假设的控制方案的合理性。在控制文献中，对于什么构成自适应控制算法似乎也没有普遍共识；因此，在本章中，讨论将仅限于在控制律中显式包含参数估计的控制方案。
+
+%========================================
+\section{计算力矩方法的自适应控制}\label{sec:computed-torque}
+%========================================
+
+在第3章中，我们讨论了使用计算力矩控制律来控制由以下方程给出的机器人机械臂动力学：
+
+\begin{equation}\label{eq:robot-dynamics}
+\tau = M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q})
+\end{equation}
+
+这种激励实际上非常简单。具体来说，如果存在一些不想处理的非线性动力学，可以通过直接抵消非线性来将非线性控制问题转化为线性控制问题。控制线性系统有丰富的可用知识；因此，如果机器人模型的精确知识可用，就不需要复杂的非线性控制技术。
+
+\subsection*{近似计算力矩控制器}
+
+当然，在现实中，由于与模型公式相关的许多问题，我们永远无法获得机器人模型的精确知识。机器人应用中不允许精确模型抵消的两个常见不确定性是负载扰动导致的未知连杆质量和未知摩擦系数。处理这些类型参数不确定性的一种方法是在第3章给出的计算力矩控制器中使用未知参数的固定估计值代替实际参数。这种近似计算力矩控制器的形式为：
+
+\begin{equation}\label{eq:approx-computed-torque}
+\tau = \hat{M}(q)(\ddot{q}_d + K_v \dot{e} + K_p e) + \hat{V}_m(q, \dot{q})\dot{q} + \hat{G}(q) + \hat{F}(\dot{q})
+\end{equation}
+
+其中上标"$\hat{\ }$"表示用参数估计值代替未知实际参数的估计动力学，$K_v$和$K_p$是控制增益矩阵，$q_d$用于表示期望轨迹，跟踪误差$e$定义为：
+
+\begin{equation}
+e = q_d - q
+\end{equation}
+
+\textbf{例6.2-1：近似计算力矩控制器}
+
+我们希望为图6.2.1所示的两连杆机械臂（参见第2章中两连杆旋转机器人机械臂动力学）设计和仿真近似计算力矩控制器。假设摩擦可忽略不计，连杆长度完全已知，质量$m_1$和$m_2$已知分别在$0.8 \pm 0.05$ kg和$2.3 \pm 0.1$ kg范围内，可能的近似计算力矩控制器可以写为：
+
+\begin{align}
+\tau_1 &= \hat{m}_1 l_1^2 (\ddot{q}_{d1} + k_{v1} \dot{e}_1 + k_{p1} e_1) \\
+&\quad + \hat{m}_2 [l_1^2 (\ddot{q}_{d1} + k_{v1} \dot{e}_1 + k_{p1} e_1) + l_1 l_2 C_2 (\ddot{q}_{d1} + k_{v1} \dot{e}_1 + k_{p1} e_1) + l_1 l_2 S_2 (\dot{q}_1 \dot{q}_2) \\ &\quad + l_1 l_2 S_2 \dot{q}_2 (\dot{q}_{d1} + \dot{q}_{d2}) + l_2^2 (\ddot{q}_{d1} + \ddot{q}_{d2} + k_{v2} (\dot{e}_1 + \dot{e}_2) + k_{p2} (e_1 + e_2))] + g \hat{m}_1 l_1 C_1 + g \hat{m}_2 (l_1 C_1 + l_2 C_{12})
+\end{align}
+
+其中$l_1 = l_2 = 1$ m，$g$是重力常数。我们选择$\hat{m}_1 = 0.85$ kg和$\hat{m}_2 = 2.2$ kg，因为假设实际值未知。将上述控制律代入两连杆机器人动力学后，我们可以形成误差系统：
+
+\begin{equation}
+\dot{x} = Ax + W(q, \dot{q}, \ddot{q}) \tilde{\varphi}
+\end{equation}
+
+其中$\hat{M}^{-1}(q)$是用$\hat{m}_1$和$\hat{m}_2$代替$m_1$和$m_2$的惯性矩阵$M(q)$的逆。矩阵$W(q, \dot{q}, \ddot{q})$，有时称为回归矩阵[Craig 1985]，是一个$2 \times 2$矩阵，由下式给出：
+
+\begin{equation}
+W(\cdot) = \begin{bmatrix} W_{11} & W_{12} \\ W_{21} & W_{22} \end{bmatrix}
+\end{equation}
+
+其中
+
+\begin{align}
+W_{11} &= l_1^2 \ddot{q}_1 + g l_1 C_1 \\
+W_{12} &= l_1^2 \ddot{q}_1 + l_1 l_2 C_2 (2\ddot{q}_1 + \ddot{q}_2) + l_1^2 \ddot{q}_2 + l_1 l_2 S_2 \dot{q}_2^2 - 2l_1 l_2 S_2 \dot{q}_1 \dot{q}_2 + g(l_1 C_1 + l_2 C_{12})
+\end{align}
+
+向量$\tilde{\varphi}$（称为参数误差向量）是一个$2 \times 1$向量，由下式给出：
+
+\begin{equation}
+\tilde{\varphi} = \begin{bmatrix} \tilde{m}_1 \\ \tilde{m}_2 \end{bmatrix}
+\end{equation}
+
+其中
+
+\begin{align}
+\tilde{m}_1 &= m_1 - \hat{m}_1 \\
+\tilde{m}_2 &= m_2 - \hat{m}_2
+\end{align}
+
+相关的跟踪误差$2 \times 1$向量和(3)中的$2 \times 2$增益矩阵由下式给出：
+
+\begin{equation}
+x = \begin{bmatrix} e_1 \\ e_2 \\ \dot{e}_1 \\ \dot{e}_2 \end{bmatrix}, \quad A = \begin{bmatrix} O_2 & I_2 \\ -K_p & -K_v \end{bmatrix}
+\end{equation}
+
+由于误差系统(3)的右侧由$q$、$\dot{q}$和$\ddot{q}$的非线性函数组成，我们无法使用误差系统(3)用标准线性控制方法选择$K_v$和$K_p$的值。对于近似计算力矩控制器，仿真可用于选择适当的$K_v$和$K_p$值。为近似计算力矩控制器选择$K_p$和$K_v$值的一个好起点是使用计算力矩方案为给定期望阻尼比和自然频率指定的相同值。
+
+对于$m_1 = 0.8$ kg和$m_2 = 2.3$ kg，在$q(0) = \dot{q}(0) = 0$、控制器增益设置为：
+
+\begin{equation}
+K_p = K_v = \text{diag}\{15, 15\}
+\end{equation}
+
+和期望轨迹为：
+
+\begin{equation}
+q_{d1} = q_{d2} = \sin t
+\end{equation}
+
+的条件下，对近似计算力矩控制器(1)-(2)进行了仿真。跟踪误差如图6.2.2所示。正如这些图所示，跟踪误差保持有界而不是趋于零。这种有界跟踪误差性能的原因是误差系统(3)不断地被(3)右侧的动力学激励。
+
+\subsection*{自适应计算力矩控制器}
+
+对于未知的参数量，如连杆质量或摩擦系数，近似计算力矩控制器只是用固定估计值代替未知参数。从例6.2-1中的方程(3)可以清楚地看到，如果参数误差向量等于零，跟踪误差可以被证明是渐近稳定的。对于许多应用，我们不能假设等于零。例如，在机器人末端执行器携带未知负载质量的情况下，总会存在与负载质量相关的未知参数量出现在参数误差向量中。
+
+自适应控制策略可以从启发式推理中得到激励，即如果随着机械臂的运动调整参数估计而不是始终是固定量，则可以预期更好的跟踪性能。也就是说，基于自适应更新规则是机器人配置和跟踪误差的函数的推理，尝试改变我们的参数估计是合理的。问题就变成了：如何构建自适应控制策略，以及这个自适应更新规则如何影响跟踪误差的稳定性？这两个问题的答案是，自适应更新规则是从跟踪误差系统的稳定性分析中构建的。也就是说，我们通过同时构建自适应更新规则和分析跟踪误差系统的稳定性来确保跟踪误差系统的稳定性。
+
+我们将研究的第一个自适应控制策略是[Craig 1985]中概述的方法。自适应计算力矩控制器与近似计算力矩控制器(6.2.2)相同，但增加了用于调整参数估计的自适应更新规则。这种自适应控制器基于机器人模型中参数线性出现的特性（见第2章）。也就是说，机器人动力学(6.2.1)可以写成以下形式：
+
+\begin{equation}\label{eq:linear-params}
+\tau = W(q, \dot{q}, \ddot{q}) \varphi
+\end{equation}
+
+其中$W(q, \dot{q}, \ddot{q})$是$n \times r$已知时间函数矩阵，$\varphi$是$r \times 1$未知常参数向量。这一特性对Craig提出的自适应控制类型至关重要，因为它说明了未知参数与已知时间函数的分离。机器人动力学可以以这种形式分离的原因是，以向量形式$\varphi$表达的机器人动力学对参数是线性的。这种未知参数与已知时间函数的分离将用于自适应更新规则的构建以及跟踪误差系统的稳定性分析。
+
+研究自适应计算力矩控制器的第一步是形成跟踪误差系统。注意，通过使用(6.2.3)，我们可以将(6.2.1)给出的机器人动力学方程写为：
+
+\begin{equation}\label{eq:torque-dynamics}
+\tau = W(q, \dot{q}, \ddot{q}) \varphi
+\end{equation}
+
+根据[Craig 1985]，自适应计算力矩控制器由下式给出：
+
+\begin{equation}\label{eq:adaptive-controller}
+\tau = \hat{M}(q)(\ddot{q}_d + K_v \dot{e} + K_p e) + \hat{V}_m(q, \dot{q})\dot{q} + \hat{G}(q) + \hat{F}(\dot{q})
+\end{equation}
+
+从跟踪误差的定义可以很容易地看出(6.2.5)如何写成：
+
+\begin{equation}
+\tau = \hat{M}(q)(\ddot{e} + K_v \dot{e} + K_p e) + \hat{W}(q, \dot{q}, \ddot{q}) \hat{\varphi}
+\end{equation}
+
+通过利用(6.2.3)，(6.2.6)可以写为：
+
+\begin{equation}
+\tau = \hat{M}(q)(\ddot{e} + K_v \dot{e} + K_p e) + W(q, \dot{q}, \ddot{q}) \hat{\varphi}
+\end{equation}
+
+其中$\hat{\varphi}$是$n \times 1$向量，用于表示未知常参数的时变估计。将(6.2.7)代入(6.2.4)，我们可以形成跟踪误差系统：
+
+\begin{equation}\label{eq:error-system}
+\ddot{e} + K_v \dot{e} + K_p e = \hat{M}^{-1}(q) W(q, \dot{q}, \ddot{q}) \tilde{\varphi}
+\end{equation}
+
+其中参数误差为：
+
+\begin{equation}\label{eq:param-error}
+\tilde{\varphi} = \varphi - \hat{\varphi}
+\end{equation}
+
+为了方便，将(6.2.8)重写为状态空间形式：
+
+\begin{equation}\label{eq:state-space}
+\dot{x} = Ax + B \hat{M}^{-1}(q) W(q, \dot{q}, \ddot{q}) \tilde{\varphi}
+\end{equation}
+
+其中跟踪误差向量为：
+
+\begin{equation}
+x = \begin{bmatrix} e \\ \dot{e} \end{bmatrix}, \quad A = \begin{bmatrix} O_n & I_n \\ -K_p & -K_v \end{bmatrix}, \quad B = \begin{bmatrix} O_n \\ I_n \end{bmatrix}
+\end{equation}
+
+其中$I_n$是$n \times n$单位矩阵，$O_n$是$n \times n$零矩阵。
+
+现在跟踪误差系统已经形成，我们使用Lyapunov稳定性分析（见第1章）来证明通过正确选择自适应更新律，跟踪误差向量$e$是渐近稳定的。我们首先选择正定的Lyapunov类函数：
+
+\begin{equation}\label{eq:lyapunov}
+V = \frac{1}{2} x^T P x + \frac{1}{2} \tilde{\varphi}^T \Gamma^{-1} \tilde{\varphi}
+\end{equation}
+
+其中$P$是$2n \times 2n$正定、常数、对称矩阵，$\Gamma$是对角、正定$r \times r$矩阵。也就是说，$\Gamma$可以写成：
+
+\begin{equation}
+\Gamma = \text{diag}\{\gamma_1, \gamma_2, \ldots, \gamma_r\}
+\end{equation}
+
+其中$\gamma_i$是正标量常数。
+
+对时间微分(6.2.11)得到：
+
+\begin{equation}\label{eq:lyapunov-deriv}
+\dot{V} = \frac{1}{2} x^T (PA + A^T P)x + \tilde{\varphi}^T \Gamma^{-1} \left( B^T P x + \dot{\tilde{\varphi}} \right)
+\end{equation}
+
+在(6.2.12)中，我们使用了$\Gamma = \Gamma^T$这一事实。现在，将$e$从(6.2.10)代入(6.2.12)得到：
+
+\begin{equation}\label{eq:lyapunov-subst}
+\dot{V} = -\frac{1}{2} x^T Q x + \tilde{\varphi}^T \left( \Gamma^{-1} \dot{\tilde{\varphi}} + W^T(q, \dot{q}, \ddot{q}) \hat{M}^{-T}(q) B^T P x \right)
+\end{equation}
+
+合并(6.2.14)中的项并使用标量转置性质得到：
+
+\begin{equation}\label{eq:lyapunov-combined}
+\dot{V} = -\frac{1}{2} x^T Q x + \tilde{\varphi}^T \left( \Gamma^{-1} \dot{\tilde{\varphi}} + W^T(q, \dot{q}, \ddot{q}) \hat{M}^{-1}(q) B^T P x \right)
+\end{equation}
+
+其中$Q$是满足Lyapunov方程的正定、对称矩阵：
+
+\begin{equation}\label{eq:lyapunov-eq}
+A^T P + PA = -Q
+\end{equation}
+
+从第1章我们注意到，为了稳定性，总是希望$\dot{V}$至少为负半定；因此，自适应更新规则的选择变得显而易见。具体来说，通过代入：
+
+\begin{equation}\label{eq:update-rule}
+\dot{\hat{\varphi}} = \Gamma W^T(q, \dot{q}, \ddot{q}) \hat{M}^{-1}(q) B^T P x
+\end{equation}
+
+(6.2.15)变为：
+
+\begin{equation}\label{eq:lyapunov-negative}
+\dot{V} = -\frac{1}{2} x^T Q x
+\end{equation}
+
+为了确定明确的稳定性类型，我们必须进行进一步分析；然而，首先注意(6.2.17)给出了参数估计向量的自适应更新规则，因为$\dot{\tilde{\varphi}} = -\dot{\hat{\varphi}}$。也就是说，通过回忆实际未知参数是常数，我们可以将(6.2.9)代入(6.2.17)以获得参数估计向量$\hat{\varphi}$的自适应更新规则：
+
+\begin{equation}\label{eq:adaptive-update}
+\dot{\hat{\varphi}} = \Gamma W^T(q, \dot{q}, \ddot{q}) \hat{M}^{-1}(q) B^T P x
+\end{equation}
+
+在详细说明跟踪误差的稳定性之前，我们注意到Craig修改了(6.2.19)中的自适应更新规则，以防止稳定性分析中的循环论证[Craig 1985]。具体来说，参数估计被迫保持在某个已知区域内。也就是说，如果参数估计漂出已知区域，它们将被重置到已知区域内。通过在"软件"中重置参数估计，我们保证参数估计保持有界。
+
+我们现在详细说明跟踪误差的稳定性。由于$\dot{V}$是负半定的，$V$以零为下界，$V$在时间段$[0, \infty)$上保持上有界；此外：
+
+\begin{equation}
+\lim_{t \to \infty} V(x, \tilde{\varphi}, t) = V_\infty \leq V(0)
+\end{equation}
+
+其中$V_\infty$是正标量常数。由于$V$是上有界的，从(6.2.11)中给出的$V$定义可以明显看出$e$和$\tilde{\varphi}$是有界的，这也意味着$q$、$\dot{q}$和$\hat{\varphi}$是有界的。注意我们已经假设$\ddot{q}_d$是有界的，我们将始终假设期望轨迹及其前两阶导数是有界的。
+
+现在，从机器人方程(6.2.1)中，很明显：
+
+\begin{equation}
+\ddot{q} = M^{-1}(q)[\tau - V_m(q, \dot{q})\dot{q} - G(q) - F(\dot{q})]
+\end{equation}
+
+因此，$\ddot{q}$是有界的，因为$\tau$仅依赖于有界量$q$、$\dot{q}$和$\hat{\varphi}$。如果$\ddot{q}$是有界的，(6.2.10)表明$\dot{x}$是有界的。由于$\dot{x}$是有界的，我们可以从(6.2.18)中说明$\ddot{V}$是有界的。因此，由于$V$以零为下界，$\dot{V}$是负半定的，$\ddot{V}$是有界的，根据Barbalat引理（见第1章）：
+
+\begin{equation}
+\lim_{t \to \infty} \dot{V} = 0
+\end{equation}
+
+这意味着根据Rayleigh-Ritz定理（见第1章）：
+
+\begin{equation}\label{eq:asymptotic-stability}
+\lim_{t \to \infty} e = 0
+\end{equation}
+
+(6.2.22)中给出的信息告诉我们跟踪误差向量$e$是渐近稳定的。但参数误差$\tilde{\varphi}$呢？它是否也收敛到零？从我们的分析中，我们只能说，如果$\hat{M}^{-1}(q)$存在，参数误差保持有界。事实上，这对(6.2.19)中给出的参数更新律提出了限制。也就是说，我们必须使用前面讨论的参数重置方法来确保差的参数估计不会导致$\hat{M}^{-1}(q)$的逆爆炸。在[Craig 1985]中，概述了一种确保参数估计和$\hat{M}^{-1}(q)$保持有界的可能方法；此外，他展示了这种方法如何不干扰(6.2.22)所描述的稳定性结果。我们不会讨论这种参数估计重置方法和由此产生的稳定性证明，因为我们将在本章后面展示Slotine和Li如何使用更明智的Lyapunov函数选择来消除重置参数估计的需要，同时消除回归矩阵$W(q, \dot{q}, \ddot{q})$中加速度测量的需要！
+
+\begin{table}[H]
+\centering
+\caption{自适应计算力矩控制器}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{控制器} & \\ \hline
+扭矩控制 & $\tau = \hat{M}(q)(\ddot{q}_d + K_v \dot{e} + K_p e) + \hat{V}_m(q, \dot{q})\dot{q} + \hat{G}(q)$ \\ \hline
+自适应更新规则 & $\dot{\hat{\varphi}} = \Gamma W^T(q, \dot{q}, \ddot{q}) \hat{M}^{-1}(q) B^T P x$ \\ \hline
+信号定义 & $x = \begin{bmatrix} e \\ \dot{e} \end{bmatrix}, \quad A = \begin{bmatrix} O_n & I_n \\ -K_p & -K_v \end{bmatrix}, \quad B = \begin{bmatrix} O_n \\ I_n \end{bmatrix}$ \\ \hline
+增益条件 & $K_p, K_v$是正定对角矩阵 \\ \hline
+Lyapunov方程 & $A^T P + PA = -Q$（$Q$是正定的） \\ \hline
+自适应增益 & $\Gamma$是正定的对角矩阵 \\ \hline
+稳定性结果 & $e$渐近稳定，$\tilde{\varphi}$有界 \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{例6.2-2：自适应计算力矩控制器}
+
+我们希望为图6.2.1所示的两连杆机械臂设计和仿真表6.2.1中给出的自适应计算力矩控制器。假设摩擦可忽略不计且连杆长度完全已知，自适应计算力矩控制器可以写成与例6.2-1中给出的相同形式，但我们需要找到$\hat{m}_1$和$\hat{m}_2$的更新规则。也就是说，我们使用例6.2-1中的方程(1)和(2)进行关节扭矩控制，然后根据表6.2.1制定$\hat{m}_1$和$\hat{m}_2$的更新规则。
+
+为简单起见，在本例中我们选择伺服增益为：
+
+\begin{equation}
+K_p = k_p I_n, \quad K_v = k_v I_n
+\end{equation}
+
+其中$k_v$和$k_p$是正标量常数，$I_n$在这种情况下是$2 \times 2$单位矩阵。我们提议表6.2.1中的矩阵$P$选择为：
+
+\begin{equation}
+P = \begin{bmatrix} k_p I_n + \frac{k_v}{2} I_n & \frac{1}{2} I_n \\ \frac{1}{2} I_n & I_n \end{bmatrix}
+\end{equation}
+
+注意$P$是对称的，如果$k_v$选择大于1，它是正定的（参见第1章中的Gerschgorin定理）。为了验证我们对$P$的选择是否给出正定的$Q$，执行矩阵运算：
+
+\begin{equation}
+Q = -(A^T P + PA)
+\end{equation}
+
+\begin{equation}
+Q = \begin{bmatrix} \frac{k_v}{2} I_n & O_n \\ O_n & k_v I_n \end{bmatrix}
+\end{equation}
+
+由于我们已经限制$k_v > 1$，可以验证$Q$是正定的、对称矩阵。我们在这里注意到，为一般Lyapunov方法找到正定、对称的$P$和$Q$并不总是一项容易的任务。
+
+现在我们有了适当的$P$，我们可以制定表6.2.1中给出的自适应更新规则。相关的参数估计向量为：
+
+\begin{equation}
+\hat{\varphi} = \begin{bmatrix} \hat{m}_1 \\ \hat{m}_2 \end{bmatrix}
+\end{equation}
+
+带有更新规则：
+
+\begin{equation}
+\dot{\hat{m}}_1 = \gamma_1 (P_{12} W_{11} + P_{14} W_{21}) \dot{e}_1 + \gamma_1 (P_{13} W_{11} + P_{14} W_{21}) \dot{e}_2
+\end{equation}
+
+和
+
+\begin{equation}
+\dot{\hat{m}}_2 = \gamma_2 (P_{12} W_{12} + P_{14} W_{22}) \dot{e}_1 + \gamma_2 (P_{13} W_{12} + P_{14} W_{22}) \dot{e}_2
+\end{equation}
+
+其中$P_{ij}$在(2)中定义，形成回归矩阵$W_{ij}$的量在例6.2.1中找到。
+
+对于$m_1 = 0.8$ kg和$m_2 = 2.3$ kg，在$k_v = 50$、$k_p = 125$、$\gamma_1 = 500$、$\gamma_2 = 500$、$\hat{m}_1(0) = 0.85$、$\hat{m}_2(0) = 2.2$以及例6.2.1中使用的相同期望轨迹和初始关节条件下，对自适应计算力矩控制器进行了仿真。跟踪误差和质量估计如图6.2.4所示。如图所示，跟踪误差趋于零，参数估计保持有界，正如理论所预测的那样。
+
+%========================================
+\section{惯量相关方法的自适应控制}\label{sec:inertia-related}
+%========================================
+
+在第6.2节中，我们展示了自适应控制如何用于补偿参数不确定性。这引导Craig开发了自适应计算力矩控制器。我们还给出了实现自适应计算力矩控制器所需的两个限制[即，需要测量$\ddot{q}$和确保$\hat{M}^{-1}(q)$存在]。这两个限制可能相当麻烦。例如，大多数工业机器人只有位置和速度传感器，由于通常不希望对速度进行微分，我们必须添加额外的昂贵传感器来测量$\ddot{q}$。此外，如果机械臂举起相对于机械臂重量的大未知负载，确保$\hat{M}^{-1}(q)$存在可能极其困难。
+
+在研究人员重新审视自适应计算力矩控制器的结构后，他们开始怀疑是否在设计自适应控制方案时使用了所有关于机器人机械臂的可用信息。也就是说，是否正在利用机械操纵器固有的所有特性？在[Arimoto和Miyazaki 1986]中，提出了一种带重力补偿的比例-微分（PD）反馈控制器。应该注意，该控制器不是反馈线性化方法的产物。相反，该控制器在稳定性分析中使用了惯量相关的Lyapunov函数，该函数利用了机械操纵器固有的物理特性。重新审视自适应计算力矩控制器后，可以看出，稳定性分析中使用的Lyapunov函数不是惯量相关的，而是有些任意的。
+
+\subsection*{PD加重力控制器的检验}
+
+一种激励PD加重力控制器[Arimoto和Miyazaki 1986]的方法[Slotine 1988]是将机械臂动力学写成能量守恒形式：
+
+\begin{equation}\label{eq:energy-conservation}
+\frac{d}{dt}\left[\frac{1}{2}\dot{q}^T M(q) \dot{q}\right] = \dot{q}^T (\tau - G(q) - F(\dot{q}))
+\end{equation}
+
+其中(6.3.1)的左侧是机械臂动能的导数，(6.3.1)的右侧表示来自执行器的功率减去由于重力和摩擦而耗散的功率。注意，科里奥利和向心项在(6.3.1)中得到了解释，因为这些项与惯性矩阵的时间导数有关。
+
+假设我们现在想要为能量守恒形式(6.3.1)中给出的系统设计恒定点控制器（即，$\dot{q}_d = 0$）。首先，我们选择惯量相关的Lyapunov函数：
+
+\begin{equation}\label{eq:inertia-lyapunov}
+V = \frac{1}{2}\dot{q}^T M(q) \dot{q} + \frac{1}{2}e^T K_p e
+\end{equation}
+
+由于Lyapunov函数可以从启发式上理解为能量函数，这个Lyapunov函数似乎相当合理。也就是说，Lyapunov函数由机器人机械臂系统的动能和额外的能量阻尼项$\frac{1}{2}e^T K_p e$组成。这个能量阻尼项可以被理解为使用物理弹簧使机械臂表现更好。
+
+对时间微分(6.3.2)得到：
+
+\begin{equation}\label{eq:lyapunov-deriv2}
+\dot{V} = \dot{q}^T M(q)\ddot{q} + \frac{1}{2}\dot{q}^T \dot{M}(q)\dot{q} - e^T K_p \dot{q}
+\end{equation}
+
+将(6.3.1)代入(6.3.3)，我们有：
+
+\begin{equation}\label{eq:lyapunov-subst2}
+\dot{V} = \dot{q}^T (\tau - G(q) - F(\dot{q})) - e^T K_p \dot{q}
+\end{equation}
+
+因为我们正在解决定点控制问题。由于希望$\dot{V}$至少为负半定，控制：
+
+\begin{equation}\label{eq:pd-gravity}
+\tau = K_p e - K_v \dot{q} + G(q)
+\end{equation}
+
+受到(6.3.4)形式的激励。也就是说，将(6.3.5)代入(6.3.4)得到：
+
+\begin{equation}\label{eq:lyapunov-negative2}
+\dot{V} = -\dot{q}^T K_v \dot{q} - \dot{q}^T F(\dot{q})
+\end{equation}
+
+上面的分析说明$V$除了在$\dot{q} = 0$时外都在减小。我们现在使用这些信息来说明达到了期望的设定点$q_d$。也就是说，如果$\dot{q} = 0$，则$\ddot{q} = 0$，且$\dot{e} = 0$；因此对于$\dot{q} = \ddot{q} = 0$，我们可以利用(6.2.1)和(6.3.5)以$K_p e = 0$的形式写出闭环系统，这意味着$e = 0$。从第1章中，现在可以使用LaSalle定理来证明跟踪误差$e$是渐近稳定的。
+
+\subsection*{自适应惯量相关控制器}
+
+尽管(6.3.5)中给出的控制器利用了能量守恒特性，但它有两个缺点。首先，控制器仅仅确保机械臂达到期望的设定点。一般来说，机器人控制设计者必须确保机械臂跟踪期望的时变轨迹。其次，控制器需要机器人机械臂模型中任何相关参数的精确知识，因为控制律(6.3.5)中包含了重力和摩擦项。
+
+在[Slotine和Li 1985(a)]中，利用(6.3.1)中给出的能量守恒公式为轨迹跟踪问题设计了自适应控制器。这种控制器可以以与我们处理PD加重力控制器大致相同的方式得到激励。换句话说，我们使用稳定性分析来帮助我们找到自适应控制器。由于我们正在设计自适应轨迹跟踪控制器，我们应该选择是跟踪误差和参数误差函数的Lyapunov函数。Slotine选择了惯量相关的Lyapunov类函数：
+
+\begin{equation}\label{eq:slotine-lyapunov}
+V = \frac{1}{2}r^T M(q) r + \frac{1}{2}\tilde{\varphi}^T \Gamma^{-1} \tilde{\varphi}
+\end{equation}
+
+其中
+
+\begin{equation}\label{eq:r-def}
+r = \dot{e} + \Lambda e
+\end{equation}
+
+其中$\Gamma$如(6.2.11)中定义，$\Lambda$定义为正定的对角矩阵，使得：
+
+\begin{equation}
+\Lambda = \text{diag}(\lambda_1, \lambda_2, \ldots, \lambda_n)
+\end{equation}
+
+$\tilde{\varphi}$如(6.2.9)中定义。(6.3.8)中给出的辅助信号$r(t)$可以被认为是滤波后的跟踪误差。
+
+对时间微分(6.3.7)后，我们有：
+
+\begin{equation}\label{eq:v-deriv}
+\dot{V} = r^T M(q)\dot{r} + \frac{1}{2}r^T \dot{M}(q)r + \tilde{\varphi}^T \Gamma^{-1} \dot{\tilde{\varphi}}
+\end{equation}
+
+从(6.3.9)中很明显我们必须用变量$r$替代；因此，我们必须用$r$写出机器人方程。使用(6.2.1)，机器人动力学可以重写为：
+
+\begin{equation}\label{eq:robot-r}
+\tau = M(q)\dot{r} + V_m(q, \dot{q})r + Y(\cdot)\varphi
+\end{equation}
+
+其中
+
+\begin{equation}\label{eq:Y-def}
+Y(\cdot)\varphi = V_m(q, \dot{q})(\dot{q}_d + \Lambda e) + M(q)(\ddot{q}_d + \Lambda \dot{e}) + G(q) + F(\dot{q})
+\end{equation}
+
+$Y(\cdot)$是$n \times r$已知时间函数矩阵。这是与自适应计算力矩控制器公式中使用的相同类型的参数分离；然而，注意$Y(\cdot)$不是关节加速度的函数！
+
+将(6.3.10)代入(6.3.9)得到：
+
+\begin{equation}\label{eq:v-subst}
+\dot{V} = r^T (\tau - V_m(q, \dot{q})r - Y(\cdot)\varphi) + \frac{1}{2}r^T \dot{M}(q)r + \tilde{\varphi}^T \Gamma^{-1} \dot{\tilde{\varphi}}
+\end{equation}
+
+应用斜对称性质（参见第2章），我们可以将(6.3.12)写成：
+
+\begin{equation}\label{eq:v-skew}
+\dot{V} = r^T (\tau - Y(\cdot)\varphi) + \tilde{\varphi}^T \Gamma^{-1} \dot{\tilde{\varphi}}
+\end{equation}
+
+再次，稳定性分析引导我们选择扭矩控制器和自适应更新规则。也就是说，如果我们选择扭矩控制为：
+
+\begin{equation}\label{eq:torque-control}
+\tau = Y(\cdot)\hat{\varphi} + K_v r
+\end{equation}
+
+(6.3.13)变为：
+
+\begin{equation}\label{eq:v-with-control}
+\dot{V} = -r^T K_v r + \tilde{\varphi}^T (\Gamma^{-1} \dot{\tilde{\varphi}} + Y^T(\cdot)r)
+\end{equation}
+
+通过选择自适应更新规则为：
+
+\begin{equation}\label{eq:adaptive-update2}
+\dot{\hat{\varphi}} = \Gamma Y^T(\cdot)r
+\end{equation}
+
+(6.3.15)变为：
+
+\begin{equation}\label{eq:v-negative}
+\dot{V} = -r^T K_v r
+\end{equation}
+
+我们现在详细说明跟踪误差的稳定性类型。首先，由于(6.3.17)中的$\dot{V}$是负半定的，我们可以说(6.3.7)中的$V$是上有界的。利用$V$是上有界的，$M(q)$是正定矩阵（参见第2章）这一事实，我们可以说$r$和$\tilde{\varphi}$是有界的。从(6.3.8)中给出的$r$的定义，我们可以使用标准线性控制论证来说明$e$和$\dot{e}$（因此$q$和$\dot{q}$）是有界的。由于$e$、$\dot{e}$、$r$和$\tilde{\varphi}$是有界的，我们可以使用(6.3.10)和(6.3.14)来证明$\dot{r}$（因此$\ddot{e}$，通过对(6.3.17)微分得到）是有界的。其次，注意由于$M(q)$是下有界的，我们可以说(6.3.7)中给出的$V$是下有界的。由于$\dot{V}$是下有界的，$\dot{V}$是负半定的，$\ddot{V}$是有界的，我们可以使用Barbalat引理（参见第1章）来说明：
+
+\begin{equation}\label{eq:r-converge}
+\lim_{t \to \infty} r = 0
+\end{equation}
+
+这意味着根据Rayleigh-Ritz定理（参见第1章）：
+
+\begin{equation}\label{eq:r-converge2}
+\lim_{t \to \infty} e = 0
+\end{equation}
+
+注意(6.3.8)是一个由"输入"$r$驱动的稳定一阶微分方程；因此，根据标准线性控制论证和(6.3.19)，我们可以写出：
+
+\begin{equation}\label{eq:edot-converge}
+\lim_{t \to \infty} \dot{e} = 0
+\end{equation}
+
+这一结果告诉我们跟踪误差$e$和$\dot{e}$是渐近稳定的。同样，从上面的分析中，我们只能说参数误差保持有界。稍后，我们将展示在期望轨迹的某些条件下，参数误差也收敛到零。
+
+表6.3.1总结了上述导出的自适应控制器，图6.3.1描绘了该控制器。
+
+浏览表6.3.1后，我们可以看到，关于自适应计算力矩控制器的限制已被消除。具体来说，对于自适应惯量相关控制器，我们不需要加速度测量或任何临时调整参数估计来确保$\hat{M}^{-1}(q)$存在。
+
+\begin{table}[H]
+\centering
+\caption{自适应惯量相关控制器}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{控制器} & \\ \hline
+扭矩控制 & $\tau = Y(\cdot)\hat{\varphi} + K_v r$ \\ \hline
+自适应更新规则 & $\dot{\hat{\varphi}} = \Gamma Y^T(\cdot)r$ \\ \hline
+辅助信号 & $r = \dot{e} + \Lambda e$ \\ \hline
+增益条件 & $K_v, \Lambda, \Gamma$是正定对角矩阵 \\ \hline
+信号定义 & $e = q_d - q$ \\ \hline
+稳定性结果 & $e, \dot{e}$渐近稳定，$\tilde{\varphi}$有界 \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{例6.3-1：自适应惯量相关控制器}
+
+我们希望为图6.2.1所示的两连杆机械臂设计和仿真表6.3.1中给出的自适应惯量相关控制器。假设摩擦可忽略不计且连杆长度完全已知，自适应惯量相关扭矩控制器可以写为：
+
+\begin{equation}
+\tau_1 = Y_{11}\hat{m}_1 + Y_{12}\hat{m}_2 + k_{v1}r_1
+\end{equation}
+
+和
+
+\begin{equation}
+\tau_2 = Y_{21}\hat{m}_1 + Y_{22}\hat{m}_2 + k_{v2}r_2
+\end{equation}
+
+在扭矩控制表达式中，回归矩阵$Y(\cdot)$由下式给出：
+
+\begin{equation}
+Y(\cdot) = \begin{bmatrix} Y_{11} & Y_{12} \\ Y_{21} & Y_{22} \end{bmatrix}
+\end{equation}
+
+其中
+
+\begin{align}
+Y_{11} &= l_1^2(\ddot{q}_{d1} + \lambda_1\dot{e}_1) + g l_1 C_1 \\
+Y_{12} &= l_1^2(\ddot{q}_{d1} + \lambda_1\dot{e}_1) + l_1 l_2 C_2(2\ddot{q}_{d1} + 2\lambda_1\dot{e}_1 + \ddot{q}_{d2} + \lambda_2\dot{e}_2) + l_2^2(\ddot{q}_{d1} + \lambda_1\dot{e}_1 + \ddot{q}_{d2} + \lambda_2\dot{e}_2) \\
+&\quad + l_1 l_2 S_2(\dot{q}_2(\dot{q}_{d1} + \lambda_1 e_1) - (\dot{q}_1 + \dot{q}_2)(\dot{q}_{d1} + \lambda_1 e_1 + \dot{q}_{d2} + \lambda_2 e_2)) + g(l_1 C_1 + l_2 C_{12})
+\end{align}
+
+按照表6.3.1中给出的方式制定自适应更新规则，相关的参数估计向量为：
+
+\begin{equation}
+\hat{\varphi} = \begin{bmatrix} \hat{m}_1 \\ \hat{m}_2 \end{bmatrix}
+\end{equation}
+
+带有自适应更新规则：
+
+\begin{equation}
+\dot{\hat{m}}_1 = \gamma_1(Y_{11}r_1 + Y_{21}r_2)
+\end{equation}
+
+和
+
+\begin{equation}
+\dot{\hat{m}}_2 = \gamma_2(Y_{12}r_1 + Y_{22}r_2)
+\end{equation}
+
+对于$m_1 = 0.8$ kg和$m_2 = 2.3$ kg，在$k_{v1} = k_{v2} = 10$、$\lambda_1 = \lambda_2 = 2.5$、$\gamma_1 = \gamma_2 = 20$、$\hat{m}_1(0) = 0$、$\hat{m}_2(0) = 0$以及例6.2.1中给出的相同期望轨迹和初始关节条件下，对自适应惯量相关控制器进行了仿真。跟踪误差和质量估计如图6.3.2所示。如图所示，跟踪误差是渐近稳定的，参数估计保持有界。
+
+%========================================
+\section{基于无源性的自适应控制器}\label{sec:passivity}
+%========================================
+
+近年来，许多作者开发了在扭矩控制律或自适应更新规则方面不同的自适应控制方案。为了统一其中一些方法，基于无源性方法开发了一般的自适应控制策略（参见[Ortega和Spong 1988]和[Brogliato等1990]）。在本节中，我们说明如何使用无源性方法来开发一类用于机器人机械臂控制的扭矩控制律和自适应更新规则。
+
+\subsection*{无源自适应控制器}
+
+首先，我们定义一个类似于为自适应惯量相关控制器定义的辅助滤波跟踪误差变量。也就是说，我们定义跟踪变量为：
+
+\begin{equation}\label{eq:tracking-var}
+r(s) = H(s)e(s)
+\end{equation}
+
+其中
+
+\begin{equation}\label{eq:H-def}
+H(s) = [sI + K(s)]^{-1}
+\end{equation}
+
+$s$是Laplace变换变量。在(6.4.2)中，$n \times n$增益矩阵$K(s)$的选择使得$H(s)$是严格真、稳定的传递函数矩阵。稍后在本节中分析我们稍后提出的自适应控制器的稳定性时，这一限制的原因将变得清晰。
+
+与前几节一样，我们的自适应控制策略一直集中在将已知时间函数与未知常参数分离的能力上。因此，我们使用(6.4.1)和(6.4.2)中给出的表达式来定义：
+
+\begin{equation}\label{eq:Z-def}
+Z(\cdot)\varphi = M(q)\dot{r} + V_m(q, \dot{q})r - \tau + M(q)K(s)e + V_m(q, \dot{q})K(s)e
+\end{equation}
+
+其中在这种控制公式中，$Z(\cdot)$是已知的$n \times r$回归矩阵。[注意(6.4.3)中的标准符号滥用，其中$K(s)e$用于表示$K(s)$与$e(t)$卷积的逆Laplace变换。]重要的是要注意，可以选择$K(s)$使得$Z(\cdot)$和$r$不依赖于$\ddot{q}$的测量。实际上，如果选择$K(s)$使得$H(s)$的相对度为1[Kailath 1980]，$Z(\cdot)$和$r$将不依赖于$\ddot{q}$。
+
+本节中给出的自适应控制公式称为无源性方法，因为$-r \rightarrow Z(\cdot)$的映射被构造为无源映射。也就是说，我们构造一个自适应更新规则使得：
+
+\begin{equation}\label{eq:passivity}
+\int_0^t -r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma \geq -\beta
+\end{equation}
+
+对所有时间和某个正标量常数$\beta$都满足。这一无源性概念用于分析误差系统的稳定性，正如我们将展示的。然而，现在让我们说明(6.4.4)在生成自适应更新规则中的使用。
+
+\textbf{例6.4-1：无源性自适应更新规则}
+
+让我们证明自适应更新规则：
+
+\begin{equation}
+\dot{\hat{\varphi}} = -\Gamma Z^T(\cdot)r
+\end{equation}
+
+满足(6.4.4)给出的不等式。注意$\Gamma$如(6.2.11)中定义。
+
+首先将(1)写成以下形式：
+
+\begin{equation}
+\dot{\tilde{\varphi}} = \Gamma Z^T(\cdot)r
+\end{equation}
+
+其中我们使用了$\Gamma$是对角矩阵这一事实。将(2)代入(6.4.4)得到：
+
+\begin{equation}
+\int_0^t -r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma = \int_0^t \tilde{\varphi}^T(\sigma)\Gamma^{-1}\dot{\tilde{\varphi}}(\sigma)d\sigma
+\end{equation}
+
+由于$\Gamma$是常数矩阵，我们可以使用乘积规则将(3)重写为：
+
+\begin{equation}
+\int_0^t -r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma = \frac{1}{2}\int_0^t \frac{d}{dt}\left[\tilde{\varphi}^T(\sigma)\Gamma^{-1}\tilde{\varphi}(\sigma)\right]d\sigma
+\end{equation}
+
+或
+
+\begin{equation}
+\int_0^t -r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma = \frac{1}{2}\tilde{\varphi}^T(t)\Gamma^{-1}\tilde{\varphi}(t) - \frac{1}{2}\tilde{\varphi}^T(0)\Gamma^{-1}\tilde{\varphi}(0)
+\end{equation}
+
+从(5)中现在很明显，如果$\beta$选择为：
+
+\begin{equation}
+\beta = \frac{1}{2}\tilde{\varphi}^T(0)\Gamma^{-1}\tilde{\varphi}(0)
+\end{equation}
+
+那么(6.4.4)中给出的无源性积分对于(1)中给出的自适应更新规则是满足的。
+
+现在我们已经了解了如何使用无源性积分(6.4.4)来生成自适应更新规则，我们使用无源性的概念来分析一类自适应控制器的稳定性。对于这类自适应控制器，扭矩控制由下式给出：
+
+\begin{equation}\label{eq:passivity-control}
+\tau = Z(\cdot)\hat{\varphi} + K_v r
+\end{equation}
+
+注意，通过为$K(s)$选择不同的传递函数矩阵，可以从(6.4.5)生成许多类型的扭矩控制器。也就是说，对于不同的$K(s)$，我们有不同类型的反馈，因为反馈项$K_v r$会相应地改变。
+
+为了形成误差系统，将机器人动力学(6.2.1)用跟踪误差变量$r$和回归矩阵$Z(\cdot)$重写为：
+
+\begin{equation}\label{eq:error-passivity}
+M(q)\dot{r} + V_m(q, \dot{q})r = Z(\cdot)\tilde{\varphi} - K_v r
+\end{equation}
+
+将(6.4.5)代入(6.4.6)得到跟踪误差系统：
+
+\begin{equation}\label{eq:tracking-error-passivity}
+M(q)\dot{r} + V_m(q, \dot{q})r + K_v r = Z(\cdot)\tilde{\varphi}
+\end{equation}
+
+为了分析该系统的稳定性，我们使用Lyapunov类函数：
+
+\begin{equation}\label{eq:lyapunov-passivity}
+V = \frac{1}{2}r^T M(q) r + \beta - \int_0^t r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma
+\end{equation}
+
+[Ortega和Spong 1988]。注意$V$是正的，因为参数估计更新规则被构造为保证(6.4.4)。也就是说，如果满足(6.4.4)，那么：
+
+\begin{equation}
+\beta - \int_0^t r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma \geq 0
+\end{equation}
+
+因此，$V$是正标量函数。对时间微分(6.4.8)得到：
+
+\begin{equation}\label{eq:v-deriv-passivity}
+\dot{V} = r^T M(q)\dot{r} + \frac{1}{2}r^T \dot{M}(q)r - r^T Z(\cdot)\hat{\varphi}
+\end{equation}
+
+将(6.4.7)代入(6.4.10)得到：
+
+\begin{equation}\label{eq:v-subst-passivity}
+\dot{V} = -r^T K_v r + r^T Z(\cdot)\tilde{\varphi} - r^T Z(\cdot)\hat{\varphi}
+\end{equation}
+
+利用斜对称性质（参见第2章），可以将上式写成：
+
+\begin{equation}\label{eq:v-skew-passivity}
+\dot{V} = -r^T K_v r - r^T Z(\cdot)\hat{\varphi}
+\end{equation}
+
+我们现在详细说明跟踪误差的稳定性类型。首先从(6.4.12)可以看出，我们可以对$\dot{V}$放置新的上界：
+
+\begin{equation}
+\dot{V} \leq -\lambda_{\min}\{K_v\}\|r\|^2 - r^T Z(\cdot)\hat{\varphi}
+\end{equation}
+
+上式也可以写成：
+
+\begin{equation}
+\dot{V} \leq -\lambda_{\min}\{K_v\}\|r\|^2 - \frac{d}{dt}\left(\int_0^t r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma\right)
+\end{equation}
+
+将(6.4.14)乘以-1并积分左侧得到：
+
+\begin{equation}
+-\int_0^t \dot{V}(\sigma)d\sigma \geq \lambda_{\min}\{K_v\}\int_0^t \|r(\sigma)\|^2 d\sigma + \int_0^t r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma
+\end{equation}
+
+由于$\dot{V}$如(6.4.12)所描述的是负半定的，我们可以说$V$是一个非增函数，上界为$V(0)$。通过回忆$M(q)$是下有界的，如惯性矩阵的正定性质所描述的（参见第2章），我们可以说(6.4.8)中给出的$V$以零为下界。由于$V$是非增的，上界为$V(0)$，下界为$0$，我们可以将(6.4.15)写成：
+
+\begin{equation}
+V(0) - V(\infty) \geq \lambda_{\min}\{K_v\}\int_0^t \|r(\sigma)\|^2 d\sigma + \int_0^t r^T(\sigma)Z(\sigma)\hat{\varphi}(\sigma)d\sigma
+\end{equation}
+
+或
+
+\begin{equation}
+V(0) + \beta \geq \lambda_{\min}\{K_v\}\int_0^t \|r(\sigma)\|^2 d\sigma
+\end{equation}
+
+(6.4.17)给出的边界告诉我们$r \in L_2^{n}$（参见第1章），这意味着滤波后的跟踪$r$以(6.4.17)给出的"特殊"方式有界。
+
+为了为位置跟踪误差$e$建立稳定性结果，我们建立位置跟踪误差与滤波跟踪误差$r$之间的传递函数关系。从(6.4.1)我们可以说明：
+
+\begin{equation}\label{eq:transfer-e-r}
+e(s) = H(s)r(s)
+\end{equation}
+
+其中$H(s)$如(6.4.2)中定义。由于$H(s)$是严格真、渐近稳定的传递函数矩阵，$r \in L_2^{n}$，我们可以使用第1章中的定理1.4.7来说明：
+
+\begin{equation}\label{eq:e-converge}
+\lim_{t \to \infty} e = 0
+\end{equation}
+
+上面的结果告诉我们位置跟踪误差是渐近稳定的。根据上面的理论发展，我们只能说速度跟踪误差是有界的。
+
+\begin{table}[H]
+\centering
+\caption{无源性自适应控制器类}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{控制器} & \\ \hline
+扭矩控制 & $\tau = Z(\cdot)\hat{\varphi} + K_v r$ \\ \hline
+无源性条件 & $\int_0^t -r^T Z \hat{\varphi} d\sigma \geq -\beta$ \\ \hline
+跟踪变量 & $r(s) = H(s)e(s)$ \\ \hline
+传递函数 & $H(s) = [sI + K(s)]^{-1}$ \\ \hline
+增益条件 & $K_v$正定，$H(s)$严格真、稳定 \\ \hline
+稳定性结果 & $e$渐近稳定，$\dot{e}$有界 \\ \hline
+\end{tabular}
+\end{table}
+
+无源性方法给出了一类扭矩控制律。我们用一些例子来说明这一概念，这些例子统一了自适应控制中的一些研究。
+
+\textbf{例6.4-2：自适应惯量相关控制器的无源性}
+
+在这个例子中，我们展示了如何使用无源性概念导出自适应惯量相关控制器。首先，注意通过在表6.4.1中定义：
+
+\begin{equation}
+K(s) = \Lambda
+\end{equation}
+
+和
+
+\begin{equation}
+H(s) = [sI + \Lambda]^{-1}
+\end{equation}
+
+我们得到扭矩控制律：
+
+\begin{equation}
+\tau = Z(\cdot)\hat{\varphi} + K_v r
+\end{equation}
+
+其中
+
+\begin{equation}
+Z(\cdot)\hat{\varphi} = \hat{M}(q)(\ddot{q}_d + \Lambda \dot{e}) + \hat{V}_m(q, \dot{q})(\dot{q}_d + \Lambda e) + \hat{G}(q) + \hat{F}(\dot{q})
+\end{equation}
+
+这对应于(6.3.11)中给出的定义；因此，使用(2)，我们得到了表6.3.1中给出的自适应惯量相关扭矩控制器。
+
+最后一项要检查的是自适应惯量相关更新规则是否满足表6.4.1中给出的无源性积分。从表6.3.1中，自适应惯量相关更新规则可以写成：
+
+\begin{equation}
+\dot{\hat{\varphi}} = \Gamma Z^T(\cdot)r
+\end{equation}
+
+对于(1)中给出的$K(s)$选择。重新检查例6.4-1，现在很明显我们已经用无源性方法导出了自适应惯量相关控制器。
+
+\textbf{例6.4-3：PID扭矩控制律}
+
+在例6.4-2中，扭矩控制律被证明为：
+
+\begin{equation}
+\tau = \hat{M}(q)\ddot{q}_d + \hat{V}_m(q, \dot{q})\dot{q} + \hat{G}(q) + K_v r + K_p e
+\end{equation}
+
+该扭矩控制器是比例-微分（PD）反馈控制器，因为我们在反馈部分使用了$e$和$\dot{e}$。现在希望找到表6.4.1中$K(s)$的选择，以给出形式为：
+
+\begin{equation}
+\tau = \hat{M}(q)\ddot{q}_d + \hat{V}_m(q, \dot{q})\dot{q} + \hat{G}(q) + K_p e + K_i \int e dt + K_v \dot{e}
+\end{equation}
+
+的比例-积分-微分（PID）型扭矩控制器。
+
+使用表6.4.1，我们可以选择：
+
+\begin{equation}
+K(s) = \Lambda + \frac{1}{s}\Psi
+\end{equation}
+
+其中$\Lambda$和$\Psi$是对角正定矩阵。现在我们必须验证$H(s)$是否确实是严格真、稳定的传递函数矩阵。对于这种$K(s)$选择，我们可以写出：
+
+\begin{equation}
+H(s) = \text{diag}\left[\frac{s}{s^2 + s\lambda_1 + \psi_1}, \ldots, \frac{s}{s^2 + s\lambda_n + \psi_n}\right]
+\end{equation}
+
+由于$\lambda_i$和$\psi_i$是正的，$H(s)$是严格真、稳定的传递函数矩阵。
+
+\subsection*{一般自适应更新规则}
+
+如前所述，表6.4.1中概述的自适应控制方案允许通过确保所提出的更新满足(6.4.4)中给出的无源性积分来制定不同的自适应更新律。Landau提出了满足无源性积分的一般更新规则：
+
+\begin{equation}\label{eq:general-update}
+\dot{\hat{\varphi}} = -\Gamma Z^T(\cdot)r - F_p Z^T(\cdot)r - \int_0^t F_I(t-\sigma)Z^T(\sigma)r(\sigma)d\sigma
+\end{equation}
+
+其中$F_p$是$r \times r$正定常数矩阵，$F_I(t)$是其Laplace变换是具有$s=0$处极点的正实传递函数矩阵的$r \times r$正定矩阵核[Landau 1979]。
+
+通过利用这一一般更新律，可以设计多种类型的自适应。我们需要记住的只是$F_I(t)$和$F_p$必须满足的条件。(6.4.20)直接得出的一个可能自适应方案是比例+积分（PI）自适应方案。PI更新律与(6.4.20)给出的相同，其中：
+
+\begin{equation}\label{eq:PI-update}
+F_I(t) = K_I
+\end{equation}
+
+$K_I$是对角常数正定矩阵。在[Landau 1979]中指出，关于自适应模型跟随，PI自适应比积分自适应显示出显着的改进。因此，这种自适应类型可能有益于机器人机械臂的跟踪控制。
+
+%========================================
+\section{持续激励}\label{sec:persistency}
+%========================================
+
+对于前几节中提出的自适应控制器，跟踪误差已被证明是渐近稳定的；然而，关于参数误差只能说它是有界的。一般来说，只有当回归矩阵满足某些条件时，自适应控制系统中才会发生参数识别。具体来说，几位研究人员[Morgan和Narendra 1977]、[Anderson 1977]研究了类似于我们在本章中提出的自适应控制系统的渐近稳定性。例如，如果回归矩阵$Y(\cdot)$满足：
+
+\begin{equation}\label{eq:persistency}
+\int_t^{t+\rho} Y^T(q, \dot{q})Y(q, \dot{q})d\sigma \geq \alpha I_r
+\end{equation}
+
+对所有$t \geq 0$，其中$\alpha$、$\beta$和$\rho$都是正标量。此外，由于跟踪误差是渐近稳定的，我们可以将(6.5.1)重写为：
+
+\begin{equation}\label{eq:persistency2}
+\int_t^{t+\rho} Y^T(q_d, \dot{q}_d)Y(q_d, \dot{q}_d)d\sigma \geq \alpha I_r
+\end{equation}
+
+其中参数$q$和$\dot{q}$已分别被$q_d$和$\dot{q}_d$替代。
+
+(6.5.2)中给出的条件告诉我们，如果$Y(\cdot)$在$\rho$给出的区间上变化足够大，使得整个$r$维参数空间被跨越，我们就知道参数误差收敛到零。这相当于对期望轨迹的条件，使得所有参数在经过足够的学习间隔后都会被识别。这一条件有助于制定期望轨迹，以确保识别诸如摩擦系数或负载质量之类的参数。我们现在用一些例子来说明持续激励轨迹的含义。
+
+\textbf{例6.5-1：单连杆机器人机械臂缺乏持续激励}
+
+我们希望研究图6.5.1所示单连杆机器人机械臂的持续激励条件。该机器人机械臂的动力学取为：
+
+\begin{equation}
+\tau = m\ddot{q} + b\dot{q}
+\end{equation}
+
+其中项$b$用于表示表示动态摩擦系数的正标量。我们假设该机器人机械臂在不受重力影响的平面内，$m$和$b$是未知的正常数。
+
+\textit{a. 自适应控制器}
+
+通过使用表6.3.1，动力学(1)的自适应惯量相关控制器可以证明由下式给出：
+
+\begin{equation}
+\tau = Y_{11}\hat{m} + Y_{12}\hat{b} + k_v r
+\end{equation}
+
+在扭矩控制表达式中，回归矩阵$Y(\cdot)$由下式给出：
+
+\begin{equation}
+Y(\cdot) = [Y_{11}, Y_{12}]
+\end{equation}
+
+其中
+
+\begin{align}
+Y_{11} &= \ddot{q}_d + \lambda \dot{e} \\
+Y_{12} &= \dot{q}
+\end{align}
+
+相应的参数估计向量为：
+
+\begin{equation}
+\hat{\varphi} = \begin{bmatrix} \hat{m} \\ \hat{b} \end{bmatrix}
+\end{equation}
+
+我们可以按照表6.3.1制定自适应更新规则为：
+
+\begin{equation}
+\dot{\hat{m}} = \gamma_1 Y_{11} r
+\end{equation}
+
+和
+
+\begin{equation}
+\dot{\hat{b}} = \gamma_2 Y_{12} r
+\end{equation}
+
+\textit{b. 持续激励}
+
+对于这个自适应控制器，希望从分析上证明$q_d = 1 - e^{-2t}$不是持续激励的。从(6.5.2)中，这个例子的持续激励条件的被积函数由下式给出：
+
+\begin{equation}
+Y^T(\cdot)Y(\cdot) = \begin{bmatrix} (\ddot{q}_d + \lambda \dot{q}_d)^2 & \dot{q}_d(\ddot{q}_d + \lambda \dot{q}_d) \\ \dot{q}_d(\ddot{q}_d + \lambda \dot{q}_d) & \dot{q}_d^2 \end{bmatrix}
+\end{equation}
+
+或
+
+\begin{equation}
+Y^T(\cdot)Y(\cdot) = \begin{bmatrix} 4e^{-4t} & 2e^{-2t}(1-e^{-2t}) \\ 2e^{-2t}(1-e^{-2t}) & (1-e^{-2t})^2 \end{bmatrix}
+\end{equation}
+
+将$Y^T(\cdot)Y(\cdot)$的第一列乘以2并加到第二列得到：
+
+\begin{equation}
+R_{YY} = \begin{bmatrix} 4e^{-4t} & 2e^{-2t} \\ 2e^{-2t}(1-e^{-2t}) & 1 \end{bmatrix}
+\end{equation}
+
+由于矩阵$R_{YY}$与矩阵$Y^T(\cdot)Y(\cdot)$具有相同的值域空间，我们可以从(7)中看出，矩阵$Y^T(\cdot)Y(\cdot)$的值域空间总是一维的；因此，持续激励条件对于$q_d = 1 - e^{-2t}$不成立。
+
+\textbf{例6.5-2：单连杆机械臂的持续激励}
+
+\textit{a. 单频期望轨迹}
+
+使用例6.5-1中的自适应控制器，我们想通过仿真证明$q_d = \sin t$不是持续激励的。对于$m = 1$ kg和$b = 1$ N-m-s，在：
+
+\begin{align}
+k_v &= 10, \quad \lambda = 5, \quad \gamma_1 = \gamma_2 = 10 \\
+\hat{m}(0) &= \hat{b}(0) = 0
+\end{align}
+
+的初始条件下，对自适应惯量相关控制器进行了仿真。跟踪误差和参数估计如图6.5.2所示。从图中可以看出，正如预期的那样，跟踪误差是渐近稳定的，参数估计保持有界。注意$\hat{m}$和$\hat{b}$不趋于零，因为期望轨迹不是持续激励的。
+
+\textit{b. 多频期望轨迹}
+
+使用例6.5-1中的自适应控制器，我们希望仿真证明$q_d = \sin t + \cos 3t$是持续激励的。例6.5-1中给出的自适应控制器应在与本例(a)部分相同的条件下仿真，只是改变期望轨迹。跟踪误差和参数误差如图6.5.3所示。如图所示，跟踪误差是渐近稳定的，参数估计保持有界。注意$\hat{b}$和$\hat{m}$分别收敛到$b$和$m$的精确值。这是因为期望轨迹是持续激励的。
+
+%========================================
+\section{复合自适应控制器}\label{sec:composite}
+%========================================
+
+在自适应计算力矩和自适应惯量相关控制策略中，我们已经证明跟踪误差是渐近稳定的，参数误差是有界的。然后说明如果持续激励条件成立，参数误差收敛到零。在某些机器人应用中，利用持续激励轨迹可能是不切实际的；因此，我们有动力重新设计自适应控制策略以实现参数识别。
+
+在本节中，我们展示了如何修改第6.3节中给出的自适应控制器，以确保跟踪误差和参数误差都渐近收敛[Slotine和Li 1985(b)]。参数误差的渐近收敛被证明在滤波回归矩阵的条件下成立。这个条件通常称为无限积分条件，比持续激励条件限制更少。
+
+设计新自适应控制器的过程可以概述如下。首先，从扭矩测量形成滤波回归矩阵。其次，展示如何使用这个滤波回归矩阵来制定未知参数的最小二乘估计器。最后，修改表6.3.1中的自适应更新规则以包含额外的最小二乘估计器项。
+
+\subsection*{扭矩滤波}
+
+我们现在展示如何从扭矩测量形成的回归矩阵可以滤波以消除加速度测量的需要。从第6.2节我们可以以以下形式写出机器人方程(6.2.1)：
+
+\begin{equation}\label{eq:robot-filter}
+\tau = M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) = W(q, \dot{q}, \ddot{q})\varphi
+\end{equation}
+
+(6.6.1)中的中间表达式写成以下形式：
+
+\begin{equation}\label{eq:middle-expr}
+\tau = h(q, \dot{q}, \ddot{q}) + g(q, \dot{q})
+\end{equation}
+
+其中
+
+\begin{equation}\label{eq:h-def}
+h(q, \dot{q}, \ddot{q}) = M(q)\ddot{q} + V_m(q, \dot{q})\dot{q}
+\end{equation}
+
+和
+
+\begin{equation}\label{eq:g-def}
+g(q, \dot{q}) = G(q) + F(\dot{q})
+\end{equation}
+
+以(6.6.2)给出的形式写出机器人方程的原因是，这个方程现在以允许$\ddot{q}$被滤波掉或移除的方式分离。也就是说，通过滤波(6.6.2)，我们有：
+
+\begin{equation}\label{eq:filtered}
+\tau_f = f * h + g_f
+\end{equation}
+
+其中$f$是线性稳定、严格真滤波器的脉冲响应，$*$用于表示卷积运算。例如，我们可以使用由以下给出的一阶滤波器：
+
+\begin{equation}\label{eq:first-order-filter}
+f(s) = \frac{a}{s + a}
+\end{equation}
+
+其中$a$是正标量常数。通过使用卷积的性质：
+
+\begin{equation}\label{eq:conv-prop}
+f * h = \dot{f} * (\dot{q} * M(q)) + f * [V_m(q, \dot{q})\dot{q}]
+\end{equation}
+
+我们可以将(6.6.5)重写为：
+
+\begin{equation}\label{eq:filtered2}
+\tau_f = \dot{f} * (M(q)\dot{q}) + f * [V_m(q, \dot{q})\dot{q}] + g_f
+\end{equation}
+
+在代入$h$和$g$的表达式后，注意$\ddot{q}$已被滤波掉。也就是说，滤波扭矩的显式表达式由下式给出：
+
+\begin{equation}\label{eq:explicit-filtered}
+\tau_f = \tilde{f}(q, \dot{q})\varphi
+\end{equation}
+
+其中$\tilde{f}$是适当、稳定滤波器的脉冲响应；例如，
+
+\begin{equation}
+\tilde{f}(s) = \frac{as}{s + a}
+\end{equation}
+
+根据线性，未知参数仍然可以与(6.6.9)分离。也就是说，(6.6.9)可以重写为：
+
+\begin{equation}\label{eq:filtered-regression}
+\tau_f = W_f(\cdot)\varphi
+\end{equation}
+
+其中$W_f(\cdot)$是$n \times r$滤波回归矩阵，$\varphi$是$r \times 1$未知参数向量。我们现在用一个例子来说明如何使用扭矩滤波来消除加速度测量的需要。
+
+\textbf{例6.6-1：单连杆机器人机械臂的扭矩滤波}
+
+使用例6.5-1中给出的单连杆机器人机械臂动力学，希望找到(6.6.11)中给出的滤波回归矩阵$W_f(q, \dot{q})$，其中线性滤波器由下式给出：
+
+\begin{equation}
+f(s) = \frac{1}{s + 1}
+\end{equation}
+
+或，在时域中，
+
+\begin{equation}
+f(t) = e^{-t}
+\end{equation}
+
+使用(6.6.9)，单连杆机械臂的滤波扭矩表达式由下式给出：
+
+\begin{equation}
+\tau_f = \tilde{f} * (m\dot{q}) + f * (b\dot{q})
+\end{equation}
+
+其中
+
+\begin{equation}
+\tilde{f}(s) = \frac{s}{s + 1}
+\end{equation}
+
+(3)中的表达式用于将已知函数与未知常数分离成以下形式：
+
+\begin{equation}
+\tau_f = W_f(\cdot)\varphi
+\end{equation}
+
+其中滤波回归矩阵和参数向量为：
+
+\begin{equation}
+W_f(\cdot) = [\dot{f} * \dot{q}, f * \dot{q}]
+\end{equation}
+
+和
+
+\begin{equation}
+\varphi = \begin{bmatrix} m \\ b \end{bmatrix}
+\end{equation}
+
+\subsection*{最小二乘估计}
+
+最小二乘估计方法已在许多类型的参数识别方案中使用[Astrom和Wittenmark 1989]。事实证明，即使期望轨迹不是持续激励的，这种类型的估计方法也能提取最大量的参数信息。这是为机器人机械臂设计自适应控制系统时要认识到的一个重要事实，因为在许多机器人应用中，持续激励条件将不成立。因此，最小二乘估计为机器人机械臂的自适应控制器设计提供了一个有吸引力的解决方案。
+
+我们现在展示如何使用最小二乘估计方法来生成自适应更新规则。首先，定义最小二乘更新规则：
+
+\begin{equation}\label{eq:least-squares}
+\dot{\hat{\varphi}} = -P W_f^T(\cdot)\tau_f
+\end{equation}
+
+其中
+
+\begin{equation}\label{eq:P-def}
+\dot{P} = -P W_f^T(\cdot)W_f(\cdot)P
+\end{equation}
+
+$P$是$r \times r$时变对称矩阵。
+
+通过这种最小二乘估计方法，如果"无限积分"条件成立，参数误差收敛到零。具体来说，如果：
+
+\begin{equation}\label{eq:infinite-integral}
+\lim_{t \to \infty} \lambda_{\min}\left\{\int_0^t W_f^T(\cdot)W_f(\cdot)d\sigma\right\} = \infty
+\end{equation}
+
+成立，那么：
+
+\begin{equation}\label{eq:param-converge}
+\lim_{t \to \infty} \tilde{\varphi} = 0
+\end{equation}
+
+如[Slotine和Li 1985(b)]中指出的，这一无限积分条件比持续激励条件限制更少。也就是说，在实际机器人应用中，(6.6.18)通常可以被验证。
+
+\textbf{例6.6-2：单连杆机器人机械臂的最小二乘估计器}
+
+使用例6.5-1中给出的单连杆机器人机械臂动力学，希望找到(6.6.16)和(6.6.17)中给出的最小二乘估计器。由于未知参数的数量为两个，定义矩阵$P$为：
+
+\begin{equation}
+P = \begin{bmatrix} p_1 & p_2 \\ p_2 & p_3 \end{bmatrix}
+\end{equation}
+
+利用例6.6-1中的滤波回归矩阵，我们有：
+
+\begin{equation}
+P W_f^T(\cdot) = \begin{bmatrix} p_1(\dot{f} * \dot{q}) + p_2(f * \dot{q}) \\ p_2(\dot{f} * \dot{q}) + p_3(f * \dot{q}) \end{bmatrix}
+\end{equation}
+
+其中
+
+\begin{equation}
+W_f(\cdot) = [\dot{f} * \dot{q}, f * \dot{q}]
+\end{equation}
+
+使用(6.6.17)，很容易看出矩阵$P$应该以下列方式更新：
+
+\begin{equation}
+\dot{p}_1 = -[p_1(\dot{f} * \dot{q}) + p_2(f * \dot{q})]^2
+\end{equation}
+
+\begin{equation}
+\dot{p}_2 = -[p_1(\dot{f} * \dot{q}) + p_2(f * \dot{q})][p_2(\dot{f} * \dot{q}) + p_3(f * \dot{q})]
+\end{equation}
+
+和
+
+\begin{equation}
+\dot{p}_3 = -[p_2(\dot{f} * \dot{q}) + p_3(f * \dot{q})]^2
+\end{equation}
+
+现在使用(6.6.16)，参数更新规则为：
+
+\begin{equation}
+\dot{\hat{m}} = -[p_1(\dot{f} * \dot{q}) + p_2(f * \dot{q})]\tau_f
+\end{equation}
+
+和
+
+\begin{equation}
+\dot{\hat{b}} = -[p_2(\dot{f} * \dot{q}) + p_3(f * \dot{q})]\tau_f
+\end{equation}
+
+其中，从(6.6.16)中，$\tau_f$由下式给出：
+
+\begin{equation}
+\tau_f = m(\dot{f} * \dot{q}) + b(f * \dot{q})
+\end{equation}
+
+\subsection*{复合自适应控制器}
+
+复合自适应控制器与表6.3.1中给出的控制器相同，只是自适应更新规则的修改。这一修改由下式给出：
+
+\begin{equation}\label{eq:composite}
+\dot{\hat{\varphi}} = \Gamma Y^T(\cdot)r - P W_f^T(\cdot)\tau_f
+\end{equation}
+
+为了证明跟踪误差和参数误差都收敛到零，从Lyapunov类函数开始：
+
+\begin{equation}\label{eq:lyapunov-composite}
+V = \frac{1}{2}r^T M(q) r + \frac{1}{2}\tilde{\varphi}^T P^{-1} \tilde{\varphi}
+\end{equation}
+
+对时间微分(6.6.29)得到：
+
+\begin{equation}\label{eq:v-deriv-composite}
+\dot{V} = r^T M(q)\dot{r} + \frac{1}{2}r^T \dot{M}(q)r + \tilde{\varphi}^T P^{-1} \dot{\tilde{\varphi}} + \frac{1}{2}\tilde{\varphi}^T \dot{P}^{-1} \tilde{\varphi}
+\end{equation}
+
+从表6.3.1中给出的控制律和第6.3节中的发展，我们可以形成跟踪误差系统：
+
+\begin{equation}\label{eq:error-composite}
+M(q)\dot{r} + V_m(q, \dot{q})r = Y(\cdot)\tilde{\varphi} - K_v r
+\end{equation}
+
+将(6.6.31)代入(6.6.30)得到：
+
+\begin{equation}\label{eq:v-subst-composite}
+\dot{V} = -r^T K_v r + \tilde{\varphi}^T (Y^T(\cdot)r + P^{-1} \dot{\tilde{\varphi}} + \frac{1}{2}\dot{P}^{-1} \tilde{\varphi})
+\end{equation}
+
+在将(6.6.21)中的$\dot{P}^{-1}$、(6.6.28)中的和(6.6.15)中的$\tau_f$代入(6.6.32)后，我们有：
+
+\begin{equation}\label{eq:v-combined-composite}
+\dot{V} = -r^T K_v r - \frac{1}{2}\tilde{\varphi}^T W_f^T(\cdot)W_f(\cdot)\tilde{\varphi}
+\end{equation}
+
+我们现在详细说明跟踪误差和参数误差的稳定性类型。首先，由于(6.6.33)中的$\dot{V}$至少是负半定的，形式为：
+
+\begin{equation}\label{eq:v-negative-composite}
+\dot{V} \leq -r^T K_v r
+\end{equation}
+
+我们可以说(6.6.29)中的$V$是有界的。由于$V$是有界的，$M(q)$是正定矩阵，$P^{-1}$满足(6.6.27)给出的条件，我们可以说$r$和$\tilde{\varphi}$是有界的。此外，从(6.3.8)中给出的$r$的定义，我们可以使用标准线性控制论证来说明$e$和$\dot{e}$（因此$q$和$\dot{q}$）是有界的。我们现在可以使用第6.4节中提出的相同论证来说明$\dot{r}$是有界的。给定$\dot{r}$是有界的，我们可以通过建立位置跟踪误差与滤波跟踪误差$r$之间的传递函数关系来确定位置跟踪误差的稳定性结果。从(6.3.8)中，我们可以说明：
+
+\begin{equation}\label{eq:transfer}
+e(s) = G(s)r(s)
+\end{equation}
+
+其中$s$是Laplace变换变量，
+
+\begin{equation}\label{eq:G-def}
+G(s) = [sI + \Lambda]^{-1}
+\end{equation}
+
+$I$是$n \times n$单位矩阵，$\Lambda$是$n \times n$正定矩阵。由于$G(s)$是严格真、渐近稳定的传递函数，$r \in L_2^{n}$，我们可以使用第1章中的定理1.4.7来说明：
+
+\begin{equation}\label{eq:e-converge-composite}
+\lim_{t \to \infty} e = 0
+\end{equation}
+
+其次，由于$\dot{V}$至少是负半定的，我们知道$V$必须是非增的，因此以$V(0)$为上界。此外，通过无限积分假设，我们在(6.6.27)中得出结论：
+
+\begin{equation}\label{eq:P-bound}
+\lim_{t \to \infty} \lambda_{\min}\{P^{-1}\} = \infty
+\end{equation}
+
+由于(6.6.29)中给出的$V$中的项$\frac{1}{2}\tilde{\varphi}^T P^{-1} \tilde{\varphi}$以$V(0)$为上界，我们可以看到为了使(6.6.38)成立，我们必须有：
+
+\begin{equation}\label{eq:param-zero}
+\lim_{t \to \infty} \tilde{\varphi} = 0
+\end{equation}
+
+因此，根据上面的论证，位置跟踪误差和参数误差对于表6.6.1中概述的复合自适应控制器都是渐近稳定的。根据上面的理论发展，我们只能说速度跟踪误差是有界的；然而，可以调用Barbalat引理来说明速度跟踪误差也是渐近稳定的。
+
+\begin{table}[H]
+\centering
+\caption{复合自适应控制器}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{控制器} & \\ \hline
+扭矩控制 & $\tau = Y(\cdot)\hat{\varphi} + K_v r$ \\ \hline
+自适应更新规则 & $\dot{\hat{\varphi}} = \Gamma Y^T(\cdot)r - P W_f^T(\cdot)\tau_f$ \\ \hline
+辅助信号 & $r = \dot{e} + \Lambda e$ \\ \hline
+滤波器 & $f(s) = \frac{a}{s + a}$ \\ \hline
+增益条件 & $K_v, \Lambda, \Gamma$正定对角，$a > 0$ \\ \hline
+稳定性结果 & $e, \tilde{\varphi}$渐近稳定，$\dot{e}$有界 \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{例6.6-3：单连杆机器人机械臂的复合自适应控制器}
+
+希望为图6.5.1所示的单连杆机器人机械臂制定复合自适应控制器。扭矩控制律与例6.5-1中的方程(2)给出的相同；因此，需要做的只是复合自适应更新规则的制定。从表6.6.1中，复合参数更新规则为：
+
+\begin{equation}
+\dot{\hat{m}} = \gamma_1 Y_{11} r - (p_1 W_{f11} + p_2 W_{f12})\tau_f
+\end{equation}
+
+和
+
+\begin{equation}
+\dot{\hat{b}} = \gamma_2 Y_{12} r - (p_2 W_{f11} + p_3 W_{f12})\tau_f
+\end{equation}
+
+其中$r$在(6.3.8)中定义，$Y_{11}, Y_{12}$在例6.5-1中定义，$p_1, p_2, p_3, W_{f11}, W_{f12}, \tau_f$在例6.6-2中定义。
+
+%========================================
+\section{自适应控制器的鲁棒性}\label{sec:robustness}
+%========================================
+
+所有讨论的自适应控制方案都确保机器人机械臂动力学的期望参考轨迹的渐近跟踪；然而，在现实中，我们知道在任何机电系统中总会有干扰。考虑某种干扰效应的一种简单方法是在机械臂动力学方程中添加有界干扰项。有了这个附加干扰项，机器人方程变为：
+
+\begin{equation}\label{eq:disturbance}
+\tau = M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) + T_d
+\end{equation}
+
+其中$T_d$是$n \times 1$向量，表示附加干扰。
+
+应用自适应惯量相关控制策略并忽略(6.7.1)中的$T_d$项，得到表6.3.1的自适应控制方案。然而，如果我们重新检查第6.3节中对自适应惯量相关控制器的稳定性分析，我们可以看到有界干扰项给我们提供了跟踪误差的不同类型的稳定性结果。具体来说，在(6.7.1)中添加了有界干扰项后，(6.3.7)中Lyapunov函数的导数变为：
+
+\begin{equation}\label{eq:lyapunov-disturbance}
+\dot{V} = -r^T K_v r + r^T T_d
+\end{equation}
+
+从(6.7.2)中很明显，$\dot{V}$不能再被认为是负半定的。从我们之前使用Lyapunov稳定性理论的经验来看，希望$\dot{V}$是"负的"；因此，找到(6.7.2)中$\dot{V}$为负的区域是有利的。通过使用Rayleigh-Ritz定理（参见第1章），我们可以将(6.7.2)写成：
+
+\begin{equation}\label{eq:rayleigh}
+\dot{V} \leq -\lambda_{\min}\{K_v\}\|r\|^2 + \|r\|\|T_d\|
+\end{equation}
+
+从(6.7.3)中，可以获得$\dot{V}$为负的充分条件。也就是说，如果：
+
+\begin{equation}\label{eq:condition}
+\|r\| > \frac{\|T_d\|}{\lambda_{\min}\{K_v\}}
+\end{equation}
+
+$\dot{V}$将为负。
+
+如果满足(6.7.4)，$\dot{V}$为负，$V$将减小。如果$V$减小，那么从(6.3.7)中给出的Lyapunov函数定义，$r$必须最终减小。然而，如果$r$减小使得：
+
+\begin{equation}\label{eq:small-r}
+\|r\| \leq \frac{\|T_d\|}{\lambda_{\min}\{K_v\}}
+\end{equation}
+
+那么$\dot{V}$可能为正，这意味着$V$将开始增加。如果$V$开始增加，我们通过检查两种可能性来深入了解问题。一，$V$的增加导致$r$增加，使得(6.7.4)被满足。这意味着$V$将开始减小，因此$r$将最终减小。如果$r$以这种方式持续增加和减小，那么$r$和$\tilde{\varphi}$都保持有界。另一种可能性是$V$的增加导致$\tilde{\varphi}$增加，而$r$保持足够小使得(6.7.5)被满足。在这种情况下，$V$保持为正；因此，$\tilde{\varphi}$可以继续增加。如果$V$以这种方式继续增加，$r$是有界的；然而，$\tilde{\varphi}$因此$\hat{\varphi}$都变得无界。
+
+上面的论证揭示了自适应惯量相关控制律中的参数估计在存在有界干扰时可能变得不稳定。也就是说，在假设机器人模型由(6.7.1)给出的情况下，参数估计可能发散。如果参数估计变得太大，我们可以从表6.3.1中看到输入扭矩将开始增长并可能使关节电机饱和；因此，修改自适应控制器以消除扭矩饱和的可能性是可取的。
+
+\textbf{例6.7-1：干扰对自适应控制的影响}
+
+在本例中，我们仿真例6.3-1中给出的相同自适应控制器，具有相同的控制参数、初始条件和期望轨迹；然而，我们在两连杆机械臂动力学中添加了由以下给出的干扰项：
+
+\begin{equation}
+T_{d1} = 2, \quad T_{d2} = 1
+\end{equation}
+
+跟踪误差和参数估计如图6.7.1所示。从图中可以看出，对于(1)中给出的干扰，参数估计不会变得无界；然而，跟踪误差不再是渐近稳定的。
+
+\subsection*{基于扭矩的干扰抑制方法}
+
+为了抑制机器人模型中的附加干扰项，我们说明了如果扭矩控制修改为：
+
+\begin{equation}\label{eq:torque-rejection}
+\tau = \tau_a + K_d \text{sgn}(r)
+\end{equation}
+
+其中$\tau_d$是表6.3.1中给出的扭矩控制，
+
+\begin{equation}\label{eq:k_d}
+K_d = \text{diag}\{k_{d1}, k_{d2}, \ldots, k_{dn}\}
+\end{equation}
+
+$\text{sgn}(\cdot)$用于表示符号函数，$k_d$是满足：
+
+\begin{equation}\label{eq:kd-condition}
+k_{di} > |T_{di}|_{max}
+\end{equation}
+
+的标量常数，$T_{di}$表示$n \times 1$向量$T_d$的第$i$个分量[Slotine和Li 1985(c)]。
+
+应用(6.7.6)中给出的干扰抑制控制器，(6.3.7)中Lyapunov函数的导数变为：
+
+\begin{equation}\label{eq:lyapunov-rejection}
+\dot{V} = -r^T K_v r + r^T T_d - r^T K_d \text{sgn}(r)
+\end{equation}
+
+通过注意：
+
+\begin{equation}\label{eq:signum}
+|r^T T_d| \leq \sum_{i=1}^n |r_i||T_{di}|_{max}
+\end{equation}
+
+和
+
+\begin{equation}
+r^T K_d \text{sgn}(r) = \sum_{i=1}^n k_{di}|r_i|
+\end{equation}
+
+(6.7.9)可以写成：
+
+\begin{equation}
+\dot{V} \leq -r^T K_v r - \sum_{i=1}^n (k_{di} - |T_{di}|_{max})|r_i|
+\end{equation}
+
+通过利用(6.7.8)，我们可以将(6.7.11)写成：
+
+\begin{equation}\label{eq:lyapunov-final}
+\dot{V} \leq -r^T K_v r
+\end{equation}
+
+第6.6节中的相同论证可以用来证明位置跟踪误差是渐近稳定的，而速度跟踪误差和参数估计是有界的。
+
+\textbf{例6.7-2：两连杆机器人机械臂的干扰抑制}
+
+在本例中，我们仿真(6.7.6)中给出的改进自适应控制器，具有与例6.3-1中相同的控制参数、初始条件和期望轨迹，以及例6.7-1中给出的干扰。改进的扭矩控制器由下式给出：
+
+\begin{equation}
+\tau_1 = \tau_{a1} + k_d \text{sgn}(r_1)
+\end{equation}
+
+和
+
+\begin{equation}
+\tau_2 = \tau_{a2} + k_d \text{sgn}(r_2)
+\end{equation}
+
+其中$\tau_{a1}$和$\tau_{a2}$是例6.3-1中给出的相同自适应扭矩控制器，$\lambda_1$和$\lambda_2$是例6.3-1中定义的相同标量常数，和
+
+\begin{equation}
+k_d = 3
+\end{equation}
+
+注意$k_d$已被选择为满足(6.7.8)中给出的条件，并且更新律与例6.3-1中给出的相同。跟踪误差和参数估计如图6.7.2所示。从图中我们注意到参数估计保持有界；此外，即使在存在干扰的情况下，跟踪误差现在也是渐近稳定的。重要的是要注意，对于上述基于扭矩的干扰抑制方法的理论发展，我们只保证速度跟踪误差是有界的。
+
+\subsection*{基于估计器的干扰抑制方法}
+
+在[Reed和Ioannou 1988]中，引入了$\sigma$-修改[Ioannou和Tsakalis 1985]的修改版本到自适应惯量相关控制算法[Slotine和Li 1985(a)]，以补偿机器人模型中的未建模动力学和有界干扰。在这种方法中，扭矩控制与表6.3.1中给出的相同；然而，自适应更新规则修改为：
+
+\begin{equation}\label{eq:sigma-modification}
+\dot{\hat{\varphi}} = \Gamma Y^T(\cdot)r - \sigma_s \Gamma \hat{\varphi}
+\end{equation}
+
+其中
+
+\begin{equation}\label{eq:sigma-def}
+\sigma_s = \begin{cases} 0 & \text{if } \|\hat{\varphi}\| \leq \varphi_0 \\ \sigma_0 \left(\frac{\|\hat{\varphi}\|}{\varphi_0} - 1\right) & \text{if } \varphi_0 \leq \|\hat{\varphi}\| \leq 2\varphi_0 \\ \sigma_0 & \text{if } \|\hat{\varphi}\| \geq 2\varphi_0 \end{cases}
+\end{equation}
+
+和
+
+\begin{equation}
+\sigma_0 \geq \frac{\|T_d\|^2}{\varphi_0^2 \lambda_{\min}\{K_v\} \lambda_{\min}\{\Gamma\}}
+\end{equation}
+
+通过更新规则(6.7.13)，Reed证明了跟踪误差可以被限制在一个残差集合内，所有闭环信号都是有界的。
+
+正如我们所展示的，有界干扰可能导致参数估计变得不稳定。(6.7.13)中给出的更新规则旨在通过在线调节参数估计的大小来解决这个问题。这是通过标量设计常数$\varphi_0$完成的。也就是说，通过检查参数估计的大小与$\varphi_0$，使用这个新的更新规则，参数估计被迫保持有界。可以清楚地看到，如果$\|\hat{\varphi}\| < \varphi_0$，更新规则与表6.3.1中给出的相同。换句话说，如果参数估计没有变得太大，控制器与自适应惯量相关控制器相同。另一方面，如果参数估计变得太大，修改自适应更新规则以确保参数估计保持有界。我们现在讨论这个$\sigma$-修改如何完成这一任务。
+
+为了激励(6.7.13)中给出的更新规则的制定，检查$\|\hat{\varphi}\| > \varphi_0$的情况。这是更新规则的稳定部分。也就是说，如果参数估计变得太大，更新规则切换为：
+
+\begin{equation}\label{eq:sigma-large}
+\dot{\hat{\varphi}} = \Gamma Y^T(\cdot)r - \sigma_0 \Gamma \hat{\varphi}
+\end{equation}
+
+或就参数误差而言，
+
+\begin{equation}\label{eq:param-error-large}
+\dot{\tilde{\varphi}} = -\Gamma Y^T(\cdot)r - \sigma_0 \Gamma \tilde{\varphi} + \sigma_0 \Gamma \varphi
+\end{equation}
+
+我们现在重新检查第6.3节中对自适应惯量相关控制器的稳定性分析，其中参数更新规则由(6.7.16)给出。具体来说，在(6.7.1)中添加了有界干扰项后，(6.3.7)中Lyapunov函数的导数变为：
+
+\begin{equation}\label{eq:lyapunov-sigma}
+\dot{V} = -r^T K_v r - \sigma_0 \tilde{\varphi}^T \Gamma \tilde{\varphi} + \sigma_0 \tilde{\varphi}^T \Gamma \varphi + r^T T_d
+\end{equation}
+
+或
+
+\begin{equation}\label{eq:lyapunov-sigma2}
+\dot{V} = -x^T K_s x + x^T h
+\end{equation}
+
+其中
+
+\begin{equation}
+x = \begin{bmatrix} r \\ \tilde{\varphi} \end{bmatrix}, \quad K_s = \begin{bmatrix} K_v & O_{n \times r} \\ O_{r \times n} & \sigma_0 \Gamma \end{bmatrix}, \quad h = \begin{bmatrix} T_d \\ \sigma_0 \Gamma \varphi \end{bmatrix}
+\end{equation}
+
+通过使用Rayleigh-Ritz定理（参见第1章），我们可以将(6.7.19)写成：
+
+\begin{equation}\label{eq:rayleigh-sigma}
+\dot{V} \leq -\lambda_{\min}\{K_s\}\|x\|^2 + \|x\|\|h\|
+\end{equation}
+
+从(6.7.21)中，如果：
+
+\begin{equation}\label{eq:condition-sigma}
+\|x\| > \frac{\|h\|}{\lambda_{\min}\{K_s\}}
+\end{equation}
+
+$\dot{V}$将为负。
+
+重要的是要注意(6.7.22)的右侧是常数；因此，如果满足(6.7.22)，$\dot{V}$为负，这导致$V$减小。如果$V$减小，那么从(6.3.7)中给出的Lyapunov函数定义，$x$必须最终减小。然而，如果$x$减小使得：
+
+\begin{equation}\label{eq:small-x}
+\|x\| \leq \frac{\|h\|}{\lambda_{\min}\{K_s\}}
+\end{equation}
+
+那么$\dot{V}$可能为正，这意味着$V$将开始增加。$V$的增加导致$x$增加，使得(6.7.22)被满足。这意味着$V$现在开始再次减小，因此$x$最终减小。这个论证说明了$x$是如何有界的。如果$x$是有界的，那么从(6.7.20)中，$r$和$\tilde{\varphi}$是有界的。由于$r$是有界的，标准线性控制论证可以用来证明$e$和$\dot{e}$是有界的。
+
+关于自适应更新规则(6.7.13)中的区域$\varphi_0 \leq \|\hat{\varphi}\| \leq 2\varphi_0$，现在讨论最后一点。自适应更新规则的这一部分用于确保自适应惯量相关更新规则和(6.7.16)中给出的更新规则的稳定部分之间存在平滑过渡。也就是说，这确保了我们不会在参数估计中获得任何不连续性，这可能导致输入扭矩中的大不连续性。输入扭矩信号中的大不连续性是不可取的，因为这种类型的信号可能导致机器人机械臂剧烈抖动。
+
+%========================================
+\section{总结}\label{sec:summary}
+%========================================
+
+在本章中，给出了刚性机器人几种最新自适应控制结果的描述。意图是为机器人机械臂不断增长的自适应控制结果列表提供一些视角。诸如瞬态行为、数字实现和对未建模动力学的鲁棒性等研究领域无疑将在未来得到解决。一个仍有待调查的问题是比较不同伺服和自适应律的优缺点。
+
+关于机器人机械臂的其他研究人员的一些优秀自适应控制工作在[Ortega和Spong 1988]中概述。由于这是一个研究如此充分的领域，本章中可用空间有限，我们对任何被遗漏的人表示歉意。
+
+%========================================
+\section*{参考文献}
+%========================================
+
+\begin{enumerate}
+\item {[Anderson 1977]} Anderson, B., ``Exponential stability of linear equations arising in adaptive identification,'' \textit{IEEE Trans. Autom. Control}, Feb. 1977, pp. 83--88.
+
+\item {[Arimoto and Miyazaki 1986]} Arimoto, S., and F. Miyazaki, ``Stability and robustness of PD feedback control with gravity compensation for robot manipulators,'' \textit{Robot. Theory Pract.}, DSC Vol. 3, pp. 67--72, ASME Winter Annual Meeting, Dec. 1986.
+
+\item {[Åström and Wittenmark 1989]} K. Åström and B. Wittenmark, \textit{Adaptive Control}. Reading, MA: Addison-Wesley, 1989.
+
+\item {[Brogliato et al. 1990]} Brogliato, B., I. Landau, and R. Lozano-Leal, ``Adaptive motion control of robot manipulators: a unified approach based on passitivity,'' \textit{Proc. IEEE Am. Controls Conf}, pp. 2259--2264, San Diego, CA, May 1990.
+
+\item {[Craig 1985]} Craig, J., \textit{Adaptive Control of Mechanical Manipulators}. Reading, MA.: Addison Wesley, 1985.
+
+\item {[Ioannou and Tsakalis 1985]} Ioannou, P., and K. Tsakalis, ``A robust direct adaptive controller,'' \textit{IEEE Trans. Autom. Control}, vol. AC-31, no. 11, pp. 1033--1043, 1985.
+
+\item {[Kailath 1980]} Kailath, T, \textit{Linear Systems}. Englewood Cliffs, NJ: Prentice Hall, 1980.
+
+\item {[Landau 1979]} Landau, Y., \textit{Adaptive Control: The Model Reference Approach}. New York: Marcel Dekker, 1979.
+
+\item {[Li and Slotine 1987]} Li, W., and J. Slotine, ``Parameter estimation strategies for robotic applications,'' ASME Winter Annual Meeting, Boston, 1987.
+
+\item {[Morgan and Narendra 1977]} Morgan, A., and K. Narendra, ``On the uniform asymptotic stability of certain linear nonautonomous differential equations,'' \textit{SIAM J. Control Optim.}, 1977, p. 15.
+
+\item {[Ortega and Spong 1988]} Ortega, R., and M. Spong, ``Adaptive motion control of rigid robots: a tutorial,'' \textit{Proc. IEEE Conf Decision Control}, Austin, TX, 1988.
+
+\item {[Reed and Ioannou 1988]} Reed, J., and P. Ioannou, ``Instability analysis and robust adaptive control of robotic manipulators,'' \textit{Proc. IEEE Conf Decision Control}, Austin, TX, 1988.
+
+\item {[Slotine 1988]} Slotine, J., (1988), ``Putting physics in control: the example of robotics,'' \textit{Control Syst. Mag.}, Dec. 1988, Vol. 8, pp 12--15.
+
+\item {[Slotine and Li 1985(a)]} Slotine, J., and W. Li, ``Theoretical issues in adaptive control,'' 5th Yale Workshop on Applications of Adaptive Systems Theory, Yale University, New Haven, CT, 1985(a).
+
+\item {[Slotine and Li 1985(b)]} Slotine, J., and W. Li, ``Adaptive robot control: a new perspective,'' \textit{Proc. IEEE Conf Decision Control}, Los Angeles, 1985(b).
+
+\item {[Slotine and Li 1985(c)]} Slotine, J., and W. Li, ``Adaptive strategies in constrained manipulation,'' \textit{Proc. IEEE Int. Conf Robot. Autom.}, Raleigh, NC, Mar. 1985(c), pp. 595--601.
+
+\item {[Vidyasagar 1978]} Vidyasagar, M., \textit{Nonlinear Systems Analysis}. Englewood Cliffs, NJ: Prentice Hall, 1978.
+\end{enumerate}
+
+%========================================
+\section*{习题}
+%========================================
+
+\textbf{第6.2节}
+
+\begin{enumerate}
+\item[6.2-1] 为第2章中给出的两连杆极坐标机器人机械臂设计和仿真表6.2.1中给出的自适应计算力矩控制器。
+
+\item[6.2-2] 找到与例6.2-2中给出的不同的正定、对称矩阵$P$和$Q$，满足：
+\[
+A^T P + PA = -Q
+\]
+其中
+\[
+A = \begin{bmatrix} O_n & I_n \\ -K_p & -K_v \end{bmatrix}
+\]
+$K_p$、$K_v$是对角正定矩阵，$O_n$、$I_n$分别表示$n \times n$零矩阵和$n \times n$单位矩阵。
+
+\item[6.2-3] 用习题6.2-2中找到的$P$和$Q$重做习题6.2-1，并报告跟踪误差性能的差异。
+\end{enumerate}
+
+\textbf{第6.3节}
+
+\begin{enumerate}
+\item[6.3-1] 为第2章中给出的两连杆极坐标机器人机械臂设计和仿真表6.3.1中给出的自适应惯量相关控制器。
+
+\item[6.3-2] 对于习题6.3-1中给出的仿真，用控制参数（即$\Lambda$、$K_v$、$\Gamma$）的不同值运行几次仿真，并报告对跟踪误差性能的影响。
+
+\item[6.3-3] 列举表6.3.1中给出的自适应控制器相对于表6.2.1中给出的自适应控制器的优点。
+
+\item[6.3-4] 如(6.3.8)中给出的，滤波跟踪误差定义为：
+\[
+r = \dot{e} + \Lambda e
+\]
+其中$\Lambda$是正定对角矩阵。证明如果
+\[
+\lim_{t \to \infty} r = 0
+\]
+那么
+\[
+\lim_{t \to \infty} e = 0 \quad \text{和} \quad \lim_{t \to \infty} \dot{e} = 0
+\]
+\end{enumerate}
+
+\textbf{第6.4节}
+
+\begin{enumerate}
+\item[6.4-1] 用例6.4-3中给出的PID伺服律和例6.4-1中给出的自适应律为例6.3-1中给出的两连杆旋转机械臂设计和仿真自适应控制器。报告与例6.3-1中给出的任何差异。
+
+\item[6.4-2] 用方程(6.4.20)和(6.4.21)给出的比例+积分自适应律重做习题6.4-1。
+\end{enumerate}
+
+\textbf{第6.5节}
+
+\begin{enumerate}
+\item[6.5-1] 从分析上证明例6.5-2中的$q_d = \sin t$不是持续激励的。
+\end{enumerate}
+
+\textbf{第6.6节}
+
+\begin{enumerate}
+\item[6.6-1] 证明
+\[
+\frac{d}{dt}[P^{-1}] = -P^{-1}\dot{P}P^{-1}
+\]
+
+\item[6.6-2] 仿真例6.6-3中给出的复合自适应控制器，并报告对跟踪误差的$P(0)$和$a$（即用于滤波回归矩阵的滤波器极点）不同值的影响。
+
+\item[6.6-3] 展示如何使用第1章中给出的Barbalat引理在复合自适应控制器的证明中得到
+\[
+\lim_{t \to \infty} \dot{e} = 0
+\]
+\end{enumerate}
+
+\textbf{第6.7节}
+
+\begin{enumerate}
+\item[6.7-1] 将附加有界干扰：
+\[
+T_d = \begin{bmatrix} 2 \\ 1 \end{bmatrix}
+\]
+添加到第2章中给出的两连杆极坐标机器人机械臂动力学，重做习题6.3-1。
+
+\item[6.7-2] 用习题6.7-1中给出的附加有界干扰和项
+\[
+K_d \text{sgn}(r)
+\]
+添加到自适应控制器，重做习题6.3-1。用$k_d$的不同值运行几次仿真，并报告对跟踪误差性能的影响。
+\end{enumerate}
+
+\end{document}

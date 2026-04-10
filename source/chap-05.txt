@@ -1,0 +1,2365 @@
+Chapter 5
+
+Robust Control of
+Robotic Manipulators
+In this chapter we discuss the control of robots when their dynamical model
+is uncertain. This may arise because the robot is carrying an unknown load
+or because the exact evaluation of the robot’s dynamics is too costly. The
+robust controllers in this chapter are obtained from modifications to the
+controllers designed in Chapter 4.
+
+
+5.1 Introduction
+
+The control of uncertain systems is usually accomplished using either an
+adaptive control or a robust control philosophy. In the adaptive approach,
+one designs a controller that attempts to “learn” the uncertain parameters
+of the system and, if properly designed, will eventually be a “best” controller
+for the system in question. In the robust approach, the controller has a fixed
+structure that yields “acceptable” performance for a class of plants which
+include the plant in question. In general, the adaptive approach is applicable
+to a wider range of uncertainties, but robust controller are simpler to
+implement and no time is required to “tune” the controller to the particular
+plant. In this chapter we review different robust control designs used in
+controlling the motion of robots. The adaptive control approach is discussed
+in Chapter 6. The robust control methods presented in this chapter may be
+used to analyze the performance of the simple controllers used by robot
+manufacturers which were discussed in Chapter 4, and to suggest
+improvements and modifications. In fact, we are able to determine the range
+
+                                                                           263
+Copyright © 2004 by Marcel Dekker, Inc.
+264                                       Robust Control of Robotic Manipulators
+
+of applicability of the simple PID controllers of Chapter 4, as a function of
+the inherent lack of knowledge of the robot’s dynamics.
+   The controllers designed in this chapter may be analyzed using input-
+output stability tools or state-space tools. In the input-output approach, the
+stability of the controlled robot is shown using the small-gain theorem or
+the passivity theorem. In the state-space approach, most designs are shown
+to be stable using Lyapunov-based arguments. See Chapter 2 for an overview
+of both approaches.
+   Consider the robot dynamics given in Chapter 3:
+
+                                                                         (5.1.1)
+
+and assume that a desired trajectory in joint space is specified by the time
+function                       . We will suppress the time dependence if no
+ambiguity results. Let qd, d, d, and d be bounded functions of time. In a
+fashion similar to Chapter 4, we assume the trajectory error e to have two
+components:
+
+                                                                         (5.1.2)
+
+The controllers of this chapter assume that measurements of q and are
+available. As described in Section 3.5, variables other than q and may be
+measured. The Cartesian computed-torque controllers of Section 4.7 provide
+a setting where Cartesian trajectory is to be followed directly. We limit our
+discussion to the case of joint measurements with the understanding that a
+desired trajectory in another coordinate system may be followed by first
+obtaining the corresponding joint trajectory then applying the methods of
+this chapter.
+   We may, however, assume that the measurements p and p of q and p are
+corrupted by a bounded noise, that is,
+
+                                                                         (5.1.3)
+
+where ||wi||≤ci.
+   In Section 5.2 we discuss the computed-torque-like controllers of Section
+4.4 and study their robustness properties. The section is divided into
+controllers whose robustness is deduced using Lyapunov stability and others
+whose robustness relies on input-output stability. Nonlinear controllers which
+are not necessarily derived from the computed-torque controllers are
+presented in Section 5.3. These include controllers that exploit the passivity
+of the robot dynamics and others which are variable-structure methods and
+saturation controllers without particular emphasis on the special properties
+of the robot. Finally, in Section 5.4 we review approaches that attempt to
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                      265
+
+robustify the controllers by modifying the robot dynamics either explicitly
+or implicitly.
+
+
+5.2 Feedback-Linearization Controllers
+
+The controllers designed in this section may be obtained as modification of
+the feedback-linearization (or computed-torque) controllers of Chapter 3.
+They are basically the computed-torque-like controllers of Section 4.4. We
+study both static and dynamic feedback designs and compare different
+controllers found in the literature. Note that such a study was started
+in Section 4.4 and some of the controllers introduced there will reappear in
+this chapter. The emphasis will be here on relating many of the controllers
+scattered through the literature and to give them a common theoretical
+justification.
+   We assume for simplicity that d = 0 in (5.1.1) and that wi=0 in (5.1.3),
+although the effects of bounded d and wi can be easily accounted for and
+will be considered in most examples. In a fashion similar to Chapter 4, the
+dynamics of the robot are transformed into the linear system
+
+
+
+
+and
+
+                                                                        (5.2.1)
+
+leading to the nonlinear computed-torque controller
+
+
+                                                                        (5.2.2)
+
+
+which, due to the invertibility of M(q), gives the following closed-loop system:
+
+                                          ë=u                           (5.2.3)
+
+which is described by the transfer function
+
+
+                                                                        (5.2.4)
+
+
+The problem is then reduced to finding a linear control u that will achieve
+a desired closed-loop performance; that is, find F, G, H, and J in
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+266                                       Robust Control of Robotic Manipulators
+
+
+
+
+or
+
+
+                                                                         (5.2.5)
+
+Not that the notion above indicates that u(t) is the output of a system C(s)
+when an input e(t) is applied. Note also from (5.2.4) that the different
+joints or the robot are decoupled so that at this level, n SISO separate
+controllers may be designed to control the n joints of the robot.
+Unfortunately, the control law (5.2.2) cannot usually be implemented due
+to its complexity or to uncertainties present in M(q) and N(q, ) and to the
+presence of d and wi. Instead, one applies  in (5.2.6) below where    and
+   are estimates of M and N,
+
+
+                                                                         (5.2.6)
+
+
+This in turn will reintroduce some coupling in the linear model and leads to
+(Fig. 5.5.1)
+
+
+
+
+                                                                         (5.2.7)
+
+
+
+Note first that , , and therefore  are zero if = M and = N. In general,
+however, the vector  is a nonlinear function of both e and u and cannot be
+treated as an external disturbance. It represents an internal disturbance of
+the globally linearized error dynamics caused by modelling uncertainties,
+parameter variations, external disturbances, friction terms, and maybe even
+noise measurements [Spong and Vidyasagar 1987]. Most commercial robots
+are in fact controlled with the controller given in (5.2.6) with choices of =
+I and     = 0 See, for example, [Luh 1983] and Section 4.4. The choice of
+is validated by the powerful motors used to drive the robot links, and the
+gearing mechanisms used to torque the motor output to an acceptable level,
+while showing its speed down. The choice of is validated by keeping the
+different motors from driving their links too fast, thus limiting the Coriolis
+and centripetal torques. Such commercial controllers are known as “non-
+model-based controllers” and have been used since the early days of robotics.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                              267
+
+The quest for more performance is, however, leading researchers and
+manufacturers to use direct-drive robots and to attempt moving them at
+higher speeds with less powerful but more efficient motors [Asada and Youcef-
+Toumi 1987]. This new direction is increasing the need for more robust
+controllers such as the ones described next.
+   The approaches of this section revolve around the design of linear
+controllers C(s) such that the complete closed-loop system in Figure 5.5.1 is
+stable in some suitable sense (e.g., uniformly ultimately bounded, globally
+asymptotically stable, p stable etc.) for a given class of nonlinear perturbation
+. In other words choose C(s) in (5.2.5) such that the error e(t) in (5.2.8) is
+stable in some desired sense.
+
+
+
+
+                   Figure 5.2.1: Feedback-linearization; uncertain structure.
+
+
+   The reasonable assumptions (5.2.9)–(5.2.11) below are often made for
+revolute-joint robots when using this approach [Spong and Vidyasagar 1987].
+In the following, µ1, µ2, , 0, 1, and 2 are nonnegative finite constants
+which depend on the size of the uncertainties.
+
+
+                                                                                 (5.2.8)
+
+
+
+                                                                                 (5.2.9)
+
+
+                                                                                (5.2.10)
+
+
+                                                                                (5.2.11)
+
+
+Recall that inequality (5.2.8) was introduced in Section 3.3, and note that
+the norms used in the inequalities above can be, depending on the application,
+either ∞ or 2 norms. Also note that the bounds µi and i are scalar functions
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+268                                       Robust Control of Robotic Manipulators
+
+of q for robots with prismatic joints, and that (5.2.10) is satisfied by
+                                                              so that a=(µ2-
+µ1)/(µ2+µ1)) [Spong and Vidyasagar 1987]. Finally, (5.2.10) is a result of the
+properties of the Coriolis and centripetal terms discussed in Section 3.3.
+   We will give different representative designs of the feedback-linearization
+approach, starting with controllers whose behavior is studied using Lyapunov
+stability theory.
+
+
+Lyapunov Designs
+
+Static feedback compensators have been extensively used starting with the
+works of [Freund 1982] and [Tarn et al. 1984]. Consider the controller
+introduced in (4.4.13):
+
+
+                                                                        (5.2.12)
+
+
+such that
+
+
+                                                                        (5.2.13)
+
+
+It can be seen that by placing the poles of Ac sufficiently far in the left half-
+plane, the robust stability of the closed- loop system in the presence of  is
+guaranteed. This was shown true in [Arimoto and Miyazaki 1985] for the
+case where                        as described in Theorem 4.4.1 and Example
+4.4.3. It was also shown true for the trajectory-following problem assuming
+that                  in [Dawson et al. 1990] as described in Theorem 4.4.2.
+There are as many robust controllers designed using Lyapunov stability
+concepts as there are ways of choosing Lyapunov function candidates, and
+of designing the gain K to guarantee that the Lyapunov function candidate is
+decreasing along the trajectories of (5.2.13). To decrease the asymptotic
+trajectory error, however, excessively large gains may be required (see Example
+4.4.3). We therefore choose to use the passivity theorem and a choice of the
+gain matrix K that renders the linear part of the closed-loop system SPR. As
+described in Section 2.11, an output may be chosen to make the closed-loop
+system SPR; therefore allowing large passive uncertainties in the knowledge
+of M(q). In fact, the state-feedback controller may be used to define an
+appropriate output Ke such that the input-output closed-loop linear systems
+K(sI-A+BK)-1B is strictly positive real (SPR). Consider the following closed-
+loop linear system:
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                 269
+
+
+
+
+                                                                  (5.2.14)
+
+
+It may then be shown using Theorem 2.11.5 that this system is SPR if
+
+                                                                  (5.2.15)
+
+with the choice of
+
+
+                                                                  (5.2.16)
+
+
+such that
+
+
+                                                                  (5.2.17)
+
+
+is the positive-definite solution to the Lyapunov equation
+
+                                                                  (5.2.18)
+
+and
+
+                                                                  (5.2.19)
+
+The next theorem presents sufficient conditions for the uniform boundedness
+of the trajectory error.
+
+THEOREM 5.2–1: The closed-loop system given by (5.2.13) will be uniformly
+bounded if
+
+
+
+and
+
+
+
+
+where Kv=2aI and Kp=4aI.
+
+Proof:
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+270                                       Robust Control of Robotic Manipulators
+
+   Consider the closed-loop system given by (5.2.8), with the controller
+(5.2.12), and choose the following Lyapunov function candidate:
+
+
+                                                                             (1)
+
+where          is the Lyapunov function corresponding to the SPR system
+(5.2.14). Then if ≥0, we have that V>0. This condition is satisfied for ≥µ2I.
+Then differentiate to find
+
+
+                                                                             (2)
+
+
+To guarantee that V < 0 recall the bounds (5.2.8)–(5.2.11), and write
+
+
+                                                                             (3)
+
+
+where
+                 . Note that ||e|| may be factored out of (3) without affecting
+the sign definiteness of the equation. The uniform boundedness of the error
+is then guaranteed using Lemma 2.10.3 and Theorem 2.10.3 if
+
+                                                                             (4)
+
+
+which is guaranteed if
+
+                                                                             (5)
+
+or
+
+                                                                        (6)
+                                                                       䊏
+The error will be bounded by a term that goes to zero as a increases (see
+Theorem 2.10.3 and its proof in [Dawson et al. 1990] for details). This
+analysis then allows  to be arbitrarily large as long as ≥µ2I, as shown in
+the next example. In fact, if N were known, global asymptotic stability is
+assured from the passivity theorem since in that case =0. The controller is
+summarized in Table 5.2.1.
+   It is instructive to study (6) and try to understand the contribution of
+each of its terms. The following choices will help satisfy (6).
+
+1. Large gains Kp and Kv which correspond to a large a.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                             271
+
+2. A good knowledge of N which translates into small i’s.
+3. A large µ1 or a large inertia matrix M(q).
+4. A trajectory with a small c, this a small desired acceleration          d   .
+
+
+
+
+Figure 5.2.2: Kp=50, Kv=25 (a) errors of joint 1; (b) errors of joint 2; (c) torques of
+joints 1 and 2.
+
+
+
+The following example illustrates the sufficiency of condition (6) and of the
+effects of larger gains Kp and Kv.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+272                                       Robust Control of Robotic Manipulators
+
+EXAMPLE 5.2–1: Static Controller (Lyapunov Design)
+In all our examples in this chapter we use the two-link revolute-joint robot
+first described in Chapter 3, Example 3.2.2, whose dynamics are repeated
+here:
+
+
+                                                                             (1)
+
+
+where
+
+
+
+
+                                                                             (2)
+
+
+The parameters m1=1kg, m2=1kg, a1=1m, a2=1m, and g=9.8 m/s2 are given.
+Let the desired trajectory used in all examples throughout this chapter be
+described by
+
+
+
+
+Then                                         . It may then be shown that
+
+
+
+Let       =0 then
+
+
+
+or that
+
+
+
+
+Then use =6I and a=172 to satisfy (6). In fact, these values will lead to a
+larger controller gains than are actually needed. Suppose instead that we let
+ ^
+6I, =0, and that
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                       273
+
+
+
+                                                                             (3)
+
+
+Note that this is basically a computed-torque-like PD controller. A simulation
+of the robot’s trajectory is shown in Figure 5.2.2. We also start our simulation
+at              =0. The effect of increasing the gains is shown in Figure 5.2.3,
+which corresponds to the controller
+
+
+
+                                                                             (4)
+
+
+
+Note that at least initially, more torque is required for the higher-gains case
+(compare Figs. 5.2.2c and 5.2.3c) but that the errors magnitude is greatly
+reduced by expanding more effort.
+                                                                             䊏
+
+
+There are other proofs of the uniform boundedness of these static controllers.
+In particular, the results in [Dawson et al. 1990] provide an explicit expression
+for the bound on e in terms of the controller gains. In the interest of brevity
+and to present different designs, we choose to limit our development to one
+controller in this section.
+   As discussed in Section 4.4, a residual stead-state error may be present
+even when using an exact computed-torque controller if disturbances are
+present. A common cure for this problem (and one that will eliminate constant
+disturbances) is to introduce integral feedback as done in Section 4.4. Such a
+controller may again be used within a robust controller framework and will
+lead to similar improvements if the integrator windup problem is avoided
+(see Section 4.4).
+   In the next section we show the stability of static controllers similar to the
+ones designed here and use input-output stability methods to design more
+general dynamic compensators.
+
+
+Input-Output Designs
+
+In this section we group designs that show the stability of the trajectory
+error using input-output methods. In particular, we present controllers that
+show ∞ and 2 stability of the error. We divide this section into a subsection
+that deals with static controllers such as the ones described previously,
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+274                                       Robust Control of Robotic Manipulators
+
+
+
+
+Figure 5.2.3: Kp=225, Kv=30 (a) errors of joint 1; (b) errors of joint 2; (c) torques of
+joints 1 and 2.
+
+
+
+and a subsection dealing with the more general dynamic controllers, which
+have similar gains in general.
+
+
+Static Controllers
+
+These controllers have the same structure as the ones described in Section
+4.4 and in the preceding section. The difference is that here we show the
+stability of the error using input-output concepts rather that the state-space
+methods implied by Lyapunov theory. In [Craig 1988] the boundedness of
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                            275
+
+                          Table 5.2.1: Static Controller, Lyapunov Design
+
+
+
+
+            Figure 5.2.4: Block Diagram for second-order differential equation.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+276                                       Robust Control of Robotic Manipulators
+
+the error signals was shown using a static controller. The norms used in
+(5.2.8)–(5.2.10) are then ∞ norms. The development of this controller starts
+with assumptions (5.2.8), (5.2.9), and a modification of (5.2.10) to
+
+                                                                        (5.2.20)
+
+This assumption is justified by the fact that N is composed of gravity and
+velocity-dependent terms which may be bounded independent from the
+position error e [see (5.1.1)]. We shall also assume that        =0. Let us
+then choose the state-feedback controller (5.2.12) repeated here for
+convenience:
+
+                                                                        (5.2.21)
+
+The corresponding input-output differential equation
+
+                                                                        (5.2.22)
+
+A block diagram description of this equation is given in Figure 5.2.4. Consider
+now the transfer function from η (taken as an independent input) to e:
+
+
+                                                                        (5.2.23)
+
+
+or
+
+                                                                        (5.2.24)
+
+It can be seen that Kv and Kp are both diagonal, with            , a critically
+damped response it achieved at every joint [see (4.4.22), (4.4.30), and
+(3.3.32)]. The infinity operator gains of P11(s) and P12(s) are (see Lemma
+2.5.2 and Example 2.5.8)
+
+                                                                        (5.2.25)
+
+where
+
+                                                                        (5.2.26)
+
+Consider then the following inequalities:
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                   277
+
+and using (5.2.8)–(5.2.11), we have that
+
+
+                                                                    (5.2.27)
+
+
+The following theorem presents sufficient conditions for the boundedness of
+the error that parallel those of Theorem 5.2.1.
+
+THEOREM 5.2–2: Suppose that
+
+
+
+and
+
+
+                                                                          (1)
+
+
+Then the          ∞   stability of the error is guaranteed if
+
+
+                                                                          (2)
+
+
+Proof:
+   The condition above results from applying the small-gain theorem to the
+closed-loop system, under the assumption that e(0)=0 so that the quadratic
+term ||e||2 is small. See [Craig 1988] for details.
+
+Note that (2) reduces to
+
+
+
+
+and further to
+
+
+                                                                    (5.2.28)
+
+
+Let us study the inequality above to determine the effect of each term. The
+following observations are made to help satisfy (5.2.28).
+
+1. A large kv will help satisfy the stability condition. Note: That will also
+   imply a large kp.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+278                                               Robust Control of Robotic Manipulators
+
+2. A good knowledge of N, which will translate into small i’s.
+
+3. A large µ1 or a large inertia matrix M(q).
+
+4. A trajectory with a small              d   .
+
+5. Robots whose inertia matrix M(q) does not vary greatly throughout its
+   workspace (i.e. µ1≈µ2)), so that a is small. Note that a small a is needed
+   to guarantee that at least         < 1 in (5.2.28). This will translate into
+   the severe requirement that the matrix M should be close to the inertia
+   matrix M(q) in all configurations of the robot.
+
+The controller is summarized in Table 5.2.2.
+    These observations are similar to those made after inequality (6) and are
+illustrated in the next example.
+
+EXAMPLE 5.2–2: Static Controller (Input-Output Design)
+Consider the nonlinear controller (5.2.6), where
+
+
+                                                                                     (1)
+
+
+Therefore,
+
+                                                                                     (2)
+
+
+Condition (1) is then satisfied if kv>720. This of course is a large bound that
+can be improved by choosing a better . A simulation of the closed-loop
+behavior for k p=225 and k v=30 is shown in Figure 5.2.5. The errors
+magnitudes are much smaller than those achieved with the PD controllers of
+Example 5.2.1 with a comparable control effort. This improvement came
+with the expense of knowing the inertia matrix M(q) as seen in (1).
+                                                                             䊏
+
+
+Dynamic Controllers
+
+The controllers discussed so far are static controllers in that they do not
+have a mechanism of storing previous state information. In Chapter 4 and in
+this chapter, these controllers could operate only on the current position and
+velocity errors. In this section we present three approaches to show the
+robustness of dynamic controllers based on the feedback-linearization
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                             279
+
+
+
+
+Figure 5.2.5: Kp=225, Kv=30 (a) errors of joint 1; (b) errors of joint 2; (c) torques of
+joints 1 and 2.
+
+
+method. The first two approaches are one-degree-of-freedom (DOF) feedback
+compensators, while the last one is a two-DOF compensator.
+
+
+One-Degree-of-Freedom Designs.
+The first class of dynamic controllers are called one-degree-of-freedom
+controllers because they can only operate on the measured output of the
+robot. In other words, these are controllers that will take the measured
+signals and filter them through a dynamical system before feeding the signal
+back to the input. They should be contrasted with the static controllers,
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+280                                            Robust Control of Robotic Manipulators
+
+                        Table 5.2.2: Static Controller, Input-Output Design
+
+
+
+
+which did not used dynamical feedback, and with the two-degree-of-freedom
+controllers considered next.
+   In [Spong and Vidyasagar 1987] the factorization approach was used to
+design a class of dynamic linear compensators C(s), parameterized by a stable
+transfer matrix Q(s), which guarantee that the solution e(t) to the linear
+system (5.2.9) is bounded. The actual factorization approach design is beyond
+the scope of this book, but fairly general representative of the methodology
+as it applies to robotics is given in Example 5.2.3. In [Spong and Vidyasagar
+1987] it was actually assumed that the bound on  is linear [i.e., 2=0 in
+5.2.10)] before the family of all ∞ stabilizing compensators of the nominal
+plant was found. Although the case of noisy measurements was treated in
+[Spong and Vidyasagar 1987], we limit ourselves to the noiseless case for
+simplicity. Let us first recall the system (5.2.16), while suppressing the s
+dependence,
+
+
+                                                                              (5.2.30)
+
+
+and define
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                281
+
+
+                                                                  (5.2.31)
+
+and let the operator gains of Pi, i=1,2, be given by
+
+                                                                  (5.2.32)
+
+Note that 1=max 11, 12. See Lemma 2.5.2 and Example 2.5.8. Consider
+then
+
+
+
+
+                                                                  (5.2.33)
+
+
+
+The next theorem gives sufficient conditions for the BIBO stability of the
+trajectory error.
+
+THEOREM 5.2–3: The BIBO stability of the closed-loop system (5.2.30)
+will be guaranteed if
+
+
+                                                                       (1)
+
+
+In fact, the trajectory error is bounded by
+
+
+
+
+                                                                       (2)
+
+
+Proof:
+   By the small-gain theorem. See [Spong and Vidyasagar 1987] for
+details.                                                       䊏
+
+If we study (1) carefully we note that it will be satisfied if
+
+1. µ1 is large or M(q) is large.
+
+2. Good knowledge of N, resulting in a small 1.
+
+3. Small 1 due to a large gain of the compensator C.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+282                                       Robust Control of Robotic Manipulators
+
+4. 2 close to 1, which may also be obtained with a large-gain compensator
+   C.
+
+Note that in the limit, and as the gain of C(s) becomes infinitely large, 1
+goes to zero. This will then transform condition (1) to
+
+
+                                                                        (5.2.34)
+
+
+It is also seen from (5.2.33)–(5.2.34) that increasing the gain k of C(s) will
+decrease 1, therefore decreasing ||e||∞. A particular compensator may now
+be obtained by choosing the parameter Q(s) to satisfy other design criteria,
+such as suppressing the effects of . One can, for example, recover Graig’s
+compensator, by choosing C(s)=-K so that the control effort is given by
+
+                                          u=Ke.                         (5.2.35)
+
+Then note that conditions (5.2.28) and (1) are identical if 2=0 and
+2=11kp+12kv. Also note from (2) that a smaller d results in a smaller tracking
+error. In fact, if e=0 and 0=0, the asymptotic stability of the error may be
+shown. Finally, note that the presence of bounded disturbance will make the
+bound on the error e larger but will not affect the stability condition (1).
+This controller is summarized in Table 5.2.3.
+   The factorization approach gives the family of all one-degree-of-freedom
+stabilizing compensators C(s). The design methodology is illustrated for the
+two-link robot in the next example.
+
+EXAMPLE 5.2–3: Dynamic Controller (Input-Output Design)
+Let Gv(s) of Example 4.2.1 be factored as
+
+                                                                             (1)
+
+where N(s), D(s), N(s), and D(s) are matrices of stable rational functions.
+We can then find
+
+
+
+
+                                                                             (2)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                    283
+
+                      Table 5.2.3: Dynamic One-DOF Controller: Design 1
+
+
+
+
+  Next we solve the Bezout indentity [Vidyasagar 1985] for X(s) and Y(s),
+which are also stable rational functions,
+
+
+
+                                          Y(s)D(s)+X(s)N(s)=I
+
+
+
+to get
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+284                                       Robust Control of Robotic Manipulators
+
+
+                                                                             (3)
+
+
+Then all the stabilizing controllers are given by
+
+
+                                                                             (4)
+
+
+where Q(s) is a stable rational function which is otherwise arbitrary. One
+choice, of course, is to let Q(s)=0, which leads to the “central solution”
+[Vidyasagar 1985]
+
+
+                                                                             (5)
+
+
+One can also choose Q(s) to satisfy the required performance. In particular,
+the following choice of Q(s) is presented in [Spong and Vidyasagar
+1987]:
+
+
+                                                                             (6)
+
+
+which leads to the following controller:
+
+
+
+
+where
+
+
+
+
+and
+
+
+                                                                             (7)
+
+As k increases, the disturbance rejection property of the controller is enhanced
+at the expense of higher gains as seen from the expression of C(s). A simulation
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                        285
+
+of this controller for k=225 is shown in Figure 5.2.6. The following
+observations are in order: The trajectory errors are smaller than any of the
+previous controllers while the torque efforts are comparable. In addition,
+the complexity of the controller is acceptable since the dynamics of the robot
+are not used in implementing the control.
+                                                                            䊏
+
+
+
+
+Figure 5.2.6: (a) errors of joint 1; (b) errors of joint 2; (c) torques of joints 1
+and 2.
+
+
+   As it was discussed in [Craig 1988] and presented in Theorem 5.2.2,
+including the more reasonable quadratic bound will not destroy the ∞
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+286                                           Robust Control of Robotic Manipulators
+
+stability result of [Spong and Vidyasagar 1987]. It was shown in [Becker
+and Grimm 1988], however, that the 2 stability of the error cannot be
+guaranteed unless the problem is reformulated and more assumptions are
+made. It effect, the error will be bounded, but it may or may not have a finite
+energy. In particular, noisy measurements are no longer tolerated for 2
+stability to hold. We next present an extension of the ∞ stability result that
+applies to dynamical compensators similar to the one described in Theorem
+5.2.3 but without the requirement that 2=0.
+
+THEOREM 5.2–4: The error system of (5.2.30) is                ∞
+                                                                  bounded if
+
+                                                   =0
+
+and
+
+
+                                                                                    (1)
+
+
+Proof:
+   An extension of the small-gain theorem. See [Becker and Grimm 1988]
+for details.                                                        䊏
+
+A study of (1) reveals that the following desired characteristics will help
+satisfy the inequality:
+
+1. A large µ1 due to a large M(q).
+
+2. A small 1 and a 2 close to 1, which will result from a large-gain
+   compensator C.
+
+3. Small i’s, which will result from a good knowledge of N.
+
+4. A small c due to a small               .
+                                          d
+
+
+Note that Craig’s conditions in Theorem 5.2.2 are recovered if 1=max 11,
+12 and 2k=11kp+12kv.
+   On the other hand, assuming that d=0 and 2=0, the 2 stability of e was
+shown in [Becker and Grimm 1988] if
+
+
+                                                                               (5.2.36)
+
+
+where                                    as given in Lemma 2.5.2. This
+controller is summarized in Table 5.2.4.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                    287
+
+                      Table 5.2.4: Dynamic One-DOF Controller: Design 2
+
+
+
+
+EXAMPLE 5.2–4: Dynamic One DOF Design
+Use the same linear controller as that of Example 5.2.3, but assume that the
+quadratic velocity terms in N are known so that 2=0; that is
+
+
+
+
+The results are shown in Figure 5.2.7 for the parameter k=150. They do not
+look remarkably different from those of Example 5.2.3 in Figure 5.2.6. This
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+288                                       Robust Control of Robotic Manipulators
+
+is due to the fact that the velocity terms are truly negligent in this particular
+application. Such terms will, however, make a more vital contribution in
+faster trajectories.
+                                                                               䊏
+
+
+
+
+Figure 5.2.7: (a) errors of joint 1; (b) errors of joint 2; (c) torques of joints 1
+and 2.
+
+
+
+Two-Degree-of-Freedom Design.
+It is well known that the two-DOF structure is the most general linear
+controller structure. The two-DOF design allows us simultaneously to specify
+the desired response to a command input and guarantee the robustness of
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                          289
+
+the closed-loop system. This design was briefly discussed in Chapter 2,
+Example 2.11.4. It is in a different spirit from the other design of this chapter,
+because it relies on classical frequency-domain SISO concepts. The general
+structure is shown in Figure 5.2.8. A two-DOF robust controller was designed
+and simulated in [Sugie et al. 1988] and will be presented next. Let the plant
+be given by (5.2.5) and consider the following factorization:
+
+
+                                           G(s)=N(s)D-1(s),
+
+
+where
+
+
+                                           D(s)=s2, N(s)=I.                 (5.2.37)
+
+
+The following result presents a two-DOF compensator which will robustly
+stabilize (in the ∞ sense) the error system.
+
+THEOREM 5.2–5: Consider the two-DOF structure of Figure 5.2.8. Let
+K1(S) be a stable system and K2(s) be a compensator to stabilize G(s). Then
+the controller
+
+                                          u=s2K1v+K2(K1v-q)                      (1)
+
+will lead to the closed-loop system
+
+                                               q=K1v                             (2)
+
+and the closed-loop error system (5.2.13) will be             ∞   stable.
+
+Proof:
+   With simple block-diagram manipulations, it may be shown that the closed-
+loop system is
+
+                                               q=K1v.
+
+The actual robustness analysis is involved and will be omitted, but a particular
+design and its robustness are discussed in the next example.                   䊏
+   Note from (2) that K1(s) is used to obtain the desired closed-loop transfer
+function. It should then be stable, and to guarantee a zero steady-state error,
+we choose v=qd and make sure that the dc gain K1(0)=1. Finally, we would
+like K1(S) to be exactly proper (i.e., zero relative degree). K2(s), on the other
+hand, will assure the robustness of the closed-loop system. Therefore, K2(s)
+should stabilize G(s) and provide suitable stability margins. It should contain
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+290                                          Robust Control of Robotic Manipulators
+
+
+
+
+                   Figure 5.2.8: Two-degree-of-freedom controller structure.
+
+
+
+an integral term to achieve static accuracy. Its relative degree may be -1 since
+both q and are available.
+
+EXAMPLE 5.2–5: Dynamic Two DOF Design
+Consider the two-DOF structure of Figure 5.2.8, where
+
+
+
+                                                                                (1)
+
+
+Then a two-DOF regulator is described by
+
+
+
+
+                                                                                (2)
+
+
+
+where s3+b2s2+b1s+1 is a stable polynomial, and w1, w2, a1, b1, and b2 are
+design parameters. Note that K2(s) is a PID controller and that the closed-
+loop system given by K1(S) is a second-order system with natural frequency
+w1 and damping ration             . Note also that the input to the robot
+becomes
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.2 Feedback-Linearization Controllers                                        291
+
+or
+
+
+                                                                              (3)
+
+
+We can immediately see that the joint position vector q is filtered through
+the PID controller K2. Therefore, the differentiation of q is required unless
+the measurement of is available. The behavior of the nonlinear closed-loop
+system is shown in Figure 5.2.9, when =1 and =0, a1=2, b1=b2=10, w1=8,
+and w2=12. It is seen that initially, the torque effort and the trajectory errors
+are too large. To understand the behavior of this controller, consider the
+controller τ in the limit (i.e., as time goes to infinity). The output of K1qd has
+settled down to its final value qd and therefore the controller (3) becomes
+equivalent to a PID compensator [see Chapter 4, equation (4.4.35)]. It seems
+that a different structure for k1 and K2 is warranted because in the meantime,
+the two-DOF controller preforms rather poorly. This is a characteristic of
+the example rather than an inherent flow in the twoDOF methodology. As a
+matter of fact, this structure has shown better performance than the one-
+DOF PID compensator in [Sugie et al. 1988] for a set-tracking case. The
+reader is encouraged to work the problems at the end of the chapter related
+to this design in order to compare the performance of one- and two-DOF
+designs.
+                                                                                䊏
+
+We have this presented a large sample of controllers that are more or less
+computed-torque based. We have shown using different stability arguments
+that the computed-torque structure is inherently robust and that by
+increasing the gains on the outer-loop linear compensator, the position and
+velocity errors tend to decrease in the norm. This class of compensators
+constitutes by far the most common structure used by robotics
+manufacturers and is the simplest to implement and study. There are more
+compensators that would fit into this structure while appealing to some
+classical control applications. The PD and PID compensators may be
+replaced with the lead-lag compensators. These are especially appealing
+when only position measurements are available. Such designs are discussed
+in [Chen 1989] in the discrete-time case. There is also some work being done
+in the nonlinear observer area which is directly relevant to this problem
+[Canudas de Wit and Fixot 1991]. We refer the reader to the observability
+discussion in Section 2.11. We also suggest some of the problems at the end
+of this chapter, which discuss further modification of the feedback-
+linearization designs.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+292                                         Robust Control of Robotic Manipulators
+
+
+
+
+          Figure 5.2.9: (a) errors of joints 1 and 2; (b) torques of joints 1 and 2.
+
+
+
+
+   On the other hand, there exists other types of controllers, which although
+less prevalent, still constitute a very important class of robot compensators.
+These are nonlinear controllers which do not rely directly on the feedback
+linearizability of the robot. Instead, the may be obtained from the passivity
+of its dynamics or may even bypass any special structural properties of the
+robot. These controllers are discussed next.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                    293
+
+
+5.3 Nonlinear Controllers
+
+There is a class of robot controllers that are not computed-torque-like
+controllers. These controllers are obtained directly from the robot equations
+without using the feedback-linearization procedure. Instead, these controller
+may rely on other properties of the robot (such as the passivity of its Lagrange-
+Euler description) or may be obtained without even considering the physics
+of the robot. In general, these controllers may be written as a computed-
+torque controller with an auxiliary, nonlinear controller added to it. The
+nonlinear control term introduces coupling between the different joints
+independently from the computed-torque term. In other words, even if the
+computed-torque controller is a simple PID, the nonlinear term couples all
+joints together as will be seen in Theorems 5.3.4 and 5.3.5, for example.
+
+Direct Passive Controllers
+First, we present controllers that rely directly on the passive structure
+of rigid robots as described in equations (5.1.1), where (q)-2Vm(q, )
+is skew symmetric by an appropriate choice of Vm(q, ) as described in
+Section 3.3.
+
+
+
+
+                                 Figure 5.3.1: Passive-control structure.
+
+
+
+   Based on the passivity property, if one can close the loop from to  with
+a passive system (along with 2 bounded inputs) as in Figure 5.3.1, the closed-
+loop system will be asymptotically stable using the passivity theorem. Note
+that the input u2 gives an extra degree of freedom to satisfy some performance
+criteria. In other words, by choosing different 2 bounded u2 we may be able
+to obtain better trajectory tracking or noise immunity. This structure will
+show the asymptotic stability of but only the Lyapunov stability of e. On
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+294                                       Robust Control of Robotic Manipulators
+
+the other hand, if one can show the passivity of the system, which maps  to
+a new vector r which is a filtered version of e, a controller that closes the
+loop between -r and  will guarantee the asymptotic stability of both e and .
+This indirect use of the passivity property was illustrated in [Ortega and
+Spong 1988] and will be discussed first.
+   Let the controller be given by (5.3.1), where F(s) is a strictly proper, stable,
+rational function, and Kr is a positive-definite matrix,
+
+
+
+                                                                           (5.3.1)
+
+
+Substituting (5.3.1) into (5.1.1) and assuming no friction [i.e., F( )=0], we
+obtain
+
+
+                                                                           (5.3.2)
+
+
+Then it may be shown that both e and are asymptotically stable. In fact,
+choose the following Lyapunov function:
+
+
+
+
+Then
+
+
+
+
+Substituting for M(q) from (5.3.2), we obtain
+
+
+
+
+Therefore, r is asymptotically stable, which can be used to show that both e
+and e are asymptotically stable [Slotine 1988]. This approach was used in
+the adaptive control literature to design passive controllers [Ortega and Spong
+1988], but its modification in the design of robust controllers when M, Vm
+and G are not exactly known is not immediately obvious. Such modifications
+will be given in the variable-structure designs, but first, we present a simple
+controller to illustrate the robustness of passive compensators.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                   295
+
+THEOREM 5.3–1: Consider the control law (1)
+
+                                                                            (1)
+
+where (s) is an SPR transfer function, to be chosen by the designer, and the
+external input u2 is bounded in the 2 norm. Then is asymptotically stable,
+and e is Lyapunov stable.
+
+Proof:
+  Using the control law above, one gets from Figure 5.3.1,
+
+                                                                            (2)
+
+By an appropriate choice of (s) and u2, one can apply the passivity theorem
+and deduce that and r are bounded in the 2 norm, and since (s)-1 is SPR
+(being inverse of an SPR function), one deduces that is asymptotically
+stable because
+
+
+                                                                            (3)
+
+This will imply that the position error e is bounded but not its asymptotic
+stability in the case of time-varying trajectories        . In the set-point
+tracking case, however (i.e., d=0), and with gravity precompensation, the
+asymptotic stability of e may be deduced using LaSalle’s theorem. The
+robustness of the closed-loop system is guaranteed as long as (s) is SPR
+and that u2 is 2 bounded, regardless of the exact values of the robot’s
+parameters.                                                               䊏
+
+The controller is summarized in Table 5.3.1.
+
+
+                                          Table 5.3.1: Passive Controller
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+296                                       Robust Control of Robotic Manipulators
+
+
+
+
+Figure 5.3.2: (a) errors of joints 1; (b) errors of joint 2; (c) torques of joints 1
+and 2.
+
+
+
+EXAMPLE 5.3–1: Passive Controllers
+We choose an SPR transfer function
+
+
+                                                                                (1)
+
+
+and we let u2= d. Note that the desired trajectory used so far violates the
+assumption that u2 should be 2 stable. Nevertheless, the trajectories of
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                    297
+
+Figure 5.3.2 show that his controller, when started at e(0)= (0)=0, performs
+rather well for the sinusoidal trajectory. Of course, since the passivity theorem
+provides sufficient conditions for stability, this example is not contradicting
+the previous theorem but merely pointing out its conservatism.
+                                                                                䊏
+
+Note that the compensator of Theorem 5.3.1 is a generalization of the PD
+compensators of Chapter 4 and of the preceding section. In [Anderson 1989]
+it was demonstrated, using network-theoretic concepts, that even in the
+absence of the contact forces, a computed-torque-like controller is not passive
+and may therefore cause instabilities in the presence of uncertainties. His
+solution to the problem consisted of using proportionalderivative (PD)
+controllers with variable gains K1(q) and K2(q) which depend on the inertia
+matrix M(q), that is,
+
+
+                                                                         (5.3.3)
+
+
+Even though M(q) is not exactly known, the stability of the closed-loop
+error is guaranteed by the passivity of the robot and the feedback law. The
+advantage of this approach is that contact forces and larger uncertainties
+may now be accommodated. Its main disadvantage is that although robust
+stability is guaranteed, the closed-loop performance depends on the
+knowledge of M(q), whose singular values are needed in order to find Kp
+and Kv. We will not discuss this particular design and refer the interested
+reader to [Anderson 1989].
+
+
+Variable-Structure Controllers
+
+In this section we group designs that use variable-structure (VSS) controllers.
+The VSS theory has been applied to the control of many nonlinear processes
+[DeCarlo et al. 1988]. One of the main features of this approach is that one
+only needs to drive the error to a “switching surface,” after which the system
+is in “sliding mode” and will not be affected by any modelling uncertainties
+and/or disturbances.
+    There are two main criticisms of these controllers as they apply to robots.
+The first is that by ignoring the physics or the robot, these controllers will
+necessarily perform no better (if not worse) that controllers which exploit
+the structure of the Lagrange-Euler equations. The other criticism relates to
+the “chattering” problem commonly associated with variable-structure
+controllers. We shall address the second issue later in this section, and answer
+the first by admitting that although initial applications of variable-structure
+theory did indeed gloss over the physics of robots, later designs (such as the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+298                                       Robust Control of Robotic Manipulators
+
+ones discussed here) by [Slotine 1985] and [Chen et al. 1990] remedied the
+problem.
+   The first application of this theory to robot control seems to be in [Young
+1978], where the set-point regulation problem ( d=0)was solved using the
+following controller:
+
+
+                                                                         (5.3.4)
+
+
+where i=1,…, n for an n-link robot, and ri are the switching planes,
+
+
+                                                                         (5.3.5)
+
+
+It is then shown, using the hierarchy of the sliding surfaces r1, r2,…, rn and
+given bounds on the uncertainties in the manipulators model, that one can
+find  + and  - in order to drive the error signal to the intersection of the
+sliding surfaces, after which the error will “slide” to zero. This controller
+eliminates the nonlinear coupling of the joints by forcing the system into the
+sliding mode. Other VSS robot controllers have since been designed.
+Unfortunately, for most of these schemes, the control effort as seen from
+(5.3.4) is discontinuous along ri=0 and will therefore create chattering, which
+may excite unmodelled high-frequency dynamics. In addition, these
+controllers do not exploit the physics of the robot and are therefore less
+effective than controllers that do.
+    To address this problem, the original VSS controllers were modified in
+[Slotine 1985] as described in the next theorem. Let us first define a few
+variables to simplify the statement of the theorem. Let
+
+
+
+                                                                         (5.3.6)
+
+
+where
+
+
+
+
+THEOREM 5.3–2: Consider the controller
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                       299
+
+where
+
+
+
+
+Then the error reaches the surface
+
+
+
+
+in a finite time. In addition, once on the surface, q(t) will go to qd(t)
+exponentially fast.
+
+Proof:
+  Consider the Lyapunov function candidate
+
+
+
+
+Then
+
+
+
+
+Substituting for             and using the skew-symmetric property of   (q)-2Vm(q, )
+we obtain
+
+
+
+
+Then, if we use the controller given by
+
+
+
+
+we obtain
+
+
+
+
+where
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+300                                       Robust Control of Robotic Manipulators
+
+Then it is sufficient to choose
+
+
+
+where i>0. Therefore,
+
+
+
+
+which implies that r=0 is reached in a finite time. In addition, once in sliding
+mode, e converges exponentially fast to zero.                                 䊏
+
+The controller is summarized in Table 5.3.2.
+
+EXAMPLE 5.3–2: VSS Controller 1
+Consider the two-link robot and choose K=10I and =5I. The trajectory
+errors for joint 1 are given in Figure 5.3.3. Note that the chattering behavior
+due to the infinitely fast switching of the controller is becoming apparent. A
+common remedy of the problem is to sacrifice asymptotic stability by using
+sat(s/ ), > 0 instead of sgn(s) in the torque calculation. The saturation
+function is depicted in Figure 5.3.4a and will result in the errors being
+uniformly ultimately bounded. The behavior of such a controller is shown in
+Figure 5.3.5, where =5I, K=75I, and = 0.001. Note that we were able to
+greatly increase the gains in this case, which results in a smaller error
+trajectories.
+                                                                             䊏
+
+More recently, in [Chen et al. 1990], another VSS controller was introduced.
+We describe this controller in detail to give a flavor of a different VSS
+approach, which will exploit the dynamics of the robot. The assumptions
+required by this controller are listed below.
+
+
+
+
+                                                                         (5.3.7)
+
+
+
+Note that these bounds are different in spirit that those given in (5.2.8)–
+(5.2.11). The current bounds are often more useful since they depend on the
+uncertainty of each element of the inertia matrix M and the velocity-dependent
+torques N.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                       301
+
+
+
+
+                              Figure 5.3.3: errors of joint 1: (a) e1; (b) e1
+
+
+
+THEOREM 5.3–3: The errors e and e. are asymptotically stable if the input
+torque is given by
+
+
+                                                                                (1)
+
+
+where
+
+
+                                                                                (2)
+
+
+                                                                                (3)
+
+
+                                                                                (4)
+
+
+Proof:
+  Choose the same Lyapunov function as in Theorem 5.3.2:
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+302                                              Robust Control of Robotic Manipulators
+
+
+
+
+                        Figure 5.3.4: (a) plot of sat(r/ ); (b) plot of tanh(gr)
+
+
+
+
+Then, differentiating and substituting for , we obtain
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                     303
+
+
+
+
+Figure 5.3.5: (a) errors of joint 1; (b) errors of joint 2; (c) torques of joints 1
+and 2
+
+
+
+which using (4)–(5.3.8) may be shown to be
+
+
+
+
+  Therefore, the surface r(t)=0 is reached in a finite time, after which the
+exponential stability of the error results as discussed in Theorem 5.3.2.
+䊏
+    This controller is summarized in Table 5.3.3.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+304                                             Robust Control of Robotic Manipulators
+
+                             Table 5.3.2: Variable Structure Controller 1
+
+
+
+
+EXAMPLE 5.3–3: VSS Controller 2 (Saturation)
+The two-link robot was controlled using this controller with the following
+design parameters:
+
+
+
+
+  The resulting errors for joint 1 are shown in Figure 5.3.5. Due to the same
+chattering problems encountered in Example 5.3.2, we choose instead a
+controller with a saturation function and parameters identical to those in
+Example 5.3.2. The resulting behavior is plotted in Figure 5.3.7.
+                                                                            䊏
+
+   As seen in Figures 5.3.3 and 5.3.5, the algorithms of Theorems 5.3.2 and
+5.3.3, although using the physics of the robot, suffer from the chattering
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                   305
+
+                             Table 5.3.3: Variable Structure Controller 2
+
+
+
+
+commonly encountered in VSS control because of the presence of the sgn(r)
+term. A common remedy of the problem is to sacrifice asymptotic stability
+by using sat(r/ ), > 0, instead of sgn(r) in the torque calculation as done in
+both Examples 5.3.2 and 5.3.3. We propose instead to use a term tanh(gr),
+where tanh is the hyperbolic tangent and g is a gain parameter that adjusts
+the slope of tanh around the origin as shown in Figure 5.3.7b. This term is
+continuously differentiable, and a good approximation of sgn(r) for large s,
+will result in uniformly ultimately bounded errors, and by adjusting g we are
+able to get similar performance to the sgn(r) controller without the chattering
+behavior. The next example illustrates this controller and compares it to the
+usual saturation controller.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+306                                                Robust Control of Robotic Manipulators
+
+
+
+
+                               Figure 5.3.6: errors of joint 1(a) e1; (b) e1
+
+
+
+
+EXAMPLE 5.3–4: VSS Controller 2 (Hyperbolic Tangent)
+Contrast the saturation controller behavior of Example 5.3.2 with the
+hyperbolic tangent modification with g=3 in Figure 5.3.8. Similar comparisons
+should be made between Example 5.3.3 and the behavior shown in Figure
+5.3.9, where g=3 is also used.
+                                                                         䊏
+
+Saturation-Type Controllers
+In this section we present controllers that utilize an auxiliary saturating signal
+to compensate for the uncertainty present in the robot dynamics as given by
+                       .
+(5.2.1), where Vm (q,q ) is defined in Chapter 3.
+
+                                                                                  (5.3.8)
+
+or
+
+                                                                                  (5.3.9)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                     307
+
+
+
+
+Figure 5.3.7: (a) errors of joint 1; (b) errors of joint 1; (c) torques of joints 1
+and 2
+
+
+
+
+   Therefore, Z(q,q) is an n-vector representing friction, gravity and bounded
+torque disturbances. The controllers introduced in this section are robust
+due to the fact that they are designed based on uncertainty bounds rather
+than on the actual values of the parameters. The following bounds are needed
+and may be physically justified. The i’s in (5.3.11) are positive scalar constants
+and the trajectory error e is defined before.
+
+
+                                                                          (5.3.10)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+308                                       Robust Control of Robotic Manipulators
+
+
+
+
+Figure 5.3.8: (a) errors of joint 1; (b) errors of joint 1; (c) torques of joints 1
+and 2
+
+
+
+
+                                                                          (5.3.11)
+
+
+   A representative of this class was developed in [Spong et al. 1987] and is
+given as follows.
+
+
+THEOREM 5.3–4: The trajectory error e is uniformly ultimately bounded
+(UUB) with the controller
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                     309
+
+
+
+
+Figure 5.3.9: (a) errors of joint 1; (b) errors of joint 1; (c) torques of joints 1
+and 2
+
+
+
+
+                                                                               (1)
+
+
+where
+
+
+
+                                                                               (2)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+310                                       Robust Control of Robotic Manipulators
+
+and
+
+                                                                             (3)
+
+
+                                                                             (4)
+
+
+                                                                             (5)
+
+Proof:
+  Choose the Lyapunov function
+
+
+
+
+and proceed as in Theorem 2.10.4. See [Spong et al. 1987] for details. 䊏
+
+Note that in the equations above, the matrix B is defined as in (5.2.3), the
+i’s are defined as in (5.2.10), and the matrix P is the symmetric, positive-
+definite solution of the lyapunov equation (5.3.12), where Q is symmetric
+and positive-definite matrix and Ac is given in (5.2.14).
+
+
+                                                                        (5.3.12)
+
+
+In particular, the choice of Q
+
+
+                                                                        (5.3.13)
+
+
+leads to the following P:
+
+
+                                                                        (5.3.14)
+
+
+    The expression of P in (5.3.14) may therefore be used in the expression of
+vr in (2). This design is summarized in Table 5.3.4.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                 311
+
+                                   Table 5.3.4: Saturation Controller 1
+
+
+
+
+EXAMPLE 5.3–5: Saturation Controller 1
+The following design parameters were chosen in simulating this
+controller:
+
+
+
+
+and
+
+                                                    .
+                                              e(0)=e (0)=0
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+312                                       Robust Control of Robotic Manipulators
+
+   The same trajectory is followed by the two-link robot as shown in Figure
+5.3.10. Note that although the trajectory errors seem to be diverging, they
+are indeed ultimately bounded and may be shown to be so by running the
+simulation for a long time.
+                                                                         䊏
+
+
+
+
+Figure 5.3.10: (a) errors of joint 1; (b) errors of joint 1; (c) torques of joints 1
+and 2
+
+
+
+  Upon closer examination of Spong’s controller in Theorem 5.3.4, it
+becomes clear that vr depends on the servo gains Kp and Kv through p. This
+might obscure the effect of adjusting the servo gains and may be avoided
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                      313
+
+
+
+
+Figure 5.3.11: (a) errors of joint 1; (b) errors of joint 1; (c) torques of joints 1
+and 2
+
+
+
+
+as described in [Dawson et al. 1990].
+
+THEOREM 5.3–5: The trajectory error e is uniformly ultimately bounded
+(UUB) with the controller
+
+
+                                                                                (1)
+
+
+where
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+314                                       Robust Control of Robotic Manipulators
+
+
+
+
+and
+
+                                                                             (2)
+
+
+where i’s are positive scalars.
+
+Proof:
+  We again choose
+
+
+
+
+and
+
+
+
+
+and proceed as in Theorem 2.10.4. See [Dawson et al. 1990] for details. 䊏
+
+Note that p no longer contains the servo gains and, as such, one may adjust
+Kp and Kv without tampering with the auxiliary control vr. As was also shown
+in [Dawson et al. 1990], if the initial error e(0)=0 and by choosing Kv=2Kp=kvI,
+the tracking error may be bounded by the following, which shows the direct
+effect of the control parameters on the tracking error:
+
+
+                                                                        (5.3.15)
+
+
+  Finally, note that if e(0)=e.(0)=0, the uniform boundedness of e(t) may be
+deduced. This controller is given in Table 5.3.5.
+
+EXAMPLE 5.3–6: Saturation Controller 2
+In this example, let
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.3 Nonlinear Controllers                                                     315
+
+                                   Table 5.3.5: Saturation Controller 2
+
+
+
+
+   The results of this simulation are presented in Figure 5.3.11. The errors
+are ultimately bounded as may be seen after a long simulation run.
+                                                                          䊏
+
+
+Note that the last two controllers, although using a continuous term vr, may
+be modified using the hyperbolic tangent term introduced in Example 5.3.4.
+In fact, there are many extensions to these types of controllers. A particularly
+simple one that uses linearity of the dynamics with respect to the unknown
+physical parameters of the robot 3.3.59 was given in (3.3.62), where
+p=||W|| max. In this formulation, W is a matrix containing time-varying but
+known terms, while       is a vector of unknown but constant terms in the
+dynamic formulation (3.3.59) repeated here:
+
+
+                                                                          (5.3.16)
+
+
+More on this formulation and its usage is presented in Chapter 6.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+316                                       Robust Control of Robotic Manipulators
+
+
+5.4 Dynamics Redesign
+
+In this section we present two other approaches to design robust controllers.
+The first starts with the mechanical design of the robot and proposes to
+design robots such that their dynamics are simple and decoupled. It then
+solves the robust controller problem by eliminating its causes. The second
+approach may be recast into one of the approaches discussed previously, but
+it presents such a novel way to looking at the problem that we decided to
+include it separately.
+
+Decoupled Designs
+It was shown throughout the previous chapters that the controller complexity
+is directly dependent on that of the robot dynamics. Thus it would make
+sense to design robots such that they have simple dynamics making their
+control much easier. This approach is advocated in [Asada and Youcef-Toumi
+1987]. In fact, it is shown that certain robotic structures will have a decoupled
+dynamical structures resulting in a decoupled set of n SISO nonlinear systems
+which are easier controlled than the one MIMO nonlinear system. The
+decoupling is achieved by modifying the dimensions and mass properties
+of the arm to cancel out the velocity-dependent terms and decouple the
+inertia matrix. An illustrative example of such robots is given in the next
+example.
+
+
+EXAMPLE 5.4–1: Decoupled Design
+Consider the robot described in Figure 5.4.1. This mechanism is known as
+the five-bar linkage and its dynamics are described when the following
+condition holds:
+
+
+
+
+by
+
+
+
+
+  Note that the inertia matrix is decoupled and position independent. The
+controller given by
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.4 Dynamics Redesign                                                       317
+
+with positive-definite Kp and Kv is enough to achieve any desired level of
+performance. In particular, consider the following case:
+
+
+
+
+   The closed-loop error system is a linear second-order system which will
+be stable with positive-definite gains.
+                                                                            䊏
+
+
+
+
+                                          Figure 5.4.1: Five-bar linkage.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+318                                       Robust Control of Robotic Manipulators
+
+   Some standard robotic structures may also be decoupled by design. Studies
+have been carried out to partially or totally decouple robots up to six links.
+The interested reader is referred to [Yang and Tzeng 1986], [Asada and
+Youcef-Toumi 1987], and [Kazerooni 1989] for good discussions of this
+topic.
+
+Imaginary Robot Concept
+The decoupled design alternative is very useful if the control engineer has
+access to, or can modify, the robot design at an early stage. It is more
+reasonable, however, to assume that the robot has already been constructed
+to satisfy may mechanical requirements before the control law is actually
+implemented. Thus a dynamics redesign is difficult if not impossible. The
+imaginary robot concept is presented as an alternative robust design
+methodology [Gu and Loh 1988]. The development of this approach is
+described next. Consider an output function of the robot given by
+
+
+                                                                         (5.4.1)
+
+
+so that
+
+                                                                         (5.4.2)
+
+and
+
+                                                                         (5.4.3)
+
+   The generalized output y may denote the coordinates of the end effector
+of the robot or the trajectory joint error qd-q. The imaginary robot concept
+attempts to simplify the design of the control law for the physical robot, by
+controlling an “imaginary” robot that is close to the actual robot. This choice
+of the controller is shown to achieve the global stability of an imaginary
+robot whose joint positions are described by the components of the vector y.
+   The methodology starts by decomposing M(q) as follows:
+
+
+                                                                         (5.4.4)
+
+
+and then using the controller
+
+                                                                         (5.4.5)
+                                                                         (5.4.6)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+5.4 Dynamics Redesign                                                      319
+
+                                                       ~
+   Since M(q) is unknown, however, the actual M is not available. The
+resulting controller is then simpler and may be applied to the physical robot
+to lead acceptable, if not optimal behavior.
+   The following theorem illustrates a controller to guarantee the boundedness
+of the error.
+
+
+THEOREM 5.4–1: Let
+
+                                                                           (1)
+                                                                           (2)
+
+
+The      ∞   stability of the closed-loop system is guaranteed if
+
+                                                                           (3)
+
+Proof:
+  This is an immediate result of Theorem 5.2.2. See [Gu and Loh 1988] for
+more detail and for illustrative examples.                             䊏
+
+The controller is shown in Table 5.4.1.
+
+
+
+                    Table 5.4.1: Computed-Torque-Like Robot Controllers.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+320                                       Robust Control of Robotic Manipulators
+
+
+5.5 Summary
+
+The design of robust motion controllers of rigid robots was reviewed. There
+main designs were identified and explained. All controllers were robust with
+respect to a range of uncertain parameters and will guarantee the
+boundedness of the position-tracking error. In the presence of disturbance
+torques, a bounded error is best achievable outcome. The question of which
+robust control method to choose is difficult to answer analytically, but the
+following guidelines are suggested. The linear-multivariable approach is
+useful when linear performance specifications (percent overshoot, damping
+ratio, etc.) are available. The one-DOF dynamic compensators performed
+rather well, with little or no knowledge of the robot dynamics. They may,
+however, result in high-gain control laws in the attempt to achieve
+robustness. The passive controllers are easy to implement but do not
+provide easily quantifiable performance measures. The modified variable-
+structure controllers seem to preform well when using the physics of the
+robot without excessive torque effort. The saturation controllers are most
+useful when a short transient error can be tolerated, but ultimately, the error
+will have to be bounded.
+   A common thread throughout this chapter has been the fact that a high-
+gain controller will guarantee the robustness of the closed-loop system. The
+challenge is, however, to guarantee the robust stability of the robot without
+requiring excessive torques. The robustness of the motion controllers when
+nonzero initial errors or disturbances are present was also verified through
+some of the examples and is discussed in the problems at the end of the
+chapter. It is useful to note that although the robot’s dynamics are highly
+nonlinear, most successful controllers have exploited their physics and their
+very special structure. In the next chapter we describe the design of adaptive
+controllers in the case of uncertain dynamical description of the robots.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+[Abdallah et al. 1991] C.T.Abdallah and D.Dawson and P.Dorato and M. Jamshidi.
+    “Survey of Robust Control for Rigid Robots”. IEEE Control Syst. Mag., vol.
+    11, number 2, pp. 24–30, 1991.
+
+[Anderson 1989] R.J.Anderson. “A Network Approach to Force Control in Robotics
+    and Teleoperation”. Ph.D. Thesis, Departemnt of Electrical & Computer
+    Engineering. University of Illinois at Urbana-Champaign, 1989.
+
+[Arimoto and Miyazaki 1985] S.Arimoto and F.Miyazaki. “Stabiliy and Robustness
+    of PID Feedback Control for Robot Manipulators of Sensory Capability”. Proc.
+    Third Int. Symp. Robot. Res., Gouvieux, France. July, 1985.
+
+[Asada and Youcef-Toumi 1987] H.Asada and K.Youcef-Toumi. “Direct-Drive Robots:
+    Theory and Practice”. MIT Press, Cambridge, MA, 1987.
+
+[Becker and Grimm 1988] N.Becker and W.M.Grimm. “On L2 and L8 Stability
+    Approaches for the Robust Control of Robot Manipulators”. IEEE Trans. Autom.
+    Control, vol. 33, number 1, pp. 118–122, January, 1988.
+
+[Canudas de Wit and Fixot 1991] C.Canudas de Wit and N.Fixot. “Robot Control
+    via Robust Estimated State Feedback”. IEEE Trans. Autom. Control, vol. 36,
+    number 12, pp. 1497–1501, December, 1991.
+
+[Chen 1989] Y.Chen. “Replacing a PID Controller by a Lag-Lead Compensator for a
+    Robot: A Frequency Response Approach”. IEEE Trans. Robot. Autom. vol. 5,
+    number 2, pp. 174–182, April, 1989.
+
+[Chen et al. 1990] Y-F Chen and T.Mita and S.Wahui. “A New and simple Algorithm
+    for Sliding Mode Control of Robot Arms”. IEEE Trans. Autom. Control, vol.
+    35, number 7, pp. 828–829, 1990.
+
+[Corless 1989] M.Corless. “Tracking Controllers for Uncertain Systems: Application
+    to a Manutec R3 Robot”. J. Dyn. Syst. Meas. Control vol. 111, pp. 609–618,
+    December, 1989.
+
+[Craig 1988] J.J.Craig. “Adaptive Control of Mechanical Manipulators”. Addis on-
+    Wesley, Reading, MA, 1988.
+
+                                                                              321
+Copyright © 2004 by Marcel Dekker, Inc.
+322                                                                  REFERENCES
+
+[Dawson et al. 1990] D.M.Dawson et. al. “Robust Control for the Tracking of Robot
+    Motion”. Int. J. Control, vol. 52, number 3, pp. 581–595, 1990.
+
+[DeCarlo et al. 1988] R.A.DeCarlo and S.H.Zak and G.P.Matthews. “Variable
+    Structure Control of Nonlinear Multivariable Systems”. IEEE Proc. vol. 76,
+    number 3, pp. 212–232, March, 1988.
+
+[Freund 1982] E.Freund. “Fast Nonlinear Control with Arbitrary Pole-Placement for
+    Industrial Robots and Manipulators”. Int. J. Robot. Res. vol. 1, number 1, pp.
+    65–78, 1982.
+
+[Gu and Loh 1988] Y-L.Gu and N.K.Loh. “Dynamic Modeling and Control by
+    Utilizing an Imaginary Robot Model”. IEEE Trans. Rob. Aut. vol. 4, number 5,
+    1988.
+
+[Kazerooni 1989] H.Kazerooni. “Design and Analysis of a Statically Balanced Direct-
+    Drive Manipulator”. IEEE Control Syst. Mag. vol. 9, number 2, pp. 30–34,
+    February, 1989.
+
+[Luh 1983] J.Y.S.Luh. “Conventional Controller Design for Industrial Robots: A
+    Tutorial”. IEEE Trans. Syst. Man Cybern. vol. 13, pp. 298–316, May-June,
+    1983.
+
+[Ortega and Spong 1988] R.Ortega and M.W.Spong. “Adaptive Motion Control of
+    Rigid Robots: A Tutorial”. Proc. IEEE Conf. Decision Control, Austin, TX,
+    December, 1988.
+
+[Slotine 1985] J-J.E.Slotine. “The Robust Control of Robot Manipulators”. Int. J.
+     Rob. Res. vol. 4, number 4, pp. 49–64, 1985.
+
+[Slotine 1988] J-J.E.Slotine. “Putting Physics Back in Control: The Example of
+     Robotics”. IEEE Contr. Syst. Mag. vol. 8, number 7, pp. 12–17, December,
+     1988.
+
+[Spong and Vidyasagar 1987] M.W.Spong and M.Vidyasagar. “Robust Linear
+    Compensator Design for Nonlinear Robotic Control”. IEEE Trans. Robot.
+    Autom. vol. 3, number 4, pp. 345–351, August, 1987.
+
+[Spong et al. 1987] M.W.Spong and J.S.Thorp and J.M.Kleinwaks. “Robust
+    Microprocessor Control of Robot Manipulators”. Automatica. vol. 23, number
+    3, pp. 373–379, 1987.
+
+[Sugie et al. 1988] T.Sugie et. al. “Robust Controller Design for Robot Manipulators”.
+     Trans. ASME Dyn. Syst. Meas. Control, vol. 110, number 1, pp. 94–96, March,
+     1988.
+
+[Tarn et al. 1984] T.J.Tarn and A.K.Bejczy and A.Isidori and Y.Chen. “Nonlinear
+    Feedback in Robot Arm Control”. Proc. IEEE Conf. Decision Control, Las
+    Vegas, NV. December, 1984.
+
+[Utkin 1977] V.I. Utkin. “Variable Structure Systems with Sliding Modes”. IEEE
+    TRans. Autom. Control vol. 22, pp. 212–222, April, 1977.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                   323
+
+[Vidyasagar 1985] M.Vidyasagar. “Control Systems Synthesis: A Factorization
+    Approach”. MIT Press, Cambridge, MA. 1985.
+
+[Yang and Tzeng 1986] D.C-H.Yang and S.W.Tzeng. “Simplification and Linearization
+    of Manipulator Dynamics by the Design of Inertia Distribution”. Int. J. Rob.
+    Res. vol. 5, number 3, pp. 120–128, 1986.
+
+[Yeung and Chen 1988] K.S.Yeung and Y.P.Chen. “A New Controller Design for
+    Manipulators Using the Theory of Variable Structure Systems”. IEEE Trans.
+    Autom. Control, vol. 33, number 2, pp. 200–206, February, 1988.
+
+[Young 1978] K-K.D.Young. “Controller Design for a Manipulator Using theory of
+    Variale Structure Systems”. IEEE Trans. Syst. Man Cybern. vol. 8, number 2,
+    pp. 210–218, February, 1978.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+324                                                                     REFERENCES
+
+PROBLEMS
+
+Section 5.2
+
+
+
+
+                                 Figure 5.5.1: Three-axis SCARA robot
+
+
+
+
+5.2–1        WE consider the three-axis SCARA robot shown in Figure 5.5.1,
+             where all links are assumed to be thin, homogeneous rods of mass
+             mi and length ai, i=1, 2, 3. Then the dynamics are given by:
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                      325
+
+
+
+
+and let
+
+
+
+
+  Note that the first two joints are decoupled from the last one. Find , i,
+and µi defined in (5.2.8)–(5.2.11), assuming that m12(q)=m21(q)=0 and that
+
+
+5.2–2        Choose a desired set point q1d=45 deg, q2d=90 deg, and              for
+             the robot in Problem 5.2–1. Design an SPR controller as described
+             in (5.2.14)–(5.2.19). Also, find a value of a to satisfy Theorem 5.2.1.
+
+5.2–3        Let q1d=10 sin t, q2d=10 cos t, and         for the robot in Problem
+             5.2–1.
+
+       1. Design an SPR controller as described in (5.2.14)–(5.2.19).
+
+       2. Let the desired trajectory now be q1d=sin t, q2d=cos t, and      .
+          Study the effect that decreasing qd has on a and on the trajectory
+          error.
+
+5.2–4        Choose a value of kv that satisfies condition (5.2.28) for the robot in
+             Problem 5.2–1 and the trajectory in Problem 5.2–3(b). What happens
+             to kv and to the trajectory errors if m1, m2, m3 increase to 20?
+
+5.2–5        Design a dynamic controller similar to that of Example 5.2.3 for the
+             robot in Problem 5.2–1 and the trajectory in Problem 5.2–3(a).
+             Compare the performance for k=10 and k=50.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+326                                                                REFERENCES
+
+5.2–6        Find the value of k that satisfies inequality (1) for you design in
+             Problem 5.2–5. What happens to your conditions if both the velocity
+             terms and gravity terms are available to feedback (i.e., i=0)?
+
+5.2–7        Consider the robot in Problem 5.2–1 and the set point of Problem
+             5.2–2. Also, assume that all i=0 so that velocity and gravity terms
+             are available to feedback. Find a gain k to satisfy (5.2.36) and
+             implement the resulting controller.
+
+5.2–8        Repeat Problem 5.2–7 with the trajectory of Problem 5.2–3(a).
+
+5.2–9        Design a controller similar to the one in Example 5.2.5 for the robot
+             of Problem 5.2–1 to follow the trajectory of Problem 5.2–3(a).
+             Choose the same parameters used in that example and compare the
+             resulting behavior to a set of parameters of your choosing.
+
+
+Section 5.3
+
+5.3–1        Design a controller similar to the one in Example 5.3.1 for the robot
+             of Problem 5.2–1 to follow the trajectory of Problem 5.2–3(a).
+             Choose the same parameters used in that example and compare the
+             resulting behavior to a set of parameters of your choosing.
+
+5.3–2        Consider the robot of Problem 5.2–1 with the desired set point of
+             Problem 5.2–2. Design a variable-structure controller as described
+             in Theorem 5.3.2. You may want to start your design with the
+             parameter values in Example 5.3.2.
+
+5.3–3        Repeat Problem 5.3–2 for the trajectory described in Problem 5.2–
+             3(a).
+
+5.3–4        Consider the robot of Problem 5.2–1 with the desired set point of
+             Problem 5.2–2. Design a variable-structure controller as described
+             in Theorem 5.3.3. You may want to start your design with the
+             parameter values in Example 5.3.3.
+
+5.3–5        Repeat Problem 5.3–4 for the trajectory described in Problem 5.2–
+             3(a).
+
+5.3–6        Consider the robot of Problem 5.2–1 with the desired set point of
+             Problem 5.2–2. Design a saturation-type controller as described in
+             Theorem 5.3.4. You may want to start your design with the
+             parameter values in Example 5.3.5.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                 327
+
+5.3–7        Repeat Problem 5.3–6 for the trajectory described in Problem 5.2–
+             3(a).
+
+5.3–8        Consider the robot of Problem 5.2–1 with the desired set point of
+             Problem 5.2–2. Design a saturation-type controller as described in
+             Theorem 5.3.5. You man want to start your design with the
+             parameter values in Example 5.3.6.
+
+5.3–9        Repeat Problem 5.3–8 for the trajectory described in Problem 5.2–
+             3(a).
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

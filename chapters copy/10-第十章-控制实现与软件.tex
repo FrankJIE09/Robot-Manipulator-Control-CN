@@ -1,0 +1,678 @@
+\documentclass[UTF8,a4paper,12pt]{ctexart}
+
+% 数学公式支持
+\usepackage{amsmath,amssymb,amsfonts}
+
+% 图形支持
+\usepackage{graphicx}
+\usepackage{float}
+
+% 代码 listings
+\usepackage{listings}
+\usepackage{xcolor}
+
+% 表格增强
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+
+% 页面设置
+\usepackage{geometry}
+\geometry{a4paper,left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% 超链接
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue}
+
+% 代码样式设置
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{red},
+    commentstyle=\color{gray},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=10pt,
+    backgroundcolor=\color{white},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=4,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={(*@}{@*)},
+    xleftmargin=2em,
+    xrightmargin=1em
+}
+
+% 标题设置
+\title{\textbf{第十章} \\ \vspace{0.5cm} 机器人控制实现与软件}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+机器人操控器研究的多样性以及相关的硬件/软件系统的复杂要求，一直是软件开发者面临的挑战。因此，许多先前开发的软件控制平台复杂、昂贵且对用户不太友好。尽管以前的几个平台被设计为提供基于开放架构的系统，但很少被重复使用。为了解决以往的缺点，本章描述了一个名为\textbf{机器人平台（Robotic Platform）}的软件控制平台的设计和实现。机器人平台是一个用于机器人操控器应用的开放式软件开发平台。它包括硬件接口、伺服控制、轨迹生成、3D仿真、图形用户界面和数学库。与分布式解决方案不同，机器人平台在单一硬件平台上、使用单一编程语言（C++）和单一操作系统实现所有这些组件，同时保证硬实时性能。这种设计产生了一个开放架构，它不那么复杂、更容易使用和扩展，并建立在以下最先进的技术和通用组件之上，以进一步提高简单性和可靠性：i) PC技术，ii) QNX实时操作系统，iii) Open Inventor和STL库，iv) 面向对象设计，v) 易于使用、先前开发的低级控制环境。
+
+\section{引言}
+
+由于软件控制平台的构建需要覆盖广泛学科领域的构建模块（见图10.1.1），因此创建一个可以被研究人员用于不同应用的通用平台是非常理想的。考虑到机器人应用的多样性和研究领域，这项任务变得更加具有挑战性，因为机器人操控器供应商通常向用户专有的硬件组件上运行的专有机器人控制语言。由于缺乏专有机器人控制语言的灵活性和性能，以前的一些工作侧重于在常用编程语言之上构建机器人控制库（RCCL \cite{Lloyd1988} 和 ARCL \cite{Corke} 就是这种库的例子）。
+
+虽然以前的许多软件方法通过使用通用编程语言实现了新的灵活性和性能水平，但在80年代和90年代初期开发的许多软件控制平台由于当时操作系统和硬件组件的限制而本质上是复杂的。也就是说，大多数操作系统不支持实时编程，因此促进了RCI \cite{Lloyd1990} 和Chimera \cite{Stewart1989} 等项目的发展。此外，过程式编程语言如"C"在复杂项目的可重用性方面往往达到极限。此外，那个时代硬件组件的有限性能迫使系统开发者利用分布式架构（参见 \cite{Miller1991}、\cite{Kapoor1996} 和 \cite{Pelich1996}），集成了专有硬件和软件的混合体。
+
+除了分布式系统的明显优势（例如，更大的可扩展性和更强的计算能力）之外，还有几个缺点。具体来说，分布式架构显著增加了软件的复杂性。此外，网络连接上的硬实时行为通常需要昂贵的专有硬件。总的来说，硬件成本也更高；此外，用户必须熟悉不同的硬件架构和操作系统。尽管许多软件控制平台试图灵活、可重构和开放，但这些平台很少被重复使用（与非机器人平台如Open Inventor或Corba相比）。显然，工程师认为从头开始开发他们的应用程序更快、更容易。事实上，正如许多研究人员所指出的，过去安装、学习和修改先前开发的软件控制平台的学习曲线非常陡峭。
+
+在过去十年中，计算领域发生了许多创新。具体来说，面向对象软件设计 \cite{Stroustrup1991} 的出现促进了更复杂项目的管理，同时也促进了代码重用和灵活性。例如，RIPE \cite{Miller1991}、MMROC+ \cite{Zielinski1997}、OSCAR \cite{Kapoor1996} 和ZERO++ \cite{Pelich1996} 等机器人控制库在机器人编程中利用了面向对象技术。工程界还见证了用于PC的类Unix实时操作系统的 proliferation \cite{QSSL}，这有利于用专有硬件组件替换实时控制 \cite{Costescu1999}。
+
+同样，在硬件领域，工程界见证了高速、低成本PC、快速3D图形视频板和经济型运动控制卡的出现。因此，PC平台现在提供了多功能功能，从而使复杂的软件架构和专有硬件组件变得多余。由于这些技术进步，QMotor机器人工具包（QMotor RTK）\cite{Loffler2001} 被开发出来。QMotor RTK是最早将实时操控器控制和图形用户界面（GUI）集成在单个PC上的软件控制平台之一。尽管QMotor RTK有许多优点，但由于其所基于的实时操作系统（即QNX4）的限制，它缺少一些功能。例如，它缺乏3D仿真能力，并且不支持线程的使用。
+
+在1990年代末，领先的实时软件开发公司QSSL发布了QNX6 \cite{QSSL}（即QNX6/Neutrino操作系统），对QNX4进行了重大升级。这种基于微内核的操作系统可能是目前最先进的实时操作系统；此外，它还有用于软件开发和多媒体应用的附加组件。QNX6的新特性极大地促进了QMotor RTK升级版本的潜在能力，事实上，QMotor RTK被完全转换为一个名为机器人平台 \cite{Bhargava2001} 的新软件控制平台。本章的其余部分通过检查机器人平台的优点、设计和操作，提供其广泛的概述。需要强调的是"广泛"这个词，因为在一本书的一章中详细解释如何为机器人操控器开发软件控制平台实际上是不可能的。尽管如此，希望本章能让读者更好地了解相关的复杂性。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.1.1：机器人软件控制平台的构建模块 \vspace{2cm}}}
+\caption{机器人软件控制平台的构建模块}
+\label{fig:10.1.1}
+\end{figure}
+
+\section{工具与技术}
+
+鉴于最近的技术进步，下一代软件控制平台应该将伺服控制回路、轨迹生成、任务级程序、GUI程序和3D仿真集成在统一的软件架构中，这似乎几乎是显而易见的。也就是说，下一代软件控制平台应该利用单一硬件平台（例如PC）、单一操作系统（例如QNX6实时操作系统 \cite{QSSL}）和单一编程语言（例如C++ \cite{Stroustrup1998}）。这种下一代软件控制平台的优点如下：
+
+\textbf{简单性}。统一的非分布式架构比分布式异构架构要小得多、简单得多。它更容易安装、理解和扩展。简单性对于激励代码在不同应用中的重用至关重要。
+
+\textbf{性能}。统一的非分布式架构还确保高性能和硬实时行为，因为进程间通信的开销最小。
+
+\textbf{各级灵活性}。平台的每个组件都对扩展和修改开放。许多过去的平台在某些级别上利用了开放架构，但其他级别是在专有硬件上实现的，因此无法修改。
+
+\textbf{成本}。机器人平台比分布式平台需要更少的硬件组件。基本上，一台带有一个或多个输入/输出（I/O）板的PC就足够了。此外，与其他硬件平台相比，PC硬件非常经济实惠。
+
+为了更详细地解释这些优点并说明机器人平台如何降低软件开发和复杂性，现在检查用于开发机器人平台的通用工具和技术。从硬件引擎即标准桌面PC开始讨论似乎是合乎逻辑的。由于其在消费市场的普及，标准桌面PC在过去20年中发生了巨大的变化。过去，只有昂贵的工作站提供了控制机器人系统所需的处理能力，而PC已经赶上甚至超过了工作站的性能 \cite{Costescu1999}。与UNIX工作站相比，基于PC的系统允许更多的硬件和软件组件种类。此外，这些组件和PC本身通常比其UNIX对应物便宜；此外，PC是一个众所周知、大多数软件开发人员都感到舒适的平台。
+
+任何软件控制平台的第二个最重要的部分是操作系统。由于可靠性对于机器人操作极其重要，因此选择了QSSL的QNX6实时操作系统 \cite{QSSL}。QNX6的编程接口符合POSIX标准，是第一个结合以下特性的平台：
+
+\textbf{硬实时}。QNX6提供硬实时响应（例如，它可以在一定频率下执行控制循环而不会落后）。实时功能集成在微内核中。
+
+\textbf{自主开发}。软件开发和执行在同一环境和同一PC上进行。
+
+\textbf{快速3D图形}。QNX6提供硬件加速3D支持，这是机器人工作单元图形仿真所需的。
+
+\textbf{线程}。QNX6支持进程的并发执行，即线程。
+
+\textbf{设备驱动架构}。在QNX6下开发设备驱动程序非常容易，这是集成不同机器人硬件所需的。
+
+\textbf{成本}。QNX6也非常经济实惠，因为它对非商业用途免费，并且在低成本的标准PC上运行。
+
+任何软件控制平台的第三个最重要的部分或设计方面是编程理念。对于开发机器人操控器控制软件，面向对象编程比过程式编程有三个主要优点。首先，它提供了语言结构，使得编程界面更加容易。例如，矩阵乘法可以用简单的"*"表示，类似于MATLAB编程。其次，面向对象编程允许系统架构非常灵活但又非常简单。也就是说，系统的组件（类）可以具有内置的默认行为和默认设置。使用这种默认行为和/或默认设置可以让程序员减少代码大小。然而，程序员仍然可以为特定应用程序覆盖默认行为。最后，面向对象编程通过促进独立于特定实现的组件的开发来支持泛型编程（例如，通用类"Manipulator"可以与不同类型的操控器一起工作）。
+
+所有这些优点都基于面向对象编程的一般概念，如抽象、封装、多态性和继承 \cite{Stroustrup1991}。正如本章后面将要展示的，这些面向对象设计概念产生了一个直观的系统架构。正如人们所期望的，选择的语言是C++，因为它提供了面向对象概念的整个范围，同时保持高性能 \cite{Stroustrup1998}（例如，可以使用模板和内联函数在机器人平台中创建高度通用和优化的代码）。
+
+当使用强大的面向对象库如STL \cite{Musser1996} 时，C++和面向对象编程的能力可以进一步增强。STL提供了标准数据结构（例如，列表、向量等）和算法。这些标准数据结构和算法简化了编程工作，因为这些工具在常见编程任务中经常被需要。STL的数据结构非常通用，因为它们可以与不同的数据类型一起使用（即模板编程）。
+
+软件控制平台的最后一个设计方面与机器人专家如何与系统交互有关。具体来说，机器人专家如何为仿真目的设置对象的动画，以及如何实现和调整控制算法。对于仿真动画，使用了Open Inventor \cite{Wernecke}。Open Inventor由Silicon Graphics开发，是一个用于创建3D图形和动画的面向对象C++库。Open Inventor最大限度地减少了开发工作，因为它能够加载以虚拟现实建模语言（VRML）格式创建的3D模型 \cite{Hartman1996}。有各种软件包可以促进3D VRML模型的构建。这些包可用于快速创建机器人组件的图形表示。机器人平台利用Open Inventor的内置功能来设置这些组件的动画。Open Inventor还提供了高级功能，如对象拾取，这在操作界面编程中非常有用。
+
+对于控制实现，使用了QMotor \cite{Loffler2002}，因为它允许用户建立实时控制循环、记录数据、调整控制参数和绘制信号。由于QMotor支持面向对象编程，QMotor控制程序可以直接集成到机器人平台的类设计中。
+
+\section{机器人平台的设计}
+
+\subsection{概述}
+
+机器人平台的每个组件（例如，示教器、轨迹生成器等）都由一个C++类建模。C++类定义结合了与该组件相关的数据和函数。例如，类"Puma560"包含与Puma 560机器人相关的数据（例如，当前关节位置）以及与Puma 560机器人相关的函数（例如，启用机械臂电源）。因此，机器人平台的设计源于以有意义和直观的方式将数据和函数分组到多个类中。类还可以通过从基类派生来使用另一个类的功能和数据的一部分。机器人平台的类包括GUI组件和用于图形仿真的3D模型。这些类型的组件传统上出现在不同的程序中（例如，参见RCCL机器人仿真器 \cite{Lloyd1988}）。然而，通过将它们包含在同一个类中，可以实现用户界面、3D建模和其他功能部分之间的紧密集成。
+
+为了为不同的应用程序提供新功能，用户创建新类。通常，新类是从一个已存在的类派生出来的，以最小化编码工作。这个过程称为继承，它极大地促进了代码重用并消除了冗余。
+
+为了说明类如何从彼此派生，使用了类层次结构图。机器人平台的主类层次结构图如图10.3.1所示。每个箭头从派生类指向父类。列出的类越靠右，它必须变得越具体。列出的类越靠左，它必须变得越通用。机器人平台的类可以分为以下几类（注意，下面讨论的一些类没有显示在图10.3.1中，因为它们的类层次结构将在后面讨论）：
+
+\textbf{核心类}。类\texttt{RoboticObject}、\texttt{FunctionalObject}和\texttt{PhysicalObject}通过定义所有机器人对象的总体行为来构建机器人平台的核心。这些类本身可以作为任何机器人系统的基础。
+
+\textbf{通用机器人类}。从核心类派生的是一些通用机器人类。这些类（例如，\texttt{ServoControl}、\texttt{Manipulator}和\texttt{Gripper}）不能被实例化。相反，这些类作为基类实现通用功能，同时向程序员呈现通用接口（即，这些类可用于创建独立于特定硬件或特定算法的程序）。
+
+\textbf{特定机器人类}。从通用机器人类派生的是实现特定硬件的类（例如，类\texttt{Puma560}实现Puma 560机器人）或特定功能组件（例如，类\texttt{DefaultPositionControl}实现比例积分微分（PID）位置控制器）。
+
+\textbf{ControlProgram类}。这个类是所有实时控制循环的基础。
+
+\textbf{工具类}。工具类管理常见任务（例如，管理配置文件）。
+
+\textbf{对象管理器}。对象管理器监督系统中存在的所有对象和类。
+
+\textbf{数学库}。数学库由用于矩阵、向量、变换、滤波器、微分器和积分器的类组成。
+
+\textbf{操控器模型库}。操控器模型库由对操控器的运动学和动力学行为进行建模的类组成。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.1：机器人平台的类层次结构 \vspace{2cm}}}
+\caption{机器人平台的类层次结构}
+\label{fig:10.3.1}
+\end{figure}
+
+在机器人控制程序中，用户从类实例化对象。实例化对象时，为对象保留内存，对象初始化自身。用户可以根据需要从同一类创建任意数量的对象。例如，通过简单地创建两个\texttt{Puma560}类的对象，就可以操作两个Puma机器人。一旦创建了对象，用户就可以使用它们的功能。对象管理器维护所有当前存在对象的列表。通过对象管理器，可以在多个对象上启动功能（例如，关闭所有对象）。场景查看器（Scene Viewer）是机器人平台的默认GUI。它包含查看机器人工作单元3D场景和列出所有对象的窗口。整体运行时架构如图10.3.2所示。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.2：机器人平台的运行时架构 \vspace{2cm}}}
+\caption{机器人平台的运行时架构}
+\label{fig:10.3.2}
+\end{figure}
+
+在机器人系统中，不同的组件彼此相关。为了反映这一事实，在对象之间建立了对象关系。例如，对象可以指定它们之间的物理连接。对象关系通过C++指针实现到相关对象。示例场景中的对象关系如图10.3.3所示。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.3：示例场景中的对象关系 \vspace{2cm}}}
+\caption{示例场景中的对象关系}
+\label{fig:10.3.3}
+\end{figure}
+
+\subsection{核心类}
+
+类\texttt{RoboticObject}是所有类的基类。它定义了一个通用接口（即，可以与机器人平台的所有类一起使用的一组函数）。例如，程序可以使用\texttt{startShutdown()}函数来指示\texttt{Puma560}类或\texttt{Gripper}类的对象关闭。具体来说，以下通用功能在类\texttt{RoboticObject}中定义（另见图10.3.4）：
+
+\textbf{错误处理}。每个对象必须指示其错误状态。
+
+\textbf{交互式命令}。每个对象可以定义一组交互式命令（例如，"打开夹爪"），这些命令将显示在场景查看器的对象弹出菜单中。
+
+\textbf{配置管理}。每个对象可以使用全局配置文件进行设置。此外，每个对象还可以有一个本地对象配置文件。
+
+\textbf{关闭行为}。每个对象都能够关闭自身。
+
+\textbf{GUI控制面板}。每个对象都能够创建一个控制面板。
+
+\textbf{消息处理器}。每个对象都有一个可以解释自定义消息的消息处理器。
+
+\textbf{线程管理}。每个对象指示其操作是否需要额外的线程，并且还提供执行这些额外线程的函数。
+
+注意，实际功能通常在派生类中实现。然而，类\texttt{RoboticObject}也实现了简单的默认功能。此功能通过让从类\texttt{RoboticObject}派生的所有类在需要时接管此默认功能的能力来支持代码重用和简单性。表10.3.1显示了所有函数及其默认行为。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.4：\texttt{RoboticObject}类 \vspace{2cm}}}
+\caption{\texttt{RoboticObject}类}
+\label{fig:10.3.4}
+\end{figure}
+
+类\texttt{PhysicalObject}从类\texttt{RoboticObject}派生。它是代表物理对象（例如，操控器、传感器、夹爪等）的所有类的基类。它为这些类定义了一个通用接口，如图10.3.5和表10.3.2所示。具体来说，以下通用功能在\texttt{PhysicalObject}中定义：
+
+\textbf{3D可视化}。每个物理对象可以创建其Open Inventor 3D模型。场景查看器循环遍历所有物理对象以创建整个3D场景。
+
+\textbf{对象连接}。物理对象可以将另一个对象指定为安装位置。通过使用这种对象关系，场景查看器在正确的位置绘制对象（例如，绘制安装在机器人操控器末端的夹爪）。
+
+\textbf{位置和方向}。位置/方向信息指定对象在场景中的绝对位置（或安装位置，如果指定了对象连接）。
+
+\textbf{仿真模式}。每个物理对象可以锁定在仿真模式中。也就是说，对象不执行任何硬件I/O（即，其行为只是仿真的）。
+
+类\texttt{FunctionalObject}不包含任何功能；但是，它用于构建其他类。例如，功能类（如类\texttt{TrajectoryGenerator}）是从类\texttt{FunctionalObject}派生的。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.5：\texttt{PhysicalObject}类 \vspace{2cm}}}
+\caption{\texttt{PhysicalObject}类}
+\label{fig:10.3.5}
+\end{figure}
+
+\subsection{机器人控制类}
+
+任何机器人工作单元的核心组件是操控器。\texttt{Manipulator}类是一个通用类，定义了具有任意数量关节的操控器的通用功能。从\texttt{Manipulator}类派生的是\texttt{DefaultManipulator}类，它包含操控器的默认实现。\texttt{DefaultManipulator}类是一个模板类（即，它以关节数量作为参数）。表10.3.3说明了通用编程接口和默认实现。从\texttt{DefaultManipulator}类派生的是实现特定操控器类型的类。目前，支持三种操控器：Puma 560机器人、IMI机器人 \cite{Berkeley1992} 以及Barrett全臂操控器（WAM）\cite{Barrett}（包括4连杆和7连杆配置）。关于这些机器人操控器特定控制实现的更多信息可以在 \cite{Loffler2001} 和 \cite{Costescu1999} 中找到。
+
+为了仿真操控器，需要它们的动力学模型。此外，对于笛卡尔控制，需要正向/反向运动学和雅可比矩阵的计算。所有这些函数都位于\texttt{ManipulatorModel}类中。\texttt{ManipulatorModel}类的类层次结构和通用接口如图10.3.6所示。
+
+\texttt{DefaultManipulator}类创建实时控制循环，但它不包含伺服控制算法。伺服控制算法包含在\texttt{ServoControl}类或其派生类的单独对象中。\texttt{ServoControl}类是一个通用类，定义了伺服控制的通用属性和功能。也就是说，伺服控制从操控器对象获取当前位置，并计算实现控制任务所需的输出控制信号（例如，将操控器伺服到期望的设定点）。
+
+从\texttt{ServoControl}类派生的是\texttt{DefaultPositionControl}类，它在关节空间和笛卡尔空间中包含具有摩擦补偿的PID位置控制。\texttt{DefaultManipulator}类中的控制循环首先确定操控器的当前位置，然后调用\texttt{ServoControl}类的\texttt{calculate()}函数。伺服控制作为单独对象的优点是用户可以在操控器移动时切换多个伺服控制算法。
+
+轨迹生成也在一个单独的类中执行。\texttt{TrajectoryGenerator}类定义了通用轨迹生成器的接口。轨迹生成器是创建连续设定点流并将其转发给伺服控制对象的任何对象。轨迹生成器必须实现自己的循环，以便轨迹生成器可以独立运行，并以与伺服控制中使用的频率不同的频率运行。伺服控制调用轨迹生成器的\texttt{getCurrentSetpoint()}函数来确定当前期望位置。还可以定义多个轨迹生成器并在操控器移动时在它们之间切换。
+
+\texttt{QueueTrajectoryGenerator}类从\texttt{TrajectoryGenerator}类派生，以实现通用接口和创建沿经由点和目标点的轨迹的轨迹生成器的通用功能（即，实现了运动队列管理功能）。从\texttt{QueueTrajectoryGenerator}类派生的是\texttt{DefaultTrajectoryGenerator}类。这个类是轨迹生成器的具体实现，可以在关节空间和笛卡尔空间中进行插值，包括在经由点处两段运动之间的路径混合。表10.3.4显示了默认轨迹生成器的接口。
+
+\texttt{Puma560}或\texttt{WAM}等类自动创建默认轨迹生成器和默认伺服控制，以方便用户。但是，如果需要，用户可以切换到不同的轨迹生成器或伺服控制。图10.3.7说明了在典型场景中操控器对象、伺服控制对象和轨迹生成器对象如何协同工作。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.6：\texttt{ManipulatorModel}类 \vspace{2cm}}}
+\caption{\texttt{ManipulatorModel}类}
+\label{fig:10.3.6}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.7：操控器伺服控制和轨迹生成的对象设置 \vspace{2cm}}}
+\caption{操控器伺服控制和轨迹生成的对象设置}
+\label{fig:10.3.7}
+\end{figure}
+
+\subsection{外部设备类}
+
+除了与特定操控器相关的类之外，还有一些其他类可用于机器人应用。具体来说，这些类使机器人操控器能够通过夹爪、机器手等工具与其他物理对象进行接口。这些外部设备类如下：
+
+\textbf{夹爪（Gripper）}。\texttt{Gripper}类是夹爪的通用接口。基本上，它定义了\texttt{open()}、\texttt{close()}和\texttt{relax()}函数。
+
+\textbf{默认夹爪（DefaultGripper）}。\texttt{DefaultGripper}类假设两个数字输出线控制夹爪，一个数字线打开夹爪，一个关闭它。
+
+\textbf{Barrett手（BarrettHand）}。这是一个操作Barrett手 \cite{Barrett} 的类。这个类允许用户移动三个手指中的每一个到特定位置，并控制展开运动。
+
+\textbf{力/力矩传感器（ForceTorqueSensor）}。这个类定义了力/力矩传感器的通用接口。也就是说，它定义了读取力和力矩的函数。
+
+\textbf{ATI力传感器（AtiFTSensor）}。这个类是ATI工业自动化Gamma 30/100力/力矩传感器的具体实现。
+
+\textbf{工具更换器（ToolChanger）}。\texttt{ToolChanger}类是工具更换器的通用接口。基本上，它定义了\texttt{lock()}、\texttt{unlock()}和\texttt{relax()}函数。
+
+\textbf{默认工具更换器（DefaultToolChanger）}。\texttt{DefaultToolChanger}类假设一个数字输出线控制工具更换器的锁定功能，另一个线控制解锁功能。
+
+\textbf{静态对象（StaticObject）}。\texttt{StaticObject}类的对象除了指定其3D模型外没有其他功能。它可以用于向3D场景添加桌子或工件等对象。
+
+\subsection{工具类}
+
+与任何复杂的软件系统一样，需要实用程序用于通信目的和向用户提供系统相关信息。为此，在机器人平台中使用了几个单独的通用工具类。这些工具类如下：
+
+\textbf{状态（Status）}。\texttt{Status}类提供了堆叠状态消息的功能。它向用户返回详细的状态报告。每个类都有一个\texttt{Status}类的数据成员，指示对象的状态。
+
+\textbf{客户端（Client）}。\texttt{Client}类简化了向单独任务或线程发送消息。
+
+\textbf{服务器（Server）}。\texttt{Server}类是\texttt{Client}类的对应类，简化了接收消息和回复消息。
+
+\textbf{配置（Config）}。\texttt{Config}类处理ASCII格式的配置文件。
+
+\textbf{IO板客户端（IOBoardClient）}。\texttt{IOBoardClient}类允许与I/O板通信（例如，提供编码器读数、写入D/A值、读取A/D值、设置和读取数字输入/输出）。
+
+\textbf{锁（Lock）}。\texttt{Lock}类在两个线程之间提供互斥。
+
+\subsection{配置管理}
+
+机器人平台利用一个全局配置文件，由对象管理器和对象解析以确定系统配置。默认情况下，这个文件称为\texttt{rp.cfg}。对象管理器在由shell变量\texttt{RP\_CONFIG\_PATH}指定的路径中搜索此文件。通过使用选项\texttt{-config <filename>}启动机器人平台程序，可以指定不同的文件名和路径作为配置文件。现在讨论配置文件的格式。对于每个对象，配置文件列出括号中的对象名称、对象的类名称以及一些附加设置（见图10.3.8）。表10.3.5列出了可能的对象设置及其由\texttt{RoboticObject}和\texttt{PhysicalObject}类定义的相关成员函数。派生类可用于定义附加设置。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.8：示例全局配置文件 \vspace{2cm}}}
+\caption{示例全局配置文件}
+\label{fig:10.3.8}
+\end{figure}
+
+\subsection{对象管理器}
+
+对象管理器实现为\texttt{ObjectManager}类，处理系统中的所有对象。每次创建新对象时，它都会向对象管理器注册自己。同样，每次销毁对象时，它都会从对象管理器维护的对象列表中删除。对象管理器包含遍历此列表的必要功能，因此允许对多个对象执行操作。例如，场景查看器检索从\texttt{PhysicalObject}类派生的所有对象的列表。此列表检索操作允许场景查看器渲染每个对象，从而渲染整个3D场景。
+
+对象管理器还维护机器人平台中使用的所有类的列表。此功能对于促进通用编程至关重要。具体来说，通用代码仅利用提供通用接口的组件；因此，当使用具有不同实现的组件时，通用代码不需要更改。也就是说，相同的代码可用于许多具体实现，因此有助于代码重用（例如，通用轨迹生成器可与不同类型的操控器一起使用）。幸运的是，C++利用类继承和虚函数来促进通用编程。为了说明这个概念，请考虑图10.3.9中所示的类层次结构的一部分。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.9：通用\texttt{Manipulator}类及其派生类 \vspace{2cm}}}
+\caption{通用\texttt{Manipulator}类及其派生类}
+\label{fig:10.3.9}
+\end{figure}
+
+以下通用代码片段演示了如何编写操控器独立程序，使其可以与Puma机器人、WAM、IMI或将来可能添加的任何机器人一起工作：
+
+\begin{lstlisting}[caption={通用操控器编程示例}]
+Manipulator *manipulator;
+ObjectManager om;
+
+manipulator = om.createDerivedObject<Manipulator>("leader");
+// 根据全局配置文件中"leader"下指定的内容
+// 创建Puma、IMI或WAM对象
+
+// 现在，我们可以进行通用操作
+manipulator->enableArmPower();
+Transform t = manipulator->getCurrentCartesianPosition();
+\end{lstlisting}
+
+为了在C++中利用通用编程，上述代码创建派生类的对象（例如，\texttt{Puma}类或\texttt{WAM}类的对象），并通过指向通用基类的指针操作对象（即，\texttt{Manipulator *manipulator}）。对象管理器的\texttt{createDerivedObject()}函数用于创建\texttt{Puma560}、\texttt{Barrett Arm}、\texttt{WAM}或\texttt{IMI}类的对象。为了创建正确的对象，\texttt{createDerivedObject()}函数在全局配置文件中查找对象名称（见图10.3.8）。然后，\texttt{createDerivedObject()}函数从配置文件中读取对象的类名称，并创建此类的一个对象。因此，当使用现有的通用程序时，只需更改全局配置文件中的类名称即可切换到不同的操控器类型。
+
+\subsection{并发/通信模型}
+
+与机器人操控器系统软件开发相关的固有问题之一是并发问题。也就是说，虽然对于许多工程系统来说作为单个任务运行就足够了，但机器人系统需要组件（例如，伺服控制）与其他组件（例如，轨迹生成器）并发执行。机器人平台通过在同一个PC上运行所有并发任务来解决这个问题。应该注意的是，由于QNX6支持对称多处理，因此可以将任务分布在多个处理器上。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.10：为并发创建新线程 \vspace{2cm}}}
+\caption{为并发创建新线程}
+\label{fig:10.3.10}
+\end{figure}
+
+机器人平台的前身QMotor RTK \cite{Loffler2001} 执行多个程序以在单个处理器上实现并发。虽然这个概念促进了模块化，但管理多个程序的启动和终止是不方便的。相比之下，使用机器人平台的应用程序被编译并链接到单个程序中。如果需要并发执行，此程序会生成线程。一旦程序终止，所有线程自动终止。图10.3.10说明了用户程序如何生成多个线程的示例。在程序启动时，只有线程1正在执行。在机器人平台库初始化时，创建了一个执行3D场景查看器的新线程。然后，用户使用操控器类的新对象。此操控器对象的创建会自动生成用于伺服控制循环的第三个线程。因此，第一个线程可以继续计算操控器的目标点，而伺服控制循环和场景查看器在后台运行。为了确保时间关键任务的实时行为，线程以不同的优先级运行（例如，伺服控制循环以高优先级27运行）。
+
+由于线程访问相同的地址空间，因此可以通过使用此地址空间轻松执行线程之间的通信。但是，同步此访问以避免数据结构的损坏非常重要。通过使用\texttt{Lock}类为在多个线程之间共享的数据访问提供互斥来实现同步。
+
+\subsection{绘图与控制调整能力}
+
+调整低级控制器和轨迹规划算法以及调试的问题在许多以前开发的软件控制平台中通常没有被解决。然而，鉴于准确定位诸如机器人操控器之类的多自由度系统的复杂性，这是一个极其重要的问题。为了解决这个问题，机器人平台利用QMotor进行低级算法开发。QMotor \cite{Loffler2002} 是一个用于实现和调整控制策略的综合环境。QMotor包括：i) 用于硬件访问的客户端/服务器架构，ii) 用于创建控制程序的C++库，iii) 用于控制参数调整、数据记录和绘图的自定义GUI。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.11：QMotor控制参数窗口 \vspace{2cm}}}
+\caption{QMotor控制参数窗口}
+\label{fig:10.3.11}
+\end{figure}
+
+为了与硬件通信，QMotor使用在后台运行并以固定速率执行硬件I/O的硬件服务器。有不同的I/O板服务器可用（例如，ServoToGo板、Quanser MultiQ板和ATI力/力矩传感器接口板）。硬件服务器的使用提供了抽象的客户端/服务器通信接口，使得客户端可以使用不同的服务器执行相同的通用操作。因此，可以通过简单地启动不同的服务器快速重新配置系统以使用不同的I/O板。对于编写控制程序，QMotor提供了一个定义\texttt{ControlProgram}类的库。为了实现实时控制循环，用户从\texttt{ControlProgram}类派生一个特定类，并定义执行控制计算和必要内务处理的几个函数。一旦实现了控制程序并编译完成，用户可以启动QMotor GUI，加载控制程序，启动它，并从控制参数窗口（见图10.3.11）调整控制策略。此外，用户可以打开多个绘图窗口（见图10.3.12）并设置记录参数。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.12：QMotor绘图窗口 \vspace{2cm}}}
+\caption{QMotor绘图窗口}
+\label{fig:10.3.12}
+\end{figure}
+
+为了将QMotor用于机器人平台，\texttt{DefaultManipulator}等类是从\texttt{ControlProgram}类派生的。因此，这些类继承了控制程序的功能（即，实时执行、数据记录和与GUI通信）。如果从\texttt{ControlProgram}类派生一个类，基类\texttt{RoboticObject}会自动创建一个新的执行线程，在后台运行控制循环。QMotor最初设计为一次加载和调整一个控制程序。也就是说，要切换到不同的控制程序，必须停止并卸载当前的控制程序。机器人平台设计为同时启动和运行多个控制循环；因此，有必要升级QMotor。具体来说，QMotor现在可以将自己附加到正在执行的控制程序，而不是加载和启动控制程序。此QMotor修改现在允许机器人平台中的以下操作场景。用户首先启动控制程序。此控制程序创建几个执行实时控制循环的线程。然后，用户可以启动QMotor GUI并将其附加到任何控制程序。一旦QMotor GUI附加到控制程序，就可以更改控制参数并绘制数据。
+
+\subsection{数学库}
+
+过去的机器人控制库经常引入它们自己特定的机器人类型数据。大多数这些数据类型基于向量或矩阵（例如，齐次变换是一个4x4矩阵）。因此，使用通用的C++矩阵库并在其上定义机器人类型更为可行。大多数用于C++的矩阵库使用动态内存分配，这冒着失去确定性实时响应的风险 \cite{Loffler2001}。因此，使用动态内存分配的库的大缺点是它们不能在机器人平台的大部分中使用。为了克服这个问题，为机器人平台开发了特殊的实时矩阵类，使用模板表示矩阵大小。这意味着矩阵大小在编译时已知，不需要动态内存分配。除了适用于实时应用之外，此解决方案还产生高度优化的代码。也就是说，由于使用模板和内联函数，矩阵类可以像直接编程一样快。具体来说，通过优化实现，两个2x2矩阵的乘法$C=A * B$与编写以下代码一样快：
+
+\begin{lstlisting}[caption={矩阵乘法优化示例}]
+c11=a11 * b11 + a12 * b21;
+c12=a11 * b12 + a12 * b22;
+// ... 等等
+\end{lstlisting}
+
+另一个优点是编译器可以在编译时检查正确的矩阵大小（例如，在编译期间检测到两个大小不兼容的矩阵的矩阵乘法）。图10.3.13、表10.3.6和表10.3.7说明了矩阵类的类层次结构、类型类和数据类型。\texttt{MatrixBase}、\texttt{VectorBase}、\texttt{Matrix}、\texttt{ColumnVector}和\texttt{RowVector}类以元素的数据类型为参数。默认的元素数据类型是\texttt{double}，这是机器人平台的标准浮点数据类型。\texttt{MatrixBase}和\texttt{VectorBase}类是纯虚基类，允许操作未知大小的矩阵和向量（在通用操控器编程期间需要未知大小的矩阵和向量）。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.3.13：矩阵类的类层次结构 \vspace{2cm}}}
+\caption{矩阵类的类层次结构}
+\label{fig:10.3.13}
+\end{figure}
+
+除了矩阵、向量和变换类之外，\texttt{ButterworthFilter}、\texttt{Differentiator}和\texttt{Integrator}类也是数学库的一部分。\texttt{ButterworthFilter}类用于低通滤波。\texttt{Differentiator}类通过反向差分法加低通滤波实现数值微分。最后，\texttt{Integrator}类利用梯形法进行数值积分。用户可以从\texttt{Integrator}类派生一个特定类以实现更高级的积分方法。两个类都以数据类型为参数（即，它们适用于标量、向量和矩阵）。
+
+\subsection{错误管理和前端GUI}
+
+每个对象负责维护适当的错误状态。如果发生致命错误，任何对象都可以请求对象管理器关闭系统。例如，当控制力矩超过其限制时可能就是这种情况。对于此类系统关闭，对象管理器遍历系统中的所有对象并调用它们的\texttt{startShutdown()}函数。然后，对象管理器等待所有对象完成其关闭。对象关闭的完成由\texttt{isShutdownComplete()}函数指示。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.4.1：矩阵类示例程序 \vspace{2cm}}}
+\caption{矩阵类示例程序}
+\label{fig:10.4.1}
+\end{figure}
+
+机器人平台的前端GUI组件是用C++ GUI类库QWidgets++开发的。QWidgets++允许在GUI程序中使用面向对象技术。GUI由三部分组成：
+
+\begin{itemize}
+    \item \textbf{场景查看器（Scene Viewer）}：是默认的监控GUI，在每个机器人平台程序启动时自动打开。
+    \item \textbf{控制面板}：每个类都可以有自己的控制面板。控制面板从场景查看器打开。
+    \item \textbf{实用程序}：几个实用程序（例如，手动移动程序和示教器程序）有GUI。
+\end{itemize}
+
+机器人平台前端GUI的操作在下一节中进一步解释。
+
+\section{机器人平台的操作}
+
+\subsection{场景查看器和控制面板}
+
+当执行在机器人平台内部运行的程序时，场景查看器窗口打开。场景查看器窗口显示整个3D场景，并允许用户打开一个显示当前运行对象列表的窗口（见图10.4.2）。为了创建3D场景，场景查看器循环遍历从\texttt{PhysicalObject}类派生的所有对象，并调用\texttt{get3DModel()}函数以获取该对象的Open Inventor 3D数据。然后，场景查看器使用对象连接关系（由\texttt{PhysicalObject}类的\texttt{setConnection()}函数指定）在正确的位置显示3D对象（例如，显示安装在机器人操控器末端的夹爪）。此外，场景查看器用所有对象的当前状态连续更新3D场景（例如，它使用机器人操控器的当前关节位置在正确的位置显示机器人关节）。因此，场景查看器窗口中渲染的3D场景始终代表实际硬件的当前状态（在仿真模式下，表示硬件的仿真状态）。为了选择最佳观看位置，用户使用鼠标在3D场景中导航。用户可以旋转视图、前后移动，还可以存储/恢复期望的观看位置。此外，用户可以隐藏场景中的对象以提高帧率。可以同时打开许多不同的场景查看器窗口，从不同的观看位置同时查看3D场景。用户还可以打开对象查看器窗口以显示当前正在实例化的所有对象的列表。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.4.2：场景查看器和对象列表窗口 \vspace{2cm}}}
+\caption{场景查看器和对象列表窗口}
+\label{fig:10.4.2}
+\end{figure}
+
+每个对象还有一个单独的弹出菜单（见图10.4.3）。如果用户：i) 在场景查看器渲染区域中右键单击对象，或ii) 在对象查看器窗口中右键单击条目，则会出现此弹出菜单。与弹出菜单相关的选项可用于在渲染区域中隐藏对象并选择线框或实体显示。此外，弹出菜单显示在对象的特定类中定义的交互式命令。例如，夹爪对象有额外的菜单项来打开、关闭和放松夹爪。最后，用户可以从对象弹出菜单中打开控制面板。图10.4.5显示了Barrett WAM的控制面板作为示例。每个控制面板出现在一个新窗口中。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.4.3：对象弹出菜单 \vspace{2cm}}}
+\caption{对象弹出菜单}
+\label{fig:10.4.3}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.4.5：WAM类的控制面板 \vspace{2cm}}}
+\caption{WAM类的控制面板}
+\label{fig:10.4.5}
+\end{figure}
+
+\subsection{用于移动机器人的实用程序}
+
+为了促进低级算法开发，必须创建用于移动机器人的实用程序。例如，手动移动实用程序（见图10.4.6）是一个让用户能够测试机器人操控器低级伺服控制的程序。具体来说，手动移动实用程序包含每个关节的滑块。当用户可以用鼠标移动滑块时，选定的机器人操控器关节立即跟随命令的用户输入。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.4.6：手动移动实用程序 \vspace{2cm}}}
+\caption{手动移动实用程序}
+\label{fig:10.4.6}
+\end{figure}
+
+示教器（见图10.5.1）实现了一个低级零重力控制器，允许用户将机器人操控器关节物理定位在任何位置。一旦用户将机器人操控器关节移动到期望的目标位置，此位置可以存储在机器人操控器位置列表中。示教器利用机器人平台的轨迹生成器将机器人操控器移动到存储的位置。这样，用户可以使机器人操控器循环通过所有或部分存储的位置。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering \vspace{2cm} 图10.4.5：示教器 \vspace{2cm}}}
+\caption{示教器}
+\label{fig:10.5.1}
+\end{figure}
+
+\subsection{编写、编译、链接和启动控制程序}
+
+控制程序首先被编译，然后链接到机器人平台库。整个机器人平台（即，所有类和场景查看器）都包含在一个库中。如前所述，机器人平台可以通过添加新类轻松扩展。如果扩展特定于某个控制程序，则可以将类添加到相关控制程序的代码中。如果扩展在不同的控制程序中使用，则将此新功能添加到机器人平台库可能更方便。为了反映对预先存在的编译和链接程序的扩展，机器人平台库被构造为动态库（即，程序在启动时加载库）。因此，在用新功能扩展库之后，示教器等程序将利用新功能（例如，示教器将能够操作新操控器类型）。
+
+图10.4.6显示了一个简单的拾取和放置操作示例控制程序的清单。每个机器人平台控制程序必须首先调用\texttt{RoboticPlatform::init()}。此函数初始化机器人平台并启动场景查看器。命令行参数传递给\texttt{RoboticPlatform::init()}，以便任何机器人平台程序都可以用某些默认命令行选项启动（见表10.4.1）。此外，这些选项也可以通过使用表10.4.1第三列中列出的函数从C++代码控制。调用\texttt{RoboticPlatform::init()}后，用户的程序创建相关机器人任务所需的所有对象（即，创建夹爪对象、Puma 560对象和轨迹生成器对象）。如果在命令行中指定了\texttt{-wait}选项，则在用户程序执行\texttt{RoboticPlatform::start()}函数之前不会启动控制循环。此函数等待用户按下启动按钮。此功能是必需的，因为它使用户能够在启动控制循环之前启动QMotor GUI、设置控制参数和选择记录模式。示例程序的最后部分利用轨迹生成器对象和夹爪对象将机器人移动到工件，关闭夹爪，拾取工件，并将其放置在目标位置。
+
+\begin{table}[htbp]
+\centering
+\caption{机器人平台程序的默认命令行选项}
+\label{tab:10.4.1}
+\begin{tabular}{lll}
+\toprule
+\textbf{选项} & \textbf{描述} & \textbf{C++等效} \\
+\midrule
+\texttt{-config <file>} & 指定配置文件 & \texttt{setConfigFile()} \\
+\texttt{-wait} & 等待用户启动 & \texttt{setWaitForStart()} \\
+\texttt{-simulation} & 强制仿真模式 & \texttt{setSimulationMode()} \\
+\texttt{-log} & 启用数据记录 & \texttt{setLogging()} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}[caption={简单的拾取和放置程序},label={lst:pickplace}]
+// 简单的拾取和放置操作
+#include "RoboticPlatform.hpp"
+
+void main(int argc, char *argv[])
+{
+    RoboticPlatform::init(argc, argv);
+
+    Puma560 puma;                    // 创建Puma560对象
+    DefaultGripper gripper;          // 创建夹爪对象
+
+    DefaultTrajectoryGenerator tragen; // 创建轨迹生成器
+
+    RoboticPlatform::start();        // 等待用户启动
+
+    // 移动到工件位置
+    tragen.moveTo(0.3, 0.2, 0.1);
+    gripper.close();                  // 关闭夹爪
+
+    // 拾取工件
+    tragen.moveTo(0.3, 0.2, 0.15);
+
+    // 移动到目标位置
+    tragen.moveTo(0.5, 0.4, 0.1);
+    gripper.open();                   // 打开夹爪
+}
+\end{lstlisting}
+
+\section{编程示例}
+
+\subsection{仿真与实现的比较}
+
+一个非常有趣的选项是将轨迹生成器创建的设定点转发给两个操控器。通过这种方式，可以比较两个具有相同运动学的操控器的运动，或者可以将真实操控器的行为与动态仿真进行比较。后一种应用在图10.5.1的程序中实现。首先，创建两个\texttt{Puma560}类的对象，并将其中一个对象配置为仿真模式。然后，两个对象都连接到同一个轨迹生成器以接收相同的设定点。
+
+\begin{lstlisting}[caption={将相同轨迹转发给两个机器人的示例},label={lst:two-robots}]
+#include "RoboticPlatform.hpp"
+
+void main(int argc, char *argv[])
+{
+    RoboticPlatform::init(argc, argv);
+
+    // 创建两个Puma560对象
+    Puma560 realRobot;
+    Puma560 simulatedRobot;
+
+    // 将第二个对象配置为仿真模式
+    simulatedRobot.setSimulationMode(true);
+
+    // 创建轨迹生成器
+    DefaultTrajectoryGenerator tragen;
+
+    // 将两个机器人连接到同一个轨迹生成器
+    realRobot.setTrajectoryGenerator(&tragen);
+    simulatedRobot.setTrajectoryGenerator(&tragen);
+
+    // 移动到几个位置进行比较
+    for(int i = 0; i < 5; i++) {
+        tragen.moveTo(i*0.1, i*0.1, i*0.05);
+    }
+}
+\end{lstlisting}
+
+\subsection{虚拟墙壁}
+
+这是如何创建自定义伺服控制的一个很好的示例。它还演示了操控器模型函数和数学库的使用。虚拟墙壁是操控器工作空间中的虚拟平面，一旦操控器移动到墙壁中就会产生反作用力。给定具有平面方程的平面（使用齐次坐标）：
+
+\begin{equation}
+n^T \cdot x + d_0 = 0
+\end{equation}
+
+其中$n$是平面的法向量，$d_0$是距原点的距离。如果$x_{EndEffector}$是当前末端执行器位置，则
+
+\begin{equation}
+d = n^T \cdot x_{EndEffector} + d_0
+\end{equation}
+
+使用控制律
+
+\begin{equation}
+\tau = J^T \cdot (-K_d \cdot \dot{x} - K_p \cdot n \cdot d)
+\end{equation}
+
+创建了一个阻止机器人移动到墙壁中的关节力矩。
+
+要实现新的伺服控制算法，需要从\texttt{ServoControl}类派生一个类（见图10.5.2中的第(1)行）。上述虚拟墙壁函数在计算控制输出的\texttt{calculate()}函数中实现。在\texttt{main()}函数中，像往常一样创建机器人对象。此外，还创建了虚拟墙壁伺服控制类的对象（见图10.5.2中的第(2)行）。最后，指示机器人对象使用新的伺服控制而不是默认位置控制，并启用重力补偿以允许机器人被推动（见图10.5.2中的第(3)行）。
+
+\begin{lstlisting}[caption={虚拟墙壁示例},label={lst:virtual-walls}]
+#include "RoboticPlatform.hpp"
+
+// (1) 从ServoControl派生新类
+class VirtualWallServo : public ServoControl
+{
+private:
+    Vector<3> n;           // 平面法向量
+    double d0;             // 距原点的距离
+    double Kp, Kd;         // 增益
+
+public:
+    VirtualWallServo() {
+        n(0) = 1.0; n(1) = 0.0; n(2) = 0.0;
+        d0 = 0.5;
+        Kp = 100.0; Kd = 10.0;
+    }
+
+    void calculate() {
+        // 获取当前末端执行器位置
+        Transform T = manipulator->getCurrentCartesianPosition();
+        Vector<3> x = T.getPosition();
+
+        // 计算到平面的距离
+        double d = dot(n, x) + d0;
+
+        // 计算雅可比矩阵
+        Matrix<6,6> J = manipulator->getJacobian();
+
+        // 计算末端执行器速度
+        Vector<6> xd = J * manipulator->getJointVelocities();
+
+        // 虚拟墙壁控制律
+        Vector<3> F;
+        if(d < 0) {  // 墙壁内
+            F = -Kd * xd.getSubVector(0,3) - Kp * n * d;
+        } else {
+            F = zeros(3);
+        }
+
+        // 计算关节力矩
+        Vector<6> tau = J.transpose() * F;
+
+        // 输出控制力矩
+        output = tau;
+    }
+};
+
+void main(int argc, char *argv[])
+{
+    RoboticPlatform::init(argc, argv);
+
+    Puma560 puma;
+
+    // (2) 创建虚拟墙壁伺服控制对象
+    VirtualWallServo servo;
+
+    // (3) 设置新的伺服控制并启用重力补偿
+    puma.setServoControl(&servo);
+    puma.enableGravityCompensation();
+
+    RoboticPlatform::start();
+}
+\end{lstlisting}
+
+\section{总结}
+
+机器人平台是一个支持实现广泛机器人应用的软件框架。与过去基于分布式架构的软件控制平台不同，机器人平台呈现了一个统一的、非分布式的面向对象架构。也就是说，基于PC技术和实时操作系统QNX6，所有非实时和实时组件都集成在一个C++库中。机器人平台的架构提供了设备、控制策略、轨迹生成和GUI组件的高效集成和可扩展性。此外，使用机器人平台实现的基于软件的控制系统价格低廉且提供高性能。机器人平台还建立在QMotor控制环境之上，用于数据记录、控制参数调整和实时绘图。实时数学库简化了操作并提供了一个易于使用的编程接口。内置的GUI组件如场景查看器和控制面板使机器人平台的操作变得容易，并为不熟悉C++编程的用户提供了快速的上手时间。
+
+\begin{thebibliography}{99}
+
+\bibitem{Lloyd1988} J. Lloyd, M. Parker and R. McClain, ``Extending the RCCL Programming Environment to Multiple Robots and Processors'', Proc. IEEE International Conference on Robotics \& Automation, 1988, pp. 465--469.
+
+\bibitem{Corke} P. Corke and R. Kirkham, ``The ARCL Robot Programming System'', Proc. of the International Conference on Robots for Competitive Industries, Brisbane, Australia, pp. 484--493.
+
+\bibitem{Lloyd1990} J. Lloyd, M. Parker and G. Holder, ``Real Time Control Under UNIX for RCCL'', Proceedings of the 3rd International Symposium on Robotics and Manufacturing (ISRAM '90).
+
+\bibitem{Stewart1989} D. B. Stewart, D. E. Schmitz, and P. K. Khosla, ``CHIMERA II: A Real-Time UNIX-Compatible Multiprocessor Operating System for Sensor-based Control Applications'', Technical Report CMU-RI-TR-89--24, Robotics Institute, Carnegie Mellon University, September, 1989.
+
+\bibitem{Stroustrup1991} B. Stroustrup, ``What is `Object-Oriented Programming'?'', Proc. 1st European Software Festival. February, 1991.
+
+\bibitem{Miller1991} D. J. Miller and R. C. Lennox, ``An Object-Oriented Environment for Robot System Architectures'', IEEE Control Systems Magazine, Feb. 1991, pp. 14--23.
+
+\bibitem{Zielinski1997} C. Zielinski, ``Object-Oriented Robot Programming'', Robotica, Vol.15, 1997, pp. 41--48.
+
+\bibitem{Kapoor1996} Chetan Kapoor, ``A Reusable Operational Software Architecture for Advanced Robotics'', Ph.D. thesis, University of Texas at Austin, December 1996.
+
+\bibitem{Pelich1996} C. Pelich \& F. M. Wahl, ``A Programming Environment for a Multiprocessor-Net Based Robot Control Unit'', Proc. 10th International Conference on High Performance Computing, Ottawa, Canada, 1996.
+
+\bibitem{QSSL} QSSL, Corporate Headquarters, 175 Terence Matthews Crescent, Kanata, Ontario K2M 1W8 Canada, Tel: +1 800--676--0566 or +1 613--591--0931, Fax: +1 613--591--3579, Email: info@qnx.com, http://qnx.com.
+
+\bibitem{Costescu1999} N. Costescu, D. M. Dawson, and M. Loffler, ``QMotor 2.0---A PC Based Real-Time Multitasking Graphical Control Environment'', IEEE Control Systems Magazine, Vol. 19 Number 3, Jun., 1999, pp. 68--76.
+
+\bibitem{Loffler2001} M. Loffler, D. Dawson, E. Zergeroglu, and N. Costescu, ``Object-Oriented Techniques in Robot Manipulator Control Software Development'', Proc. of the American Control Conference, Arlington, VA, June 2001, pp. 4520--4525.
+
+\bibitem{Bhargava2001} M. Loffler, A. Bhargava, V. Chitrakaran, and D. Dawson, ``Design and Implementation of the Robotic Platform'', Proc. of the IEEE Conference on Control Applications, Mexico City, Mexico, Sept., 2001, pp. 357--362.
+
+\bibitem{Stroustrup1998} B. Stroustrup, ``An Overview of the C++ Programming Language'', Handbook of Object Technology, CRC Press. 1998. ISBN 0--8493--3135--8.
+
+\bibitem{Musser1996} D. R. Musser, A. Saini, ``STL Tutorial and Reference Guide'', Addison-Wesley, 1996. ISBN 0--201--63398--1.
+
+\bibitem{Wernecke} Josie Wernecke, ``The Inventor Mentor'', Addison-Wesley, ISBN 0--201--62495--8.
+
+\bibitem{Hartman1996} Hartman, Jed and Josie Wernecke, ``The VRML 2.0 Handbook'', Addison-Wesley, Reading Massachusetts, 1996.
+
+\bibitem{Loffler2002} M. Loffler, N. Costescu, and D. Dawson, ``QMotor 3.0 and the QMotor Robotic Toolkit---An Advanced PC-Based Real-Time Control Platform'', IEEE Control Systems Magazine, Vol. 22, No. 3, pp. 12--26, June, 2002.
+
+\bibitem{Berkeley1992} ``Direct Drive Manipulator Research and Development Package, Operations Manual'', Integrated Motion Inc., Berkeley, CA, 1992.
+
+\bibitem{Barrett} Barrett Technologies, 139 Main St, Kendall Square, Cambridge, MA 02142, http://www.barretttechnology.com/robot.
+
+\bibitem{Costescu1999b} N. Costescu, M. Loffler, E. Zergeroglu, and D. M. Dawson, ``QRobot---A Multitasking PC Based Robot Control System'', Microcomputer Applications Journal Special Issue on Robotics, Vol. 18, No. 1, pp. 13--22, 1999.
+
+\end{thebibliography}
+
+\end{document}

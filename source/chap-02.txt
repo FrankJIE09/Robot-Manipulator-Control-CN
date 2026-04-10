@@ -1,0 +1,3410 @@
+Chapter 2
+
+Introduction to Control
+Theory
+In this chapter we review various control theory concepts that are used in
+the control of robots. We first review the state-space formulation for both
+linear and nonlinear systems and present the stability concepts needed in the
+sequel. The chapter is intended to introduce modern control concepts, but
+even readers with a background in control theory may wish to consult it for
+notation and convenience.
+
+
+2.1 Introduction
+
+The control of robotic manipulators is a mature yet fruitful area for research,
+development, and manufacturing. Industrial robots are basically positioning
+and handling devices. Therefore, a useful robot is one that is able to control
+its movement and the interactive forces and torques between the robot and
+its environment. This book is concerned with the control aspect of robotic
+manipulators. To control usually requires the availability of a mathematical
+model and of some sort of intelligence to act on the model. The mathematical
+model of a robot is obtained from the basic physical laws governing its
+movement. Intelligence, on the other hand, requires sensory capabilities and
+means for acting and reacting to the sensed variables. These actions and
+reactions of the robot are the result of controller design.
+    In this chapter we review the concepts of control theory that are needed
+in this book. All proofs are omitted, but references are made to more
+specialized books and papers where proofs are provided. Once a satisfactory
+
+                                                                            21
+Copyright © 2004 by Marcel Dekker, Inc.
+22                                              Introduction to Control Theory
+
+model of the robot dynamics is obtained as described in Chapter 2, the
+automatic control concepts presented in the current chapter may be used to
+modify the actions and reactions of the robot to different stimuli. Subsequent
+chapters will therefore deal with the application of control principles to the
+robot equations. The particular controller used will depend on the complexity
+of the mathematical model, the application at hand, the available resources,
+and a host of other criteria.
+   We begin the chapter in section 2.2 with a review of the state-space
+description for linear, continuous- and discrete-time systems. A similar review
+of nonlinear systems is presented in section 2.3. The Equilibria of nonlinear
+systems is reviewed in section 2.4, while concepts of vector spaces is presented
+in section 2.5. Stability theory is presented in section 2.6, which constitutes
+the bulk of the chapter. In Section 2.7, Lyapunov stability results are presented
+while input-output stability concepts are presented in section 2.8. Advanced
+stability concepts are compiled to make later developments more concise in
+section 2.9. In section 2.10 we review some useful theorems and lemmas. In
+section 2.11 we the basic linear controller designs from a state-space point
+of view, and the chapter is concluded in Section 2.12.
+
+
+2.2 Linear State-Variable Systems
+
+Many physical systems such as the robots considered in this book are
+described by differential or difference equations. These describing equations,
+which are usually obtained from fundamental physical laws, provide the
+starting point for the analysis and control of systems. There are, of course,
+some systems which are so complicated that describing differential (or
+difference) equations are not available. We do not consider those systems in
+this book.
+   In this section we study the state-space model of physical systems that are
+linear. We limit ourselves to systems described by ordinary differential
+equations which will lead to a finite-dimensional state space. Partial
+differential equations, leading to infinite-dimensional systems, are needed to
+study flexible robotic manipulators, but those are not considered in this
+textbook. We stress that the material of this chapter is intended as a quick
+introduction to these topics and will not be comprehensive. The readers are
+referred to [Kailath 1980], [Antsaklis and Michel 1997] for more rigorous
+presentations of linear control systems.
+
+Continuous-Time Systems
+A continuous-time system is said to be linear if it obeys the principle of
+superposition] that is, if the output y1(t) results from the input u1(t) and the
+output y2(t) results from the input u2(t), then the output resulting from
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.2 Linear State-Variable Systems                                               23
+
+u(t)=α1u1(t)+α2u2(t) is given by y(t)=α1y1(t)+α2y2(t), where α1 and α2 are scalar
+constants. Linear, single-input/single-output (SISO), continuous-time, time-
+invariant systems are described by linear, scalar, constant-coefficient ordinary
+differential equations such as
+
+
+
+                                                                           (2.2.1)
+
+
+
+where ai, bi, i=0,…,n are scalar constants, y(t) is a scalar output and u(t) is a
+scalar input. Moreover, we are given for some time t0 the initial conditions,
+
+
+
+
+Note that the input u(t) is differentiated at most as many times as the output
+y(t). Otherwise, the system is said to be non-dynamic.
+
+State-Space Realization
+The state of the system is defined as a sufficient set of variables, which when
+specified at time t0 along with the input u(t), t≥t0, is sufficient to completely
+determine the behavior of the system for all t≥t0 [Kailath 1980]. The state
+vector then contains all necessary variables needed to determine the future
+behavior of any signal in the system. By definition, such a state vector x(t) is
+not unique, a feature that will be exploited later. In fact, if x is a state vector
+then so is any (t)=Tx(t), where T is any n×n invertible matrix. For the
+continuous-time system described in (2.2.1), the following choice of a state
+
+
+
+
+                                                                           (2.2.2)
+
+vector is possible:
+where           , i=1,2,…, n. The input-output equation then reduces to
+
+                                                                           (2.2.3)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+24                                             Introduction to Control Theory
+
+     A more compact formulation of 2.2.2 and 2.2.3 is given by
+
+
+                                                                         (2.2.4)
+
+
+where
+
+
+
+
+                                                                        (2.2.5)
+
+   This particular state-space representation is known as the controllable
+canonical form [Kailath 1980], [Antsaklis and Michel 1997]. In general, a
+linear, time-invariant, continuous-time system will have more than one input
+and one output. In fact, u(t) is an m×1 vector and y(t) is a p×1 vector. The
+differential equations relating u(t) to y(t) will not be presented here, but the
+state-space representation of the multi-input/multi-output (MIMO) system
+becomes
+
+
+                                                                        (2.2.6)
+
+
+where A is n×n, B is n×m, C is p×n, and D is p×m. For the specific forms of
+A, B, C, and D, the reader is again referred to [Kailath 1980], [Antsaklis and
+Michel 1997]. A block diagram of (2.2.6) is shown in Figure 2.2.1a. Note
+that the minimal number of states is equal to the required number of initial
+conditions in order to find a unique solution to the set of differential
+equations.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.2 Linear State-Variable Systems                                               25
+
+
+
+
+Figure 2.2.1: (a) State-space block diagram of (2.2.6); (b) Transfer function block
+diagram of (2.2.6)
+
+
+
+
+EXAMPLE 2.2–1: Double Integrator
+Consider a SISO system described by
+
+                                          ÿ(t)=u(t)
+
+   This system is known as the double integrator and represents a wide variety
+of physical systems described by Newton’s Law. In order to obtain a state-
+space description, let
+
+
+
+
+so
+
+
+
+
+                                                                                䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+26                                               Introduction to Control Theory
+
+EXAMPLE 2.2–2: Two-Platform System
+Consider the MIMO mechanical system shown in Figure 2.2.2 which represents
+a 2 platform system used to isolate experiments from external disturbances.
+There are 2 inputs to the system given by u2 which causes the ground to move
+and u1 which causes the platform m1 to move. The system also has 2 outputs,
+namely the motion y1 of platform m1 and the motion y2 of platform m2. The
+experiments will be conducted on top of platform m1 and therefore, one would
+like to minimize the size of y1. The differential equations describing this system
+are obtained using Newton’s second law:
+
+
+
+
+A state-space formulation of this system can be obtained by choosing
+
+
+
+
+                                                                               䊏
+
+
+
+
+Transfer Functions
+Another equivalent representation of linear, time-invariant, continuous-time
+systems is given by their transfer function, which relates the input of the
+system u(t) to its output y(t) in the Laplace variable s or in the frequency
+domain. It is important to note that the transfer function description has no
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.2 Linear State-Variable Systems                                           27
+
+
+
+
+                                    Figure 2.2.2: Two-platform system
+
+
+
+
+information about the initial conditions of the system and, as such, will not
+provide a unique output to a particular input unless all initial conditions are
+zero [Antsaklis and Michel 1997], [Kailath 1980]. The transfer function
+formalism, however, is important in practice, since many engineers are familiar
+with frequency-domain specifications. In addition, the identification of many
+systems may be effectively performed in the frequency domain [Ljung 1999].
+It is therefore imperative that one should be able to move between the state-
+space (or modern) description and the transfer function (or classical)
+description.
+    Let us consider the system described by (2.2.6) and take its Laplace
+transform,
+
+
+                                                                        (2.2.7)
+
+
+
+where X(s), U(s), and Y(s) are the Laplace transforms of x(t), u(t), and y(t)
+respectively. The initial state vector is x(0). By eliminating X(s) between the
+two equations in (2.2.7), we find the following relation:
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+28                                                             Introduction to Control Theory
+
+                               Y(s)=[C(sI-A)-1B+D] U(s)+C(sI-A)-1x(0)                 (2.2.8)
+
+
+As mentioned previously, the transfer function is obtained as the relationship
+between the input U(s) and the output Y(s) when x(0)=0, that is,
+
+
+                                          Y(s)=[C(sI-A)-1B+D] U(s).                   (2.2.9)
+
+
+The transfer function of this particular linear, time-invariant system is given
+by
+
+
+                                             P(s)=C(sI-A)-1B+D                       (2.2.10)
+
+
+such that (see Fig.2.2.1)
+
+
+                                               Y(s)=P(s)U(s)                         (2.2.11)
+
+
+
+EXAMPLE 2.2–3: Transfer Function of Double Integrator
+Consider the system of Example 2.2.1. It is easy to see that the transfer
+function     is
+
+
+
+                                                                                           䊏
+
+Discrete-Time Systems
+In the discrete-time case, a difference equation is used to described the system
+as follows:
+
+
+                                                                                     (2.2.12)
+
+
+where ai, bi, i=0,…,n are scalar constants, y(k) is the output, and u(k) is the
+input at time k. Note that the output at time k+n depends on the input at
+time k+n but not on later inputs; otherwise, the system would be non-
+causal.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.2 Linear State-Variable Systems                                            29
+
+State-Space Representation
+In a similar fashion to the continuous-time case, the following state-vector is
+defined:
+
+
+
+
+                                                                        (2.2.13)
+
+
+The input-output equation then reduces to
+
+                               y(k)=b0x1(k)+b1x2(k)+…+ bn-1xn(k)+u(k)   (2.2.14)
+
+A more compact formulation of (2.2.7) and (2.2.8) is given by
+
+
+                                                                        (2.2.15)
+
+
+where
+
+
+
+
+                                                                        (2.2.16)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+30                                                        Introduction to Control Theory
+
+The MIMO case is similar to the continuous-time case and is given by
+
+
+                                                                                (2.2.17)
+
+
+where A is n×n, B is n×m, C is p×n, and D is p×m.
+  In many practical cases, such as in the control of robots, the system is a
+continuous-time system, but the controller is implemented using digital
+hardware. This will require the designer to translate between continuous-
+and discrete-time systems. There are many different approaches to
+“discretizing” a continuous-time system, some of which are discussed in
+Chapter 3. The interested reader in this very important aspect of the control
+problem is referred to [Åström and Wittenmark 1996], [Franklin et al.
+1997].
+
+
+EXAMPLE 2.2–4: Double Integrator in Discrete Time
+
+Recall Example 2.2.1 which presented a model of the double integrator or
+Newton’s system. One discrete-time version of the differential equation is
+given by the following difference equation
+
+
+
+
+where T is the sampling period in seconds. If we choose x1(k)=y(k) and
+x2(k)=x1(k+1), we obtain the state-space description
+
+
+
+
+                                                                                      䊏
+
+
+Transfer Function Representation
+In a similar fashion to the continuous-time case, a linear, time-invariant,
+discrete-time system given by (2.2.17) may be described in the Z-transform
+domain, from input U(z) to output Y(z) by its transfer function P(z) such
+that
+
+                                          Y(z)=P(z)U(z)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.3 Nonlinear State-Variable Systems                                           31
+
+where
+
+
+                                          P(z)=C(zI-A)-1B+D
+
+
+Note that the Z transform is used in the discrete-time case versus the Laplace
+transform in the continuous-time case.
+
+EXAMPLE 2.2–5: Tranfer Function of Discrete-Tiem Double Integrator
+The transfer function of the Example 2.2.4 is given by
+
+
+
+
+                                                                               䊏
+
+
+2.3 Nonlinear State-Variable Systems
+
+In many cases, the underlying physical behavior may not be described using
+linear state-variable equations. This is the case of robotic manipulators where
+the interaction between the different links is described by nonlinear differential
+equations, as shown in Chapter 3. The state-variable formulation is still
+capable of handling these systems, while the transfer function and frequency-
+domain methods fail. In this section we deal with the nonlinear variant of
+the preceding section and stress the classical approach to nonlinear systems
+as studied in [Khalil 2001], [Vidyasagar 1992] and in [Verhulst 1997], [LaSale
+and Lefschetz 1961], [Hahn 1967].
+
+
+Continuous-Time Systems
+
+A nonlinear, scalar, continuous-time, time-invariant system is described by a
+nonlinear, scalar, constant-coefficient differential equation such as
+
+
+                                                                          (2.3.1)
+
+
+where y(t) is the output and u(t) is the input to the system under consideration.
+As with the linear case, we define the state vector x by its components as
+follows:
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+32                                                               Introduction to Control Theory
+
+
+
+
+                                                                                        (2.3.2)
+
+
+The output equation then reduces to:
+
+                                                    y(t)=x1(t)                          (2.3.3)
+
+A more compact formulation of (2.3.2) and (2.3.3) is given by
+
+
+                                                                                        (2.3.4)
+
+
+where
+
+
+                                          U(t)=[u(t) u(1)(t)…u(n-1) (t)]T
+
+
+and
+
+                                                 c=[1 0 0…0].                           (2.3.5)
+
+
+EXAMPLE 2.3–1: Nonlinear Systems
+We present 2 examples illustrating such concepts:
+1. Consider the damped pendulum equation
+
+
+
+
+A state-space description is obtained by choosing x1=y, x2=y, leading to
+
+
+
+
+The time history of y(t) is shown in Figure 2.3.1.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.3 Nonlinear State-Variable Systems                                          33
+
+
+
+
+                              Figure 2.3.1: Damped pendulum trajectory.
+
+
+
+2. A classical nonlinear system is the Van der Pol oscillator which is described
+   by
+
+
+
+
+or in state-space with
+
+
+
+
+   The time history of y(t) and the phase-plane plot (i.e. x2 versus x1) is shown
+in Figure 2.3.2.
+                                                                              䊏
+
+
+EXAMPLE 2.3–2: Rigid Robot Dynamics
+
+A rigid robot is described by the following equations
+
+
+
+
+where M(q) is an n×n Inertia matrix, q and its derivatives are n×1 vectors of
+generalized coordinates, V(q, q), G(q) and τ are n×1 vectors containing
+velocity-dependent torques, gravity torques, and input torques respectively.
+
+Copyright © 2004 by Marcel Dekker, Inc.
+34                                               Introduction to Control Theory
+
+
+
+
+Figure 2.3.2: Van der Pol Oscillator Time Trajectories: (a) Time history, (b) phase
+plane.
+
+
+
+In this example, we will concentrate on writing the n coupled differential
+equations into a state-space form. In fact, let a state vector x be
+
+
+
+
+and the input vector be u=τ and suppose the output vector is y= q. Due to
+some special properties of rigid robots (see Chapter 2), the matrix M(q) is
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.3 Nonlinear State-Variable Systems                                        35
+
+known to be invertible so that
+
+
+
+
+or
+
+
+                                                                            (1)
+
+
+where
+
+
+
+
+                                                                            䊏
+
+Discrete-Time Systems
+A nonlinear, scalar, discrete-time, time-invariant system is described by a
+nonlinear, scalar, constant-coefficient difference equation such as,
+
+
+
+                                                                       (2.3.6)
+
+where y(.) and u are as defined before. A simple choice of state variables will
+lead to
+
+
+
+
+                                                                       (2.3.7)
+
+or, more compactly, as
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+36                                              Introduction to Control Theory
+
+
+
+
+                                                                       (2.3.8)
+
+where U(k) and c are defined similarly to those given in equation (2.3.4).
+
+EXAMPLE 2.3–3: Logistics Equation
+Consider the scalar system
+
+
+
+
+which leads to the state-space representation
+
+
+
+
+                                                                             䊏
+
+We will not emphasize the study of discrete nonlinear systems since robots
+are described by differential equations. However, as discussed in Chapter 4,
+robot controllers are usually implemented using digital controllers. It will
+therefore be advantageous to be able to translate between continuous-and
+discrete-time description of nonlinear dynamical systems as discussed in
+[åAström and Wittenmark 1995], [Franklin et al. 1997].
+
+
+2.4 Nonlinear Systems and Equilibrium Points
+
+In this section, we concentrate on systems described by (2.2.15) with the
+additional requirement that u(t) is specified as a function of the state x(t),
+i.e.
+
+
+                                                                       (2.4.1)
+
+
+   This will allow us to concentrate on the Analysis problem. We require a
+few definitions which we shall now introduce.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.4 Nonlinear Systems and Equilibrium Points                                 37
+
+   DEFINITION 2.4–1 The system (2.4.1) is said to be autonomous if f[t, x(t)]
+is not explicitly dependent on time, i.e.
+
+
+                                                                             (1)
+
+                                                                             䊏
+
+
+EXAMPLE 2.4–1: Nonautonomous System
+Both systems introduced in Example 2.3.1 are autonomous while the system
+described by
+
+
+
+is not.
+
+                                                                             䊏
+
+DEFINITION 2.4–2 A vector xe∈ is a fixed or equilibrium point of (2.4.1)
+                                          n
+
+at time t0 if
+
+
+                                                                             (1)
+
+                                                                             䊏
+EXAMPLE 2.4–2: Equilibrium Point of Autonomous System
+The system described by
+
+
+
+
+is autonomous and it has an equilibrium point at the origin of n.
+
+                                                                             䊏
+Note that:
+
+•     If a system is autonomous, then an equilibrium point at time t0 is also an
+      equilibrium point at all other times.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+38                                                        Introduction to Control Theory
+
+•     If xe is an equilibrium point at time t0 of the non-autonomous system
+      (2.4.1), then xe is an equilibrium point of (2.4.1) for all t1≥t0.
+
+
+EXAMPLE 2.4–3: Equilibrium Point of Nonautonomous System
+
+Consider the system
+
+
+
+
+which is non-autonomous. It has NO EQUILIBRIUM POINTS. Although it
+might seem that it has 2 equilibrium points xe1=-1 and xe2=1 at time t0=1.
+However, these are not equilibrium points for times since at times t≥1 the
+conditions of equilibrium does not hold.
+                                                                                      䊏
+
+
+Some books also used the terms stationary or singular points to denote
+equilibrium points.
+
+EXAMPLE 2.4–4: Damped Pendulum
+Recall the pendulum in Example 2.3.1 and let us try to find its equilibrium
+points. Note first that the system is autonomous so that we do not need to
+specify the particular time t0 and then note that the pendulum is at equilibrium
+if both
+
+
+                                          x2=0 and sin(x1)=0
+
+
+Therefore the equilibrium points are at
+
+
+
+
+  It is obvious that the pendulum is at equilibrium when it is hanging straight
+up or straight down with zero velocity.
+                                                                                      䊏
+
+DEFINITION 2.4–3 An equilibrium point xe at t0 of (2.4.1) is said to be
+isolated if there is a neighborhood N of xe which contains no other equilibrium
+points besides xe.                                                            䊏
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.5 Vector Spaces, Norms, and Inner Products                              39
+
+EXAMPLE 2.4–5: Equilibrium Points of Pendulum
+The equilibrium points of the pendulum are isolated. On the other hand, a
+system described by =0 has for equilibrium points any point in R and
+therefore, none of its equilibrium points is isolated.
+                                                                          䊏
+
+
+2.5 Vector Spaces, Norms, and Inner Products
+
+In this section, we will discuss some properties of nonlinear differential
+equations and their solutions. We will need many concepts such as vector
+spaces and norms which we will introduce briefly. The reader is referred to
+[Boyd and Barratt], [Desoer and Vidyasagar 1975], [Khalil 2001] for proofs
+and details.
+
+Linear Vector Spaces
+In most of our applications, we need to deal with (linear) real and complex
+vector spaces which are defined subsequently.
+
+DEFINITION 2.5–1 A real linear vector space (resp. complex linear vector
+space is a set V, equipped with 2 binary operations: the addition (+) and the
+scalar multiplication (.) such that
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+40                                             Introduction to Control Theory
+
+8. For each x∈V, we have 1.x=x where 1 is the unity in  (resp. in         ).
+
+                                                                                䊏
+
+
+EXAMPLE 2.5–1: Vector Spaces
+The following are linear vector spaces with the associated scalar fields: 
+with , and n with .
+
+                                                                                䊏
+
+DEFINITION 2.5–2 A subset M of a vector space V is a subspace if it is a
+linear vector space in its own right. One necessary condition for M to be a
+subspace is that it contains the zero vector.                             䊏
+   We can equip a vector space with many functions. One of which is the
+inner product which takes two vectors in V to a scalar either in  or in the
+other one is the norm of a vector which takes a vector in V to a positive
+value in . The following section discusses the norms of vectors which is
+then followed by a section on inner products.
+
+
+Norms of Signals and Systems
+A norm is a generalization of the ideas of distance and length. As stability
+theory is usually concerned with the size of some vectors and matrices, we
+give here a brief description of some norms that will be used in this book. We
+will consider first the norms of vectors defined on a vector space X with the
+associated scalar field of real numbers  then introduce the matrix induced
+norms, the function norms and finally the system-induced norms or operator
+gains.
+
+
+Vector Norms
+
+We start our discussion of norms by reviewing the most familiar normed
+spaces, that is the spaces of vectors with constant entries. In the following,
+||a|| denotes the absolute value of a for a real a or the magnitude of a if a is
+complex.
+
+DEFINITION 2.5–3 A norm ||·|| of a vector x is a real-valued function defined
+on the vector space X such that
+
+1. ||x||>0 for all x∈X, with ||x||=0 if and only if x=0.
+
+2. ||αx||=|α|||x|| for all x∈X and any scalar α.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.5 Vector Spaces, Norms, and Inner Products                                 41
+
+3. ||x+y||≤||x||+|y|| for all x,y ∈X,
+
+                                                                             䊏
+
+
+EXAMPLE 2.5–2: Vector Norms (1)
+The following are common norms in X=n where n is the set of n×1 vectors
+with real components.
+
+1. 1-norm:
+2. 2-norm:                                also known as the Euclidean norm
+3. p-norm:
+4. 8-norm:
+
+                                                                             䊏
+
+
+EXAMPLE 2.5–3: Vector Norms (2)
+Consider the vector
+
+
+
+
+Then, ||x||1=5, ||x||2=2 and ||x||∞=2.
+                                                                             䊏
+
+                                                                n
+We now present an important property of norms of vectors  in which will
+be useful in the sequel.
+
+LEMMA 2.5–1: Let ||x||a and ||x||b be any two norms of a vector x∈. Then
+there exists finite positive constants k1 and k2 such that
+
+
+
+
+                                                                             䊏
+
+  The two norms in the lemma are said to be equivalent and this particular
+property will hold for any two norms on .
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+42                                                              Introduction to Control Theory
+
+EXAMPLE 2.5–4: Equivalent Vector Norms
+1. It can be shown that for
+
+
+
+
+2. Consider again the vector of Example 2.5.3. Then we can check that
+
+
+
+
+                                                                                            䊏
+
+
+Matrix Norms
+In systems applications, a particular vector x may be operated on by a matrix
+A to obtain another vector y=Ax. In order to relate the sizes of x and Ax we
+define the induced matrix norm as follows.
+
+DEFINITION 2.5–4 Let ||x|| be a given norm of x∈. Then each m×n matrix
+A, has an induced norm defined by
+
+
+
+
+                                                                       䊏
+where sup stands for the supremum.
+  It is always imperative to check that the proposed norms verify the
+conditions of Definition 2.5.3. The newly defined matrix norm may also be
+shown to satisfy
+
+                                          ||AB||i ≤ ||A||i ||B||i
+
+for all n×m matrices A and all m×p matrices B.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.5 Vector Spaces, Norms, and Inner Products                                 43
+
+EXAMPLE 2.5–5: Induced Matrix Norms
+Consider the ∞ induced matrix norm, the 1 induced matrix norm and the 2
+induced matrix norm,
+
+
+
+
+where ␭max is the maximum eigenvalue. As an illustration, consider the matrix
+
+
+
+
+Then, ||A||i1=max(4, 4, 5)=5, ||A||i2=4.4576, and ||A||i∞= max(4, 7, 2)=7.
+                                                                             䊏
+Function Norms
+
+Next, we review the norms of time-dependent functions and vectors of
+functions. These constitute an important class of signals which will be
+encountered in controlling robots.
+
+DEFINITION 2.5–5 Let f(.): [0, ∞)→R be a uniformly continuous function.
+A function f is uniformly continuous if for any ⑀>0, there is a ␦(⑀) such that
+
+
+
+
+Then, f is said to belong to Lp if for p∈[1, ∞),
+
+
+
+
+f is said to belong to L∞ if it is bounded i.e. if
+where sup f(t) denotes the supremum of f9t) i.e. the smallest number that is
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+44                                                            Introduction to Control Theory
+
+
+larger than or equal to the maximum value of f(t). L1 denotes the set of signals
+with finite absolute area, while L2 denotes the set of signals with finite total
+energy.                                                                       䊏
+   The following definition of the norms of vector functions is not unique. A
+discussion of these norms is found in [Boyd and Barratt].
+
+DEFINITION 2.5–6 Let         denote the set of n×1 vectors of functions fi,
+each of which belonging to Lp. The norm of         is
+
+
+
+
+for p⑀ [1, ∞) and
+
+
+                                                                                          䊏
+
+   Some common norms of scalar signals u(t) that are persistent (i.e. limt→ ∞
+u(t)≠0) are the following:
+
+1.                                           which is valid for signals with
+   finite steady-state power.
+2. ||u||∞=supt≥0 |u(t) which is valid for bounded signals but is dependent on
+   outliers.
+3.                                                  which measures the steady-state average
+      resource consumption.
+
+For vector signals, we obtain:
+
+1.
+
+2.
+
+3.
+
+Note that
+
+  On the other hand, if signals do not persist, we may find their L2 or L1
+norms as follows:
+
+1.                                        which measures the total resource consumption
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.5 Vector Spaces, Norms, and Inner Products                                   45
+
+
+2.                                                           which measures the
+
+      total energy.
+
+
+EXAMPLE 2.5–6: Function Norms
+
+1. The function f(t)=e-t belongs to L1. In fact, ||e -t|| 1=1. The function
+             belongs to L2. The sinusoid f(t)=2sint belongs to L∞ since its
+      magnitude is bounded by 2 and ||2sint||∞= 2.
+2. Suppose the vector function x(t) has continuous and real-valued
+   components, i.e.
+
+
+
+
+where [a, b] is a closed-interval on the real line R. We denote the set of such
+functions x by n [a, b]. Then, let us define the real-valued function
+
+
+
+
+where ||x(t)|| is any previously defined norm of x(t) for a fixed t. It can be
+verified that ||x(.)|| is a norm on the set n [a, b] and may be used to compare
+the size of such functions [Desoer and Vidyasagar 1975]. In fact, it is very
+important to distinguish between ||x(t)|| and ||x(.)||. The first is the norm of a
+fixed vector for a particular time t while the second is the norm of a time-
+dependent vector. It is this second norm (which was introduced in definition
+2.5.6) that we shall use when studying the stability of systems.
+
+3. The vector f(t)=[e-t-e-t-(1+t)-2]T is a member of       . On the other hand,
+   f(t)=[e-t-e-t-(1+t)-1]T is a member of  and   .
+                                                                               䊏
+In some cases, we would like to deal with signals that are bounded for finite
+times but may become unbounded as time goes to infinity. This leads us to
+define the extended Lp spaces. Thus consider the function
+
+
+                                                                          (2.5.1)
+
+
+then, the extended Lp space is defined by
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+46                                                       Introduction to Control Theory
+
+
+
+
+where T<∞. We also define the norm on Lpe as
+
+
+
+
+Similar definitions are available for and the interested reader is referred to
+[Boyd and Barratt], [Desoer and Vidyasagar 1975].
+
+EXAMPLE 2.5–7: Extended Lp Spaces
+The function f(t)=t belongs to Lpe for any p∈[1, ∞] but not to Lp.
+                                                                                     䊏
+System Norms
+We would like next to study the effect of a multi-input-multi-output (MIMO)
+system on a multidimensional signal. In other words, what happens to a
+time-varying vector u(t) as it passes through a MIMO system H? Let H be a
+system with m inputs and l outputs, so that its output to the input u(t) is
+given by
+
+                                          y(t)=(Hu)(t)
+
+We say that H is Lp stable if Hu belongs to   whenever u belongs to                and
+there exists finite constants ␥>0 and b such that
+
+
+
+
+If p=∞, the system is said to be bounded-input-bounded-output (BIBO) stable.
+
+DEFINITION 2.5–7 The Lp gain of the system H is denoted by ␥p(H) and is
+the smallest ␥ such that a finite b exists to verify the equation.
+
+
+                                                                                     䊏
+    Therefore, the gain ␥p characterizes the amplification of the input signal as
+it passes through the system. The following lemma characterizes the gains of
+linear systems and may be found in [Boyd and Barratt].
+
+LEMMA 2.5–2: Given the linear system H such that an input u(t) results in
+an output                                   and suppose H is BIBO
+stable, then
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.5 Vector Spaces, Norms, and Inner Products                             47
+
+1.
+2.
+3.
+                                                                          䊏
+EXAMPLE 2.5–8: System Norms
+1. Consider the system
+
+
+
+
+so that the impulse response is
+
+
+                                                                         (1)
+
+
+Note that H(s) is BIBO stable. Then
+
+
+
+
+2. Consider the system
+
+
+
+
+where kv and kp are positive constants. The system is therefore BIBO stable.
+Then
+
+
+
+
+where e=2.7183 is the base of natural logarithms.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+48                                              Introduction to Control Theory
+
+                                                                             䊏
+
+     This concludes our brief review of norms as they will be used in this book.
+
+Inner Products
+An inner product is an operation between two vectors of a vector space which
+will allow us to define geometric concepts such as orthogonality and Fourier
+series, etc. The following defines an inner product.
+
+DEFINITION 2.5–8 An inner product defined over a vector space V is a
+function <.,.> defined from V to F where F is either  or such that ᭙x, y,
+z, ∈V
+
+      1. <x, y>=<y, x>* where the <.,.>* denotes the complex conjugate.
+      2. <x, y+z>=<x, y>+<x, z>
+      3.                                   ,
+      4. <x, x>≥0 where the 0 occurs only for x=0V
+
+                                                                              䊏
+
+
+EXAMPLE 2.5–9: Inner Products
+
+The usual dot product in n is an inner product.
+                                                                              䊏
+
+We can define a norm for any inner product by
+
+
+                                                                         (2.5.2)
+
+
+Therefore a norm is a more general concept: A vector space may have a norm
+associated with it but not an inner product. The reverse however is not true.
+Now, with the norm defined from the inner product, a complete vector space
+in this norm (i.e. one in which every Cauchy sequence converges) is known as
+a Hilbert Space
+
+Matrix Properties
+
+Some matrix properties play an important role in the study of the stability of
+dynamical systems. The properties needed in this book are collected in this
+section. We will assume that the readers are familiar with elementary
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.5 Vector Spaces, Norms, and Inner Products                                   49
+
+DEFINITION 2.5–9 All matrices in this definition are square and real.
+
+•     Positive Definite: A real n×n matrix A is positive definite if xT Ax>0 for
+      all       , x≠0.
+•     Positive Semidefinite: A real n×n matrix A is positive semidefinite if xT
+      Ax≥0 for all        .
+•     Negative Definite: A real n×n matrix A is negative definite if xT Ax<0 for
+      all      , x≠0.
+•     Negative Semidefinite: A real n×n matrix A is negative semidefinite if xT
+      Ax≤0 for all       .
+•     Indefinite: A is indefinite if xT Ax>0 for some           and xT Ax<0 for
+      other        .
+                                                                               䊏
+Note that
+
+
+
+
+where As is the symmetric part of A. Therefore, the test for the definiteness
+of a matrix may be done by considering only the symmetric part of A.
+
+THEOREM 2.5–1: Let A=[aij] be a symmetric n×n real matrix. As a result,
+all eigenvalues of A are real. We then have the following
+
+•     Positive Definite: A real n×n matrix A is positive definite if all its
+      eigenvalues are positive.
+•     Positive semidefinite: A real n×n matrix A is positive definite if all its
+      eigenvalues are nonnegative.
+•     Negative Definite: A real n×n matrix A is negative definite if all its
+      eigenvalues are negative.
+•     Negative Semidefinite: A real n×n matrix A is negative semidefinite if all
+      its eigenvalues are non-positive.
+•     Indefinite: A real n×n matrix A is indefinite if some of its eigenvalues are
+      positive and some are negative.
+
+                                                                               䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+50                                                Introduction to Control Theory
+
+THEOREM 2.5–2: Rayleigh-Ritz Let A be a real, symmetric n×n positive-
+definite matrix. Let ␭min be the minimum eigenvalue and ␭max be the maximum
+eigenvalue of A. Then, for any         ,
+
+
+
+
+                                                                                 䊏
+
+THEOREM 2.5–3: Gerschgorin Let A=[aij] be a symmetric n×n real matrix.
+Suppose that
+
+
+
+
+If all the diagonal elements are positive, i.e. aii>0, then the matrix A is positive
+definite.
+                                                                                  䊏
+
+EXAMPLE 2.5–10: Positive Definite Matrics
+Consider the matrix
+
+
+                                                                                (1)
+
+
+Its symmetric part is given by
+
+
+                                                                                (2)
+
+
+This matrix is positive-definite since its eigenvalues are both positive (1.8377,
+8.1623). Of course, Gershgorin’s theorem could have been used since the
+diagonal elements of As are all positive and
+
+
+
+
+On the other hand, consider a vector x=[x1 x2]T and its 2-norm, then
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.6 Stability Theory                                                           51
+
+
+
+
+as a result of Rayleigh-Ritz theorem.
+                                                                               䊏
+
+
+2.6 Stability Theory
+
+The first stability concept we study, concerns the behavior of free systems, or
+equivalently, that of forced systems with a given input. In other words, we
+study the stability of an equilibrium point with respect to changes in the
+initial conditions of the system. Before doing so however, we review some
+basic definitions. These definitions will be stated in terms of continuous,
+nonlinear systems with the understanding that discrete, nonlinear systems
+admit similar results and linear systems are but a special case of nonlinear
+systems.
+   Let xe be an equilibrium (or fixed) state of the free continuous-time, possibly
+time-varying nonlinear system
+
+                                                                          (2.6.1)
+
+i.e. f(xe, t)=0, where x, f are n×1 vectors.
+    We will first review the stability of an equilibrium point xe with the
+understanding that the stability of the state x(t) can always be obtained with
+a translation of variables as discussed later. The stability definitions we use
+can be found in [Khalil 2001], [Vidyasagar 1992].
+
+
+
+DEFINITION 2.6–1 In all parts of this definition xe is an equilibrium point
+at time t0, and ||.|| denote any function norm previously defined.
+
+      1. Stability: xe is stable in the sense of Lyapunov (SL) at t0, if starting
+         close enough to xe at t0, the state will always stay close to xe at later
+         times. More precisely, xe is SL at t0, if for any given >0, there exists
+         a positive (, t0) such that if
+
+
+
+
+      then
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+52                                                      Introduction to Control Theory
+
+
+
+
+Figure 2.6.1: (a) Stability of xe at t0; (b) Instability of xe at t0.
+
+
+
+
+             xe is stable in the sense of Lyapunov if it is stable for any given t0.
+             See Figure 2.6.1a.
+      2. Instability: xe is unstable in the sense of Lyapunov (UL), if no matter
+         how close to xe the state starts, it will not be confined to the vicinity
+         of xe at some later time. In other words, xe is unstable if it is not
+         stable at t0. See Figure 2.6.1b for an illustration.
+      3. Convergence: xe is convergent (C) at t0, if states starting close to xe
+         will eventually converge to xe. In other words, xe is convergent at t0
+         if for any positive there exists a positive 1(t0) and a positive T(1, x0,
+         t0) such that if
+
+
+
+
+             then
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.6 Stability Theory                                                             53
+
+             xe is convergent, if it is convergent for any t0. See Figure 2.6.2 for
+             illustration.
+
+
+
+
+                                   Figure 2.6.2: Convergence of xe at t0
+
+
+
+      4. Asymptotic Stability: xe is asymptotically stable (AS) at t0 if states
+         starting sufficiently close to xe will stay close and will eventually
+         converge to it. More precisely, xe is AS at t0 if it is both convergent
+         and stable at t0. xe is AS if it is AS for any t0. An illustration of an AS
+         equilibrium point is shown in Figure 2.6.3.
+
+
+
+
+                             Figure 2.6.3: Asymptotic stability of xe at t0
+
+
+
+      5. Global Asymptotic Stability: xe is globally asymptotically stable
+         (GAS) at t0 if any initial state will stay close to xe and will eventually
+         converge to it. In other words, xe is GAS if it is stable at t0, and if
+         every x(t) converges to xe as time goes to infinity. xe is GAS if it is
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+54                                                         Introduction to Control Theory
+
+             GAS for any t0 and the system is said to be GAS in this case, since it
+             can only have one equilibrium point xe. See Figure 2.6.4.
+                                                                                䊏
+
+
+EXAMPLE 2.6–1: Stability of Various Systems
+      1. Consider the scalar time-varying system given by
+
+
+
+
+             the solution of this equation for all tt0 is
+
+
+
+
+             The equilibrium point is located at xe=ye=0. Let us use the 1-norm
+             given by |y| and suppose that our aim is to keep |y(t)|< for all tt0.
+             It can be seen that our objective is achieved if
+
+
+
+
+             The origin is therefore a stable equilibrium point of this system.
+             This is further illustrated in Figure 2.6.5
+      2. The damped pendulum system has many equilibrium points as
+         described in Example 2.3.1. It can be shown that the equilibrium
+         point located at the origin of the state-space is unstable. This is
+         illustrated in Figure 2.6.6 where it is seen that no matter how close
+         to the origin the initial state is, the norm of x(t) can not be pre-
+         specified. On the other hand, note that the two equilibrium points
+         at [, 0] are stable.
+
+
+
+
+                        Figure 2.6.4: Global asymptotic stability of xe at t0
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.6 Stability Theory                                                            55
+
+
+
+
+                                 Figure 2.6.5: Time history for
+
+
+      3. The origin is an equilibrium point of the Van der Pol oscillator.
+          However, and as shown in Figure 2.6.7, it is an unstable equilibrium
+          point. In fact, suppose the following norm is used per definition
+          2.5.6, and let ≠1.Therefore, we would like
+
+
+
+
+             for all t>t0. As can be seen from Figure 2.6.7, no matter how close to
+             the origin x0 is, i.e. no matter how small  is, the trajectory will
+             eventually leave the ball of radius =1.
+      4. The origin is a stable equilibrium point of the robot described in
+         Example 2.3.1 whenever the following choices are made
+
+                                          Kv=diag(kvi); Kp=diag(kpi)
+
+             where kvi>0 and kpi>0 for all i=1,…n.
+                                                                                䊏
+
+
+EXAMPLE 2.6–2: Stability versus Convergence
+Consider the following system
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+56                                                  Introduction to Control Theory
+
+
+
+
+             Figure 2.6.6: Damped pendulum: (a)time history; (b) phase plane
+
+
+
+
+   There are 2 equilibrium points located at (0, 0) and (1, 0), both of which
+are unstable (check!). On the other hand, (1, 0) is convergent since all
+trajectories will eventually converge to it after some time T. Before T however,
+there is no guarantee that a trajectory will stay within some  of (1, 0) no
+matter how close the initial state is to (1, 0). In fact, suppose the system
+starts at x(0), then the state-vector is given at any t0 by
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.6 Stability Theory                                                                 57
+
+
+
+
+           Figure 2.6.7: Van der Pol oscillator: (a) time history; (b) phase plane
+
+
+
+
+      See Figure 2.6.8 for illustration of the behavior of the state vector.
+                                                                                     䊏
+   Note that stability and asymptotic stability are local concepts in the
+sense that, if the initial perturbation  is too large, the subsequent states
+x(t) may stray arbitrarily far from xe. There exists, therefore, a region
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+58                                                     Introduction to Control Theory
+
+
+
+
+                 Figure 2.6.8: Example 2.6.2 (a)time history; (b) phase plane
+
+
+
+
+centered at xe and given by                                           such that
+both stability and asymptotic stability will result for any state starting in
+            but not for states starting outside of it. This region is called the
+domain of attraction of xe. The equilibrium state xe is GAS if                  .
+   Note also that all previous stability definitions depended on the initial
+time t0, so that the region of attraction may vary with varying initial times. If
+the system (2.6.1) were independent of time (or autonomous), then the
+stability concepts in definition 2.6.1 are indeed independent of t0 and they
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.6 Stability Theory                                                      59
+
+will be equivalent to the stability concepts defined next. On the other hand,
+and even though the system (2.6.1) is time-dependent, we would like to have
+its stability properties not depend on t0 since that would later provide us
+with a desired degree of robustness. This leads us to define the uniform
+stability concepts [Khalil 2001].
+
+DEFINITION 2.6–2 In all parts of this definition, xe is an equilibrium point
+at time t0.
+
+1. Uniform Stability: xe is uniformly stable (US) over [t0, ∞) if δ(, t0)in
+   definition 2.6.1 is independent of t0.
+2. Uniform Convergence: xe is uniformly convergent (UC) over [t0, ∞) if
+   δ1(t 0) and T(1,x0, t0) of definition 2.6.1 can be chosen independent of
+   t 0.
+3. Uniform Asymptotic Stability: xe is uniformly, asymptotically stable (UAS)
+   over [t0, ∞), if it is both US and UC.
+4. Global Uniform Asymptotic Stability: x e is globally, uniformly,
+   asymptotically stable (GUAS) if it is US, and UC.
+5. Global Exponential Stability: xe is globally exponentially stable (GES) if
+   there exists α>0, and ß 0 such that for all x0∈ℜn,
+
+
+
+
+                                                                           䊏
+Note that GES implies GUAS, and see Figure 2.6.9 for an illustration of
+uniform stability concepts.
+
+EXAMPLE 2.6–3: Uniform stability
+1. Consider the damped Mathieu equation,
+
+
+
+
+    The origin is a US equilibrium point as shown in Figure 2.6.10
+2. The scalar system
+
+
+
+
+    has an equilibrium point at the origin which is UC.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+60                                                Introduction to Control Theory
+
+
+
+
+Figure 2.6.9: (a) Uniform Stability of xe; (b) uniform convergence of xe; (c) uniform
+asymptotic stability of xe; (d) global uniform asymptotic stability of xe
+
+3. The origin is a UAS equilibrium point for
+
+
+
+4. The system
+
+
+
+     has an equilibrium point xe=0 which is GUAS.
+
+5. Consider the system
+
+
+
+     the origin is then a GES equilibrium point since the solution is given by
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.6 Stability Theory                                                       61
+
+
+
+
+    so that
+
+                                          |x(t)|≤|x0|e-t
+
+    See Figure 2.6.11, for an illustration of the time history of x(t).
+                                                                       䊏
+
+
+
+
+Figure 2.6.10: Damped Mathieu equation: (a)time history; (b) phase plane
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+62                                                      Introduction to Control Theory
+
+
+
+
+               Figure 2.6.11: Example 2.6.3e: (a)time history; (b) phase plane
+
+
+In many cases, a bound on the size of the state is all that is required in terms
+of stability. This is a less stringent requirement than Lyapunov stability. It is
+instructive to study the subtle difference between the definition of
+Boundedness below and that of Lyapunov stability in Definition 2.6.1.
+
+DEFINITION 2.6–3
+
+1. Boundedness: xe is bounded (B) at t0 if states starting close to xe will
+   never get too far. In other words, xe is bounded at t0 if for each δ>0 such
+   that
+
+                                          ||x0-xe||<δ
+
+there exists a positive (r, t0)<∞ such that for all tt0
+
+
+
+
+xe is bounded if it is bounded for any t0.
+
+2. Uniform Boundedness: xe is uniformly bounded (UB) over [t0, ∞) if
+   (r, t0) can be made independent of t0.
+3. Uniform Ultimate Boundedness: xe is said to be uniformly, ultimately
+   bounded (UUB), if states starting close to xe will eventually become
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.6 Stability Theory                                                      63
+
+      bounded. More precisely, xe is UUB if for any δ>0, >0, there exists a
+      finite time T( , δ ) such that whenever ||x0-xe||< δ, the following is
+      satisfied
+
+
+
+
+for all tT(,δ).
+
+4. Global Uniform Ultimate Boundedness: xe is said to be globally, uniformly,
+   ultimately bounded (GUUB) if for >0, there exists a finite time T()
+   such that
+
+
+
+
+      for all tT() See Figure 2.6.12 for an illustration of the boundedness
+      stability concepts.
+
+                                                                           䊏
+EXAMPLE 2.6–4: Boundedness
+1. The second-order system given by
+
+
+
+
+      has a uniformly bounded equilibrium point at the origin as shown in
+      Figure 2.6.13.
+
+2. The second-order system given by
+
+
+
+
+      has an UUB equilibrium point at xe=0, as shown in Figure 2.6.14.
+                                                                           䊏
+Note that in general, we are interested in the stability of the motion x(t)
+when the system is perturbed from its trajectory. In other words, how far
+does x(t) get from its nominal trajectory if the initial state is perturbed?
+This problem can always be reduced to the stability of the origin of a non-
+
+Copyright © 2004 by Marcel Dekker, Inc.
+64                                                    Introduction to Control Theory
+
+
+
+
+Figure 2.6.12: (a) Boundedness of xe at t0; (b) uniform boundedness of xe; (c) uniform
+ultimate boundedness of xe; (d) global uniform boundedness of xe.
+
+
+autonomous system by letting
+
+                                          z=xe-x(t)
+
+and
+
+
+
+
+and studying the stability of the equilibrium point ze=0.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.6 Stability Theory                                                   65
+
+
+
+
+Figure 2.6.13: Example 2.6.4-a: (a)x1(0)=x2(0)=1 (b) x1(0)=x2(0)=0.1
+
+
+EXAMPLE 2.6–5: Stability of the Origin
+1. Consider the damped pendulum of Example 2.3.1a. Its equilibrium points
+   are at [nπ 0]T, n=0, ±1,…. The stability of these points can be studied
+   from the stability of the origin of the system
+
+
+
+
+2. Consider the rigid robot equations of Example 2.3.2, and assume
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+66                                               Introduction to Control Theory
+
+
+
+
+Figure 2.6.14: Example 2.6.4-b: (a)x1(0)=x2(0)=1 (b) x1(0)=x2(0)=1
+
+
+that a desired trajectory is specified by
+
+
+
+
+Therefore, we can define the new system by choosing z=xd-x so that
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.7 Lyapunov Stability Theorems                                              67
+
+and verify that ze=0 is the desired equilibrium point of the modified system if
+xe=xd is the desired equilibrium trajectory of the robot.
+
+                                                                             䊏
+
+
+2.7 Lyapunov Stability Theorems
+Lyapunov stability theory deals with the behavior of unforced nonlinear
+systems described by the differential equations
+
+                                                                        (2.7.1)
+
+where without loss of generality, the origin is an equilibrium point of (2.7.1).
+It may seem to the reader that such a theory is not needed since all we had
+to do in the examples of the previous section is to solve the differential
+equations, and study the time evolution of a norm of the state vector. There
+are at least two reasons why Lyapunov theory is needed. The first is that
+Lyapunov theory will allow us to determine the stability of a particular
+equilibrium point without actually solving the differential equations. This,
+as is well known to any student of nonlinear differential equations, is a
+large saving. The second and related reason for using Lyapunov theory is
+that it provides us with qualitative results to the stability questions, which
+may be used in designing stabilizing controllers of nonlinear dynamical
+systems.
+   We shall first assume that any necessary conditions for (2.7.1) to have a
+unique solution are satisfied [Khalil 2001], [Vidyasagar 1992]. The unique
+solution corresponding to x(t0)=x0 is x(t, t0, x0) and will be denoted simply as
+x(t). Before we actually introduce Lyapunov’s theorems, we review certain
+classes of functions which will simplify the statement of Lyapunov theorems.
+
+Functions of Class K
+Consider a continuous function α:ℜ→ℜ
+
+DEFINITION 2.7–1 We say that a belongs to class K, if
+
+1. α(0)=0
+2. α(x)>0, for all x>0
+3. α is nondecreasing, i.e. α(x1)α(x2) for all x1>x2.
+
+                                                                             䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+68                                                       Introduction to Control Theory
+
+EXAMPLE 2.7–1: Class K Functions
+The function α(x)=x2 is a class K function. The function α(x)=x2+1 is not a
+class K function because (1) fails. On the other hand, α(x)=-x2 is not a class
+K function because (2) and (3) fail.
+
+                                                                                     䊏
+
+
+DEFINITION 2.7–2 In the following, ℜ+=[0,∞).
+
+1. Locally Positive Definite: A continuous function V:ℜ+×ℜn→R is locally
+   positive definite (l.p.d) if there exists a class K function a(.) and a
+   neighborhood N of the origin of ℜn such that
+
+                                          V(t, x)α(||x||)
+
+for all t0, and all x∈N.
+
+2. Positive Definite: The function V is said to be positive definite (p.d) if
+   N=ℜn.
+3. Negative and Local Negative Definite: We say that V is (locally) negative
+   definite (n.d) if -V is (locally) positive definite.
+                                                                          䊏
+
+
+EXAMPLE 2.7–2: Locally Positive Definite Functions
+[Vidyasagar 1992] The function                         is l.p.d but not
+p.d, since V(t, x)=0 at x=(0, π/2). On the other hand,
+is not even l.p.d because V(t, x)→0 as t→∞ for any x. The function
+                            is p.d.
+                                                                     䊏
+
+
+DEFINITION 2.7–3
+
+In the following,
+
+1. Locally Decrescent: A continuous function                       is locally
+   decrescent if There exists a class K function ß(.) and a neighborhood N
+   of the origin of    such that
+
+                                          V(t, x)ß(||x||)
+
+for all t0 and all x∈Ν.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.7 Lyapunov Stability Theorems                                              69
+
+2. Decrescent: We say that V is decrescent if N=ℜn.
+                                                                             䊏
+
+
+EXAMPLE 2.7–3: Decrescent Functions
+[Vidyasagar 1992] The function                                   is locally but
+not globally decrescent. On the other hand,                          is globally
+decrescent.
+
+                                                                             䊏
+
+
+DEFINITION 2.7–4 Given a continuously differentiate function V: ℜ+×ℜn→
+R together with a system of differential equations (2.7.1), the derivative of V
+along (2.7.1) is defined as a function V: ℜ+×ℜn→R given by
+
+
+
+
+                                                                             䊏
+
+EXAMPLE 2.7–4: Lyapunov Functions
+Consider the function                          of Example 2.7.3 and assume
+given a system
+
+
+
+
+Then, the derivative of V(t, x) along this system is
+
+
+
+                                                                             䊏
+
+Lyapunov Theorems
+We are now ready to state Lyapunov Theorems, which we group in Theorem
+2.7.1. For the proof, see [Khalil 2001], [Vidyasagar 1992].
+
+THEOREM 2.7–1: Lyapunov
+
+Given the nonlinear system
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+70                                               Introduction to Control Theory
+
+with an equilibrium point at the origin, i.e. f(t, 0)=0, and let N be a
+neighborhood of the origin of size  i. e.
+
+
+
+
+Then
+
+1. Stability: The origin is stable in the sense of Lyapunov, if for x∈Ν, there
+   exists a scalar function V(t, x) with continuous partial derivative such
+   that
+
+      (a) V(t, x) is positive definite
+      (b) V is negative semi-definite
+
+2. Uniform Stability: The origin is uniformly stable if in addition to (a) and
+   (b) V(t, x) is decrescent for x∈Ν.
+3. Asymptotic Stability: The origin is asymptotically stable if V(t, x) satisfies
+   (a) and is negative definite for x∈Ν.
+4. Global Asymptotic Stability: The origin is globally, asymptotically stable
+   if V(t, x) verifies (a), and V(t, x) is negative definite for all x∈ℜn i.e. if
+   N=ℜn.
+5. Uniform Asymptotic Stability: The origin is UAS if V(t, x) satisfies (a),
+   V(t, x) is decrescent, and V(t,x) is negative definite for x∈Ν.
+6. Global Uniform Asymptotic Stability: The origin is GUAS if N=ℜn, and
+   if V(t, x) satisfies (a), V(t,x) is decrescent, V(t,x) is negative definite and
+   V(t, x) is radially unbounded, i.e. if it goes to infinity uniformly in time
+   as ||x||→∞.
+7. Exponential Stability: The origin is exponentially stable if there exists
+   positive constants α, ß, γ such that
+
+
+
+
+8. Global Exponential Stability: The origin is globally exponential stable if
+   it is exponentially stable for all x∈ℜn.
+                                                                          䊏
+
+
+The function V(t, x) in the theorem is called a Lyapunov function. Note that
+the theorem provides sufficient conditions for the stability of the origin and
+that the inability to provide a Lyapunov function candidate has no indication
+on the stability of the origin for a particular system.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.7 Lyapunov Stability Theorems                                    71
+
+EXAMPLE 2.7–5: Stability via Lyapunov Functions
+1. Consider the system described by
+
+
+
+
+and choose a Lyapunov function candidate
+
+
+
+
+Then the origin may be shown to be a stable equilibrium point.
+
+2. Consider the Mathieu equation described in Example 2.6.3. Let the
+   Lyapunov function candidate be given by
+
+
+
+
+The origin is then shown to be a US equilibrium point.
+
+3. The system given in Example 2.6.3–5, has a GES equilibrium point at
+   the origin. This may be shown by considering a Lyapunov function
+   candidate
+
+                                             V(x)=x2
+
+which leads to
+
+
+
+
+Then,
+
+                                          0.5x2V(x)2x2
+
+and
+
+
+
+
+The above inequalities hold for any x∈ℜn.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+72                                             Introduction to Control Theory
+
+4. Let
+
+
+
+
+and pick a Lyapunov function candidate
+
+
+
+
+so that
+
+
+
+
+so that the origin is SL.
+                                                                             䊏
+
+Lyapunov Theorems may be used to design controllers that will stabilize a
+nonlinear system such as a robot. In fact, if one chooses a Lyapunov function
+candidate V(t, x), then finding its total derivative V(t, x) will exhibit an
+explicit dependence on the control signal. By choosing the control signal to
+make V(t, x) negative definite, stability of the closed-loop system is
+guaranteed. Unfortunately, it is not always easy to guarantee the global
+asymptotic stability of an equilibrium point using Lyapunov Theorem. This
+is due to the fact, that V(t, x) may be shown to be negative but not necessarily
+negative-definite. If the open-loop system were autonomous, Lyapunov theory
+is greatly simplified as shown in the next section.
+
+The Autonomous Case
+Suppose the open-loop system is not autonomous, i.e. is not explicitly
+dependent on t, then a time-independent Lyapunov function candidate V(x)
+may be obtained and the positive definite conditions are greatly simplified as
+described next.
+
+LEMMA 2.7–1: A time invariant continuous function V(x) is positive definite
+if V(0)=0 and V(x)>0 for x≠0. It is locally positive definite if the above holds
+in a neighborhood of the origin                                               䊏
+
+  Note that the condition that V(0)=0 is not necessary and that as long as
+V(0) is bounded above the Lyapunov results hold without modification.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.7 Lyapunov Stability Theorems                                                    73
+
+With the above simplification, the Lyapunov results hold except that no
+distinction is made between uniform and regular stability results.
+
+EXAMPLE 2.7–6: Uniform Stability via Lyapunov Functions
+Consider again the damped pendulum described by
+
+
+
+
+and obtain a state-space by choosing x1=θ and                          then a Lyapunov
+function candidate is
+
+
+
+
+so that                            and the origin is SL and actually USL.
+                                                                                    䊏
+
+
+EXAMPLE 2.7–7: Uniform Stability via Lyapunov Functions
+This example illustrates the local asymptotic, uniform stability of the origin
+for the system
+
+
+                                                                                   (1)
+
+
+
+Choose                                    then
+
+
+
+
+which is strictly less than zero for all
+                                                                                    䊏
+
+Sometimes, and although V(x) is only non-positive, LaSalle’s theorem
+[LaSale and Lefschetz 1961], [Khalil 2001] may be used to guarantee the
+global asymptotic stability of the equilibrium point as described in the
+next theorem.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+74                                            Introduction to Control Theory
+
+THEOREM 2.7–2: LaSalle
+  Given the autonomous nonlinear system
+
+
+
+
+and let the origin be an equilibrium point. Then,
+
+1. Asymptotic Stability: Suppose a Lyapunov function V(x) has been found
+   such that for               , V(x)>0 and           Then the origin is
+   asymptotically stable if and only if        only at x=0.
+2. Global Asymptotic Stability: The origin is GAS if          above and
+   V(x) is radially unbounded.
+                                                                      䊏
+
+
+Unfortunately, in many applications with time-varying trajectories, the open-
+loop systems are not autonomous, and more advanced results such as the
+ones described later will be called upon to show global asymptotic stability.
+
+EXAMPLE 2.7–8: LaSalle Theorem
+Consider the autonomous system
+
+
+
+
+The origin is an equilibrium point. Moreover, consider a Lyapunov function
+candidate
+
+
+
+
+Leading to
+
+
+
+
+Since          for all x1=x2, we need to check whether the origin is the only
+point where            It can be seen from the state equation that x1=x2 can
+only happen at the origin, therefore the origin is GAS.
+                                                                           䊏
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.7 Lyapunov Stability Theorems                                                 75
+
+   Note that LaSalle’s theorem is actually more general than we have
+described. In fact, it can be used to ascertain the stability of sets rather than
+just an equilibrium point. The basic idea is that since V(x) is lower bounded
+V(x)>c, then the derivative V has to gradually vanish, and that the trajectory
+is eventually confined to the set where V=0. The following definitions is
+useful in explaining the more general LaSalle’s theorem.
+
+DEFINITION 2.7–5 A set G is said to be an invariant set of a dynamical
+system if every trajectory which starts in G remains in G.          䊏
+
+As examples of invariant sets, we can give the whole state-space, an
+equilibrium point and a limit cycle. By using this concept, LaSalle was able
+to describe the convergence to sets rather than to just equilibrium points.
+For example, we can use this result to show that the limit cycle is a stable
+attracting set of the Van der Pol oscillator.
+
+The Linear Time-Invariant Case
+In the case where the system under consideration is linear and time-invariant,
+Lyapunov theory is well developed and the choice of a Lyapunov function is
+simple. In fact, in this case, the various stability concepts in definitions 2.6.1
+are identical. Lyapunov theory then provides necessary as well as sufficient
+conditions for stability as discussed in this section. For the proofs consult
+[Khalil 2001].
+
+THEOREM 2.7–3: Given a linear time-invariant system
+
+
+
+
+The system is stable if and only if there exists a positive definite solution P to
+the equation
+
+                                          ATP+PA=-Q
+
+where Q is an arbitrary positive-definite matrix.                               䊏
+
+Note that the stability of the whole system was obtained in the last theorem
+since in this case, the origin is the unique equilibrium point and its stability is
+equivalent to the system being stable. In addition, no reference was made to
+what kind of stability is implied since all stability concepts are equivalent in
+the very special case of linear, time-invariant systems [Khalil 2001]. Also
+note that this result is equivalent to testing that all eigenvalues of A have
+negative real parts [Kailath 1980]. In the following, we include a table
+summarizing Lyapunov Stability theorems.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+76                                                     Introduction to Control Theory
+
+                                   Lyapunov Stability Theorems
+1. Autonomous Systems:                        , such that
+      •      The origin is an equilibrium point.
+      •      The set                          .
+      •      There exists V(x) continuous, continuously differentiate, V(0)=0
+
+
+
+
+2. Non-autonomous Systems: x=f(t, x), such that
+   • The origin is an equilibrium point at t=t0.
+   • The set                          .
+      •      There exists V(t, x) continuous, continuously differentiate in t and
+             x, V(t, 0)=0
+      •      α(||x||), ß(||x||), and γ(||x||) class K functions.
+
+
+
+
+Lyapunov Theorems may be used to design controllers that can stabilize
+linear time-invariant systems as described in the next example.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.7 Lyapunov Stability Theorems                                               77
+
+EXAMPLE 2.7–9: Stability of PD Controllers for Rigid Robots
+Consider the rigid robot example and the torque input of Example 2.3.2.
+The resulting linear system is given by
+
+
+
+
+The equilibrium point is xe=[0T 0T]T. It is then easy to find Kp and Kv to
+stabilize the equilibrium point. In fact, let Q=I and consider the Lyapunov
+equation of theorem 2.7.3
+
+                                             ATP+PA=-I
+
+which reduces to
+
+
+
+
+where
+
+
+
+
+The solution of these equations will provide a stabilizing controller for the
+robot. In particular, the choices of Kp and Kv of Example 2.6.3(part 5) will
+make the origin a GES equilibrium.
+                                                                           䊏
+
+Convergence Rate
+Although Lyapunov stability theory does not directly give an indication of
+the transient behavior of the system, it may actually be used to estimate the
+convergence rate for linear systems. In order to see this, consider the following
+inequalities which are a result of Rayleigh-Ritz theorem 2.5.2,
+
+                                     xTλmin(P)xxT PxxT λmax(P)x        (2.7.2)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+78                                                           Introduction to Control Theory
+
+then, note
+
+                                                                                    (2.7.3)
+
+
+
+
+Now, we can show by separation of variables and integrating that
+
+                                          xTmin(P)xV(t)V(0)e-t                  (2.7.4)
+
+or that
+
+
+                                                                                    (2.7.5)
+
+
+Therefore, x(t) is approaching the origin at rate faster than /2. In fact, it
+can be shown that the fastest convergence rate estimate is obtained when
+Q=I.
+
+Krasovskii Theorem
+There are some cases when a Lyapunov function for autonomous nonlinear
+systems is easily obtained using Krasovkii’s theorem stated below.
+
+THEOREM 2.7–4: Consider the autonomous nonlinear system x=f(x) with
+the origin being an equilibrium point. Let A(x)=∂f/∂x. Then, a sufficient
+condition for the origin to be AS is that there exists 2 symmetric positive-
+definite matrices, P and Q such that for all x≠0, the matrix
+
+                                           F(x)=A(x)TP+PA(x)+Q                          (1)
+
+is 0 in some ball B about the origin. The function V(x)=f(x)TPf(x) is then a
+Lyapunov function for the system. If B=     and if V(x) is radially unbounded
+then the system is GAS.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.7 Lyapunov Stability Theorems                                          79
+
+EXAMPLE 2.7–10: Krasovkii’s Theorem
+Consider the nonlinear system described by
+
+
+
+
+where f(0)=g(0)=0. Let us find the Jacobian matrix
+
+
+
+
+Let P=I, Q=I and check the conditions on the system which would look
+like
+
+
+
+
+which should be 0.
+                                                                          䊏
+On the other hand, suppose we have the linear time-invariant system
+
+
+
+
+The transfer function is then given by
+
+                                          P(s)=C(sI-A)-1B
+
+Note that P(s) is strictly-proper. The following stability result then holds
+[Desoer and Vidyasagar 1975].
+
+THEOREM 2.7–5: Suppose P(s) is a stable transfer function then
+
+1. If u(t)∈L∞ i.e. u(t) is bounded, then so is y(t) and     .
+2. If limt→∞ u(t)=0 then limt→∞ y(t)=0.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+80                                                             Introduction to Control Theory
+
+3. If u(t)∈L2, then                                    .
+                                                                                           䊏
+
+
+EXAMPLE 2.7–11: Input/Output Stability of Rigid Robots
+Consider the closed-loop robot of Example 2.7.9. Its input/output behavior
+is described by a set of n decoupled differential equations
+
+
+
+
+If                                             . Then the transfer function between each
+Ui(s) and Qi(s) is
+
+
+
+
+Note that all Pi(s) are stable if kvi and kpi are both positive. Assume for the
+purposes of illustration that kvi=3 and kpi=2, and that ui=sin (t). Note that ui
+is bounded and let us find the output yi(t).
+
+                                yi(t)=-0.2e-2t+0.5e-t-0.32 cos(t+0.32)
+
+which is bounded above by 0.62 and below by -0.02. The derivative of y(t)
+is also bounded. On the other hand, suppose the input is ui(t)=e-3t then the
+output is
+
+                                          yi(t)=0.5e-t-e-2t+0.5e-3t
+
+Since limt→∞ ui(t)=0, then so is limt→∞ yi(t)=0.
+                                                                                           䊏
+
+
+2.8 Input/Output Stability
+
+When dealing with nonlinear systems, stability in the sense of Lyapunov
+does not necessarily imply that a bounded input will result in a bounded
+output. This fact is shown in the next example.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.8 Input/Output Stability                                                 81
+
+EXAMPLE 2.8–1: Input/Output Versus Lyapunov Stability
+Consider the time-varying system
+
+
+
+
+The system is asymptotically stable with a single equilibrium point at ye=0.
+On the other hand, a unit step input (which is definitely bounded) starting at
+t=0 will lead to the response
+
+
+
+
+which grows unbounded as t increases.
+                                                                           䊏
+Therefore, we need to discuss the conditions under which a bounded input
+will result in a bounded output [Boyd and Barratt], [Desoer and Vidyasagar
+1975]. This was actually presented when discussing the system-induced
+norms (see Definition 2.5.7) and the current discussion should serve to
+contrast these concepts with Lyapunov stability. Consider the nonlinear
+system
+
+                                                                       (2.8.1)
+                                 y(t)=g[x(t), t, u(t)]                 (2.8.2)
+
+DEFINITION 2.8–1 The dynamical system (2.8.1) is bounded-input-
+bounded-output (BIBO) stable if for any
+
+                                             ||u(t)||M<8
+
+there exist finite γ>0 and b such that
+
+                                             ||y(t)||γM+b
+                                                                           䊏
+
+Note that BIBO stability implies the uniform boundedness of all equilibrium
+states.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+82                                                     Introduction to Control Theory
+
+EXAMPLE 2.8–2: BIBO Stability
+Consider the system
+
+                                          y(t)=u2(t)
+
+It is BIBO stable since for any input u(t) such that |u(t)|<M<∞, the output is
+bounded by M2.
+                                                                           䊏
+
+
+2.9 Advanced Stability Results
+
+In this section we review some advanced stability concepts. These results
+will be used in showing the closed-loop stability of systems when robust or
+adaptive controllers are used. If the reader is only interested in implementing
+these controllers, this section may be skipped. On the other hand, anyone
+interested in designing new controllers should be aware of the results presented
+here.
+
+Passive Systems
+Given a nonlinear system shown in Figure 2.9.1, we are interested in studying
+the stability of such a system based on input-output measurements only.
+Motivated by energy concepts in network theory, such as
+
+
+     [Stored Energy]=[External Power Input]+[Internal power Generation]
+
+
+One can study the internal stability of all kinds of systems. In general,
+the external power input is the scalar product yTu of an input effort or
+flow u and an output flow or effort y. The last equation then takes on the
+form
+
+                                                                              (2.9.1)
+
+In many cases (e.g. isolated system) g(t)=0 and one can use the stored
+Energy
+
+
+                                                                              (2.9.2)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.9 Advanced Stability Results                                                 83
+
+
+
+
+                  Figure 2.9.1: Input-output description of nonlinear system
+
+
+
+as a Lyapunov function candidate.
+   The passivity of nonlinear systems was defined as follows [Narendra and
+Taylor 1973], [Ortega et al. 1998].
+
+DEFINITION 2.9–1 Consider the system shown in Figure 2.9.1 and assume
+that it has the same number of inputs and outputs i.e. u(t) and y(t) have the
+same dimension.
+
+1. Passivity: The system is said to be passive if
+
+
+
+
+      for all finite T>0 and some γ>-∞.
+
+2. Strict Passivity: The system is said to be strictly passive if there exists a
+   δ>0 and γ>-∞ such that
+
+
+
+
+      for all finite T>0.
+                                                                               䊏
+
+
+EXAMPLE 2.9–1: Passivity of Rigid Robots
+Consider again the robot equation
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+84                                                       Introduction to Control Theory
+
+  Suppose the robot is representing a system whose input is  and whose
+output is the joint velocity q. Let the sum of the kinetic energy and potential
+energy of the robot be denote by the Hamiltonian H and recall [Ortega and
+Spong 1988]
+
+
+
+
+then
+
+
+
+
+which proves that from  to q, the rigid robot is a passive system.
+                                                                                     䊏
+A passive system is in effect one that does not create energy.
+
+Positive-Real Systems
+If the system under consideration is linear and time-invariant, then passivity
+is equivalent to positivity and may be tested in the frequency domain
+[Narendra and Taylor 1973]. In fact, let us describe positive-real systems
+and discuss some of their properties. Consider the multi-input-multi-output
+linear time-invariant system
+
+
+
+
+where x is an n vector, u is an m vector, y is a p vector, A, B, C, and D are of
+the appropriate dimensions. The corresponding transfer function matrix is
+
+                                          P(s)=C(sI-A)-1B+D
+
+We will assume that the system has an equal number of inputs and outputs,
+i.e. p=m. To simplify our notation we will denote the Hermitian part of a
+real, rational transfer matrix T(s) by                            where s*
+is the complex conjugate of s. A number of definitions have been given for
+SPR functions and matrices [Narendra and Taylor 1973]. It appears that the
+most useful definition for control applications is the following.
+
+DEFINITION 2.9–2 An m×m matrix T(s) of proper real rational functions
+which is not identically zero is positive-real or PR if
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.9 Advanced Stability Results                                              85
+
+1. All elements of T(s) have no poles in the region Re(s)>0,
+2. Any poles of T(s) on the jw axis are simple with positive-definite residues,
+   and
+3. The matrix He[T(s)] is positive semidefinite for Re(s)>0.
+                                                                             䊏
+
+
+EXAMPLE 2.9–2: PR Matrices
+Consider the matrix
+
+
+
+
+This matrix is PR as can be checked.
+
+DEFINITION 2.9–3 An m×m matrix T(s) of proper real rational functions
+which is not identically zero is strictly-positive-real or SPR if
+
+1. All elements of T(s) have no poles in the region Re(s)0, and
+2. The matrix He[T(s)] is positive definite for Re(s)>0.
+                                                                            䊏
+
+
+EXAMPLE 2.9–3: SPR Matrices
+Consider the matrix
+
+
+
+
+This matrix is SPR as can be checked.
+                                                                            䊏
+
+
+Lure’s Problem
+Consider the following feedback interconnected system
+
+
+
+                                                                       (2.9.3)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+86                                           Introduction to Control Theory
+
+where φ is continuous in both arguments. Lure then stated the following
+Absolute Stability problem which became known as Lure’s Problem: Suppose
+the system described by the above equations is given where:
+
+1. All eigenvalues of A have negative real parts or that A has one eigen-
+   value at the origin while the rest of them is in the open left-half plane
+   (OLHP), and
+2. (A, b) is controllable, and
+3. (c, A) is observable, and
+4. The nonlinearity φ(.,.) satisfies
+
+      (a) φ(t,0)=0; t0 and
+      (b)
+
+Then, find conditions on the linear system (A, B, C, D) such that x=0 is a
+GAS equilibrium point of the closed-loop system.
+   Note that sometimes when we know more about the nonlinearity φ, the
+last condition above is replaced by the following:
+
+
+
+
+where k2k10 are constants. We then say that φ belongs to the sector
+[k1, k2].
+   The first attempt to solve this problem was made by Aizerman in what is
+now known as Aizerman’s conjecture [Vidyasagar 1992] followed by the
+efforts of Kalman [Vidyasagar 1992]. The correct solution however, was not
+available until the
+   In order to present the correct results, we need to present the KY and
+MKY lemmas.
+
+The MKY Lemma
+The following lemmas are versions of the Meyer-Kalman-Yakubovich
+(MKY) lemma which appears in [Narendra and Taylor 1973], [Khalil 2001]
+amongst other places, and will be useful in designing adaptive controllers
+for robots.
+
+LEMMA 2.9–1: Meyer-Kalman-Yakubovitch Let the system (2.9.3) with
+D=0 be controllable. Then the transfer function c(sI-A)-1b is SPR if and
+only if
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.9 Advanced Stability Results                                                87
+
+1. For any symmetric, positive-definite Q, there exists a symmetric, positive-
+   definite P solution of the Lyapunov equation
+
+                                          ATP+PA=-Q
+
+2. The matrices B and C satisfy
+
+                                           C=BTP
+
+                                                                              䊏
+
+The MKY Lemma gives conditions under which a transfer matrix has a
+degree of robustness. Note that the conditions depend on both the input and
+output matrices and thus a particular system may be SPR for a certain choice
+of input/output pairs and not SPR for others. A modified version of the KY
+lemma which relaxes the condition of controllability is given next.
+
+LEMMA 2.9–2: Meyer-Kalman-Yakubovitch Given vector b, an
+asymptotically stable A, a real vector v, scalars γ0 and >0, and a positive-
+definite matrix Q, then, there exist a vector q and a symmetric positive definite
+P such that
+
+1.
+
+
+
+2.
+
+
+
+if and only if
+
+1. is small enough and,
+
+2. the transfer function γ/2+vT(sI-A)-1b is SPR
+                                                                              䊏
+
+
+In most of our applications, q=0. These lemmas find many applications in
+nonlinear systems. It is usually possible to divide a nonlinear system into a
+linear feed-forward subsystem, and a nonlinear, passive feedback. The
+challenge is then to make the linear subsystem SPR so that the stability of the
+combined system is guaranteed.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+88                                                       Introduction to Control Theory
+
+
+
+
+             Figure 2.9.2: Feedback interconnection of two nonlinear systems.
+
+
+
+
+2.10 Useful Theorems and Lemmas
+
+Consider the block diagram shown in Figure 2.9.2. The blocks labelled H1
+and H2 represent two systems (linear or nonlinear) which operate on the
+inputs e1 and e2 as follows
+
+                                          y1=H1e1=H1(u1-y2)
+
+                                          y2=H2e2-H2(u2+y1)
+
+Let H1 be an m×p matrix function, and H2 be a p×m matrix function.
+Therefore, u1 and y2 are p×11 vectors, while u2 and y1 are m×11 vectors. The
+first theorem gives sufficient conditions to guarantee that the closed-loop
+system shown in Figure 2.9.2 is BIBO stable and is given in [Desoer and
+Vidyasagar 1975].
+
+Small-Gain Theorem
+THEOREM 2.10–1: Small gain Theorem Let H1:                                    and H2:
+       . Therefore H1 and H2 satisfy the inequalities
+
+
+
+
+for all T [0,∞) and suppose that                               . If
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.10 Useful Theorems and Lemmas                                                       89
+
+Then e1, y2,                 and y1,            .                                      䊏
+   Basically, the small-gain theorem states that a feedback interconnection
+of two systems is BIBO stable if the loop-gain is less than unity. In other
+words, if a signal traverses the feedback-loop and decreases in magnitude
+then the closed-loop system can not go unstable.
+
+EXAMPLE 2.10–1: Applications of Small-Gain Theorem
+Let the feedback connection of Figure 2.9.2 be such that
+
+
+
+
+Then, we can show that
+
+                                             γ1=0.5; ß1=0
+
+
+                                             γ2=1; ß2=1.
+
+Since γ1γ2=0.5<1, the feedback connection is BIBO stable.
+                                                                                       䊏
+
+The next theorem provides a test for the stability of a nonlinear system based
+on the stability of its linear part. In fact, a certain degree of robustness is
+achieved if the linear system is exponentially stable as described in [Anderson
+et al. 1986].
+
+Total Stability Theorem
+THEOREM 2.10–2: Total Stability Consider the state-space system
+described by
+
+
+
+
+where
+
+1. The system                             is exponentially stable i.e. there are some a>0
+   and K1, such that
+
+                                          ||x(t)|| Ke-at; t0
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+90                                                          Introduction to Control Theory
+
+2. f(t, 0)=0 i.e. the origin is an equilibrium point of f(t, x)
+3. || f(t, x1)-f(t, x2)||ß1||x1-x2||, for some ß1>0
+4. ||g(t, x1)||ß2r, for some ß2>0
+5. ||g(t, x1)-g(t, x2)ß2 ||x1-x2||
+6.
+Then, there exists a unique solution x(t) to 1.5.5 and
+
+
+
+
+                                                                                        䊏
+The total stability theorem will be used to design controllers that will
+make the linear part of the system exponentially stable. In effect, this
+theorem guarantees that if the linear part of the system is “very” stable
+(exponentially stable), the destabilizing effect of the bounded
+nonlinearities may not be sufficient to destabilize the system and the state
+will remain bounded.
+
+EXAMPLE 2.10–2: Total Stability
+Consider the nonlinear system
+
+
+
+
+Let |x0|<1, and note the following
+
+                                          K=1; a=2; ß1=0.5; ß2=1.
+
+Note first that all conditions of the theorem are satisfied, then there exists a
+unique solution x(t) which is bounded by
+
+
+
+
+                                                                                        䊏
+
+A version of the Bellman-Gronwall lemma is proved in [Sastry and Bodson
+1989] and is presented next.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.10 Useful Theorems and Lemmas                                           91
+
+LEMMA 2.10–1: Bellman-Gronwall Let x(.), a(.), b(.): [0, 8) → [0, 8), and
+T0. Suppose that for all t [0,T], the following inequality holds
+
+
+
+
+Then for all t [0,T]
+
+
+
+
+If b(t) is further a constant, the following holds
+
+
+
+
+                                                                           䊏
+
+EXAMPLE 2.10–3: Bellman-Gronwall Lemma Example
+Consider a LTI system given by
+
+
+
+
+and assume that A is a stable matrix. Then the solution of the state equation
+is given by
+
+
+
+
+or
+
+
+
+
+which, when taking the norm of each side becomes
+
+
+
+
+We can then use the Bellman-Gronwall lemma by letting
+                         to obtain
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+92                                           Introduction to Control Theory
+
+
+
+
+or finally
+
+
+
+                                                                          䊏
+The next Lemma may be used in the case of non-autonomous systems and
+leads to results similar to LaSalle’s theorem. For a proof see for example
+[Khalil 2001]
+
+LEMMA 2.10–2: Barbalat Let f(t) be a differentiate function of t.
+
+•     First Version: If                   is uniformly continuous and
+                        , then
+•     Second Version: If f(t)0,                and        bounded, then
+
+                                                                          䊏
+
+
+EXAMPLE 2.10–4: Barbalat Lemma Example
+1. Consider f(t)=e-t+1, then dot f(t)=-e-t which is uniformly continuous. On
+   the other hand limt→∞(e-t+1)=1 therefore                    .
+2. As a second example, consider f(t)=1/(1+t), with t>0. Using the second
+   version of Barbalat’s lemma, we can show that                     .
+                                                                           䊏
+
+
+LEMMA 2.10–3: Consider the quadratic equation
+
+
+
+
+where a, b, and c are positive constants. Then P(x)<0 if
+
+
+
+
+for all x1<x<x2 where
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.11 Linear Controller Design                                                93
+
+                                                                             䊏
+
+
+THEOREM 2.10–3: Let V(x) be a Lyapunov function of a continuous-time
+system that satisfies the following properties:
+
+
+
+
+then x(t) is uniformlt bounded                                               䊏
+
+THEOREM 2.10–4: Let V(x) be a Lyapunov function of a continuous-time
+system that satisfies the following properties:
+
+
+
+
+where η is a positive constant, γ1 and γ2 are continuous, strictly increasing
+functions, and γ3 is a continuous, nondecreasing function. Then, if
+
+
+
+
+x(t) is uniformly ultimately bounded. In addition, if x(0)=0, x(t) is uniformly
+bounded.                                                                    䊏
+
+
+2.11 Linear Controller Design
+
+The purpose of control design is to make the robot respond in a predictable
+and desirable fashion to a set of input signals. In this section we review how
+a linear controller may be designed in order that the behavior of the robot-
+controller combination is acceptable. It seems obvious that the firs requirement
+on the robot-controller is its stability. Therefore, the first function of the
+controller is to stabilize the robot when it is moving in space. In fact, we can
+now pose the problem we wish to solve:
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+94                                                     Introduction to Control Theory
+
+Linear Control Design Problem: Consider a LTI system. Design a feedback
+controller that operates on the output y(t) without differentiation, and
+generates an input u(t) so that the system goes from any initial state x(0) to
+a specified desired final state xd in some finite time. This problem has 2 parts
+to it:
+
+1. Controllability: Can the problem be solved if y=x?
+2. Observability: If so, how do I get x from y?
+
+In the next section we introduce these concepts and find tests that will allow
+us to answer the questions posed. Given is a MIMO LTI system
+
+
+                                                                             (2.11.1)
+
+
+where                   ,                 ,   and A, B, C, D are of the appropriate
+dimensions.
+
+DEFINITION 2.11–1 A state x0 is controllable if there exists an input u(t),
+for 0tt1 such that x(t1)=0, for some finite t1. The system itself is said to be
+controllable if all        are controllable.                                   䊏
+
+Note that the input u(t) is not a feedback function of the state x(t). Let us
+recall the solution of the differential equation given by
+
+
+
+
+and evaluate it at t1 assuming that x0 is controllable so that x(t1)=0 to
+obtain
+
+
+                                                                             (2.11.2)
+
+
+Therefore, if x0 is controllable, it has to satisfy the last equation. This however
+is not an easy test. Fortunately, we have a much simpler test given in the
+following theorem.
+
+THEOREM 2.11–1: A necessary and sufficient condition for the complete
+controllability of the LTI systems is that, The n×nm matrix
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.11 Linear Controller Design                                              95
+
+
+
+
+                                                                           (1)
+
+is full rank, i. e. rankC=n
+                                                                           䊏
+   Next, We show that controllability is sufficient to stabilize the system
+(2.11.1) by placing the eigenvalues of the A matrix
+
+THEOREM 2.11–2: Let (A, b) be controllable. Then, there exists a constant
+gain matrix K such that u=-Kx+v will place the eigenvalues of A-bk anywhere
+in the s plane.                                                          䊏
+
+   The state-feedback gain needed to place the eigenvalues may be found in
+the single-input case using Ackermann’s formula (see for example [Antsaklis
+and Michel 1997]). Assume the desired closed-loop eigenvalues are specified
+as the roots of the equation
+
+                                                                   (2.11.3)
+
+Then, the state-feedback controller is given by
+
+
+                                                                   (2.11.4)
+
+
+where C is the controllability matrix of (2.11.1), and φ(Α) is the matrix
+obtained by evaluating φ(s) at A, i.e.
+
+                                                                   (2.11.5)
+
+EXAMPLE 2.11–1: Control Design for Double Integrator
+Consider the double integrator system
+
+
+
+
+Suppose that the desired closed-loop poles are the roots of the equation
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+96                                            Introduction to Control Theory
+
+
+
+
+Then by Ackermann’s formula
+
+
+
+                                                                           (1)
+
+                                                                           䊏
+Next, we introduce the concept of observability and find an observability
+test.
+
+DEFINITION 2.11–2 The state x(0)=x0 is said to be observable if knowledge
+of u(t), y(t); 0t1 is enough to uniquely determine x0. Note that once x(0) is
+known, so is x(t) for t0. The system is said to be completely observable if
+every initial state is observable.                                         䊏
+
+  This problem is a dual problem to the controllability problem as will
+become obvious in the following.
+
+THEOREM 2.11–3: A necessary and sufficient condition for the complete
+observability of the LTI systems is that The np×n matrix
+
+
+
+
+                                                                           (1)
+
+
+
+
+is full rank, i.e.                                                         䊏
+
+EXAMPLE 2.11–2: Observer-Controller Design
+Consider the system
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.11 Linear Controller Design                                             97
+
+then
+
+
+
+
+Therefore, this system is controllable but not observable. On the other hand,
+the system
+
+
+
+
+then
+
+
+
+
+so this one is observable but not controllable. The trouble is that both of
+these realizations have the same transfer function H(s)=c(sI-A)-1b= s/s2=s!.
+                                                                           䊏
+   Suppose we have 2 realizations of the transfer function H(s) related by a
+state-space transformation,
+
+
+                                                                    (2.11.6)
+
+
+and
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+98                                                        Introduction to Control Theory
+
+                                                             -
+Then, let us find the controllability matrix              of Σ
+
+
+                                                                                (2.11.7)
+
+
+Therefore, rankC=rank , and controllability is therefore preserved under
+state-space transformation.
+   By combining the concepts of observability and controllability, we can
+design compensators that solve the Linear Control Design problem. In fact,
+the following theorem summarizes linear control design.
+
+THEOREM 2.11–4: The Linear Control Design problem is solvable for a
+system 2.11.1, if and only if the state-space realization is both observable
+and controllable.                                                         䊏
+
+These compensators are known as the observer-controller compensators and
+are shown for example in Figure 2.11.1. In the SISO case, a transfer function
+admits a state-space realization which is completely observable and
+controllable if and only if no pole-zero cancellations occur [Kailath 1980],
+[Antsaklis and Michel 1997]. The next example shows an observer-controller
+compensator chosen to obtain desired closed-loop poles.
+
+
+
+
+                                          Figure 2.11.1
+
+
+
+EXAMPLE 2.11–3: Observer-Controller Design
+Consider again the double integrator system. It is easily verified that it is a
+controllable and observable system. Suppose that the desired closed-loop
+poles are the roots of the equation
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.11 Linear Controller Design                                                99
+
+
+
+
+This can be achieved using the structure of Figure 2.11.1 using the gain
+               found in Example 2.11.1                                䊏
+
+The double integrator system being both controllable and observable, also’
+lends itself to the most general controller design technique for linear systems,
+namely the two-degree -f freedom (2-DOF) design. This allows the
+controlled closed-loop system to match any desired model as descried in
+[Kailath 1980]. This approach goes beyond the pole or eigenvalue placement
+designs, as one can now move both poles and zeros, a goal not achievable
+with the observer-controller compensators. This design is illustrated in the
+following example.
+
+EXAMPLE 2.11–4: Two DOF Design
+Consider again the double integrator system, and assume the desired closed-
+loop transfer function is given by
+
+
+
+
+where a, b, kv, and kp are given constants. Then using the model-following
+configuration in Figure 2.11.2, and simplifying terms, we obtain
+
+
+
+
+                                          Figure 2.11.2
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+100                                                      Introduction to Control Theory
+
+    or
+
+                                (s2+kvs+kp)Q(s)=(as+b)[s2R(s)+S(s)].
+
+   At this stage, we may choose for example R(s)=1 and suppose for the
+purpose of illustration that a=b=kp=1 and that kv=9. Then we solve for S(s)=9s
+and Q(s)=s. Note that in this case, the feedback block S(s)/R(s) is improper
+but this does not cause any problems in cases (such as robot control) where
+velocity measurements are available.
+                                                                            䊏
+The question addressed next is to find conditions on (2.11.1) so that a
+static-output feedback controller will render the closed-loop system SPR.
+We will consider the SISO case only since this is the only case encountered
+in this book.
+
+
+                                                                               (2.11.8)
+
+
+or in the frequency-domain
+
+
+                                                                               (2.11.9)
+
+
+We present a simple frequency domain result to show the existence of K and
+γ that will render the closed-loop system SPR. The result first appeared in
+[Gu 1988].
+
+THEOREM 2.11–5: Let system (2.2.11) have no common poles and zeros.
+Then there exists a nonsingular K and a positive scalar γ such that the closed-
+loop system (2.11.8, 2.11.9) is SPR, if and only if P(s) has no zeros in the
+right half plane and if P(s) has n poles and n - 1 zeros. In fact, one such K is
+given by
+
+                                            K=P(CB)-1
+
+where P is any symmetric, positive-definite matrix.                                  䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+2.12 Summary and Notes                                                       101
+
+EXAMPLE 2.11-5: SPR Design
+Consider the double integrator system
+
+
+
+
+where c2≠0 and c1, c2 are of the same sign. The open-loop transfer function is
+then
+
+
+
+
+which has relative degree 1 and is minimum phase. Note that CB=c2 which is
+invertible. The gain K is chosen to be
+
+
+
+
+where p>0. The closed-loop system is then
+
+
+
+
+which is stable for any choice of γ>0 and is SPR if γ>c1/(pc2 (check!).
+                                                                              䊏
+
+
+2.12 Summary and Notes
+
+This chapter is meant to be a review of various control theory concepts that
+will be used in the remainder of the book. The emphasis has been to include
+enough material so that readers with little or no background in control theory
+are able to follow the design of robot controllers. Simplifications were often
+made to concentrate on the systems studied in this book, namely, mechanical
+systems and systems described by the Lagrange-Euler equations. In particular,
+the double integrator system was illustrated in detail, since it will result from
+applying a preliminary nonlinear feedback on mechanical manipulators. In
+Chapter 3, we introduce the dynamical description of rigid robot
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+102                                          Introduction to Control Theory
+
+manipulators, and in subsequent chapters, the control concepts reviewed in
+this chapter will be implemented on those manipulators.
+   Most of the results reviewed here can be found in greater details in the
+books by [Kailath 1980], [Antsaklis and Michel 1997] for the linear systems
+case, and in [Khalil 2001], [Vidyasagar 1992] in the nonlinear systems case.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+
+[Anderson et al. 1986] B.D.O.Anderson and R.Bitmead and C.R.Johnson,
+   Jr. and P.V.Kokotovic and R.L.Kosut and I.M.Y.Mareels and L.Praly
+   and B.D.Riedle. “Stability of Adaptive Systems: Passivity and Averaging
+   Analysis”. MIT Press, Cambridge, MA, 1986.
+
+[Antsaklis and Michel 1997] P.Antsaklis and A.N.Michel. “Linear Systems”.
+    McGraw Hill, New York, 1997.
+
+[Åström and Wittenmark 1995] K.Åström and B.Wittenmark. “Adaptive
+    Control”. Addison-Wesley, Reading, MA, 2nd edition, 1995.
+
+[Åström and Wittenmark 1996] K.Åström and B.Wittenmark. “Computer-
+    Controlled Systems: Theory and Design”, Prentice-Hall, Englewood
+    Cliffs, NJ, 1996.
+
+[Boyd and Barratt] S.Boyd and G.Barratt. “Linear Controller Design: Limits
+    of Performance”, Prentice-Hall, Englewood Cliffs, NJ, 1991.
+
+[Desoer and Vidyasagar 1975] C.Desoer and M.Vidyasagar. “Feedack
+   Systems: Input-Output Properties”, Academic Press, New York, 1975.
+
+[Franklin et al. 1997] G.Franklin and D.Powell and M.Workman. “Digital
+    Control of Dynamic Systems”, Addison-Wesley, Reading, MA, 1997.
+
+[Gu 1988] G.Gu. “Stabilizability Conditions for Multivariable Uncertain
+   systems via Output Feedback”, IEEE Trans. Autom. Control, vol. AC-
+   35, pp. 988–992, 1988.
+
+[Hahn 1967] W.Hahn. “Theory and Applications of Lyapunov’s Direct
+   Method”. Prentice-Hall, Englewood Cliffs, NJ, 1967.
+
+[Horn and Johnson 1991] R.Horn and C.Johnson. “Topics in Matrix
+   Analysis”. Cambridge University Press, New York, 1991.
+
+
+
+                                                                      103
+Copyright © 2004 by Marcel Dekker, Inc.
+104                                                          REFERENCES
+
+[Kailath 1980] T.Kailath. “Linear Systems”. Prentice-Hall, Englewood Cliffs,
+    NJ, 1980.
+
+[Khalil 2001]. H.Khalil. “Nonlinear Systems”. Prentice-Hall, Englewood
+   Cliffs, NJ, 2001.
+
+[LaSale and Lefschetz 1961] P.LaSale and S.Lefschetz. “Stability by
+   Lyapunov’s Direct Method”. Academic Press, New York, 1961.
+
+[Ljung 1999] L.Ljung. “System Identification-Theory for the User”. Prentice-
+    Hall, Englewood Cliffs, NJ, 1999.
+
+[Narendra and Taylor 1973] K.S.Narendra and J.H.Taylor. “Frequency
+   Domain Criteria for Absolute Stability”. Academic Press, New York,
+   1973.
+
+[Niculescu and Abdallah 2000] S.-I.Niculescu and C.T.Abdallah. “Delay
+    Effects on Static Output Feedback Stabilization”. Submitted IEEE CDC
+    2000, Sydney, Australia, 2000.
+
+[Ortega and Spong 1988] R.Ortega and M.Spong. “Adaptive Motion Control
+    of Rigid Robots: A Tutorial”. Proc. IEEE Conf. Dec. and Cont., pp.
+    1575–1584, 1988.
+
+[Ortega et al. 1998] R.Ortega and A.Loria and P.J.Nicklasson and H.Sira-
+    Ramirez. “Passivity-based Control of Euler-Lagrange Systems”. Springer-
+    Verlag, Berlin, 1998.
+
+[Strang 1988] G.Strang. “Linear Algebra and its Applications”. Brooks/Cole,
+     Stamford, CT, 1988.
+
+[Koltchinskii et al. 1999] V.Koltchinskii and C.T.Abdallah and M.Ariola
+    and P.Dorato and D.Panchenko. “Statistical Learning Control of
+    Uncertain Systems: It is better than it seems”. IEEE Trans, on Automatic
+    Control, February 1999.
+
+[Sastry and Bodson 1989] S.Sastry and M.Bodson. “Adaptive Control:
+    Stability, Convergence, and Robustness”. Prentice-Hall, Englewood
+    Cliffs, NJ, 1989.
+
+[ATM 1996] “ATM Forum Traffic Management Specification”. ATM Forum
+   Traffic Management Working Group AF-TM-0056.000, version 4.0,
+   April 1996.
+
+[Niculescu et al. 1997] S.-I.Niculescu and E.Verriest and L.Dugard and J.-
+    M.Dion. “Stability and robust stability of time-delay systems: A guided
+    tour”. LNCIS, Springer-Verlag, London, vol. 228, pp. 1–71, 1997.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                         105
+
+[CDC 1999] “CDC 1999 Special session on time-delay systems”. Proc. 1999
+   CDC, Phoenix, AZ, 1999.
+
+[Verhulst 1997] H.Verhulst. “Nonlinear Differential Equations and
+    Dynamical Systems”. Springer-Verlag, Berlin, 1997.
+
+[Vidyasagar 1992] M.Vidyasagar. “Nonlinear Systems Analysis”. Prentice-
+    Hall, Englewood Cliffs, NJ, 1992.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

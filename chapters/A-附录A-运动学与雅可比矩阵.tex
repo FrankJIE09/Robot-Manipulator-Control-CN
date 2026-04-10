@@ -1,0 +1,391 @@
+% 文件开头添加条件判断
+\newif\ifstandalone
+\standalonetrue  % 默认独立编译模式
+
+% 检测是否在主文档中
+\ifdefined\maindoc
+  \standalonefalse
+\fi
+
+\ifstandalone
+  \documentclass[UTF8,a4paper]{ctexart}
+
+  \usepackage{amsmath}
+  \usepackage{amssymb}
+  \usepackage{geometry}
+  \usepackage{hyperref}
+  \usepackage{booktabs}
+
+  \geometry{margin=2.5cm}
+
+  \title{附录A：机器人运动学与雅可比矩阵回顾}
+  \date{}
+\fi
+
+\ifstandalone
+  \begin{document}
+  \maketitle
+\fi
+
+\section*{前言}
+
+此处我们回顾机器人学入门课程中所需的基本知识，包括机器人运动学、臂雅可比矩阵以及笛卡尔位置描述方法。本回顾内容详尽，因为具有系统理论与控制背景但尚未接触过这些内容的读者可能需要详细参考。文中给出了多个示例，这些示例将在全书的设计与仿真中使用。
+
+\section{A.1 基本操作器几何}
+
+本节介绍一些基本的手臂几何结构。机器人手臂或操作器由一系列通过臂连杆在空间上分隔的关节组成。关节是手臂运动发生的地方（类似于人类的手腕和肘部），而连杆具有固定结构（类似于人类的前臂）。因此，连杆在关节之间维持固定的关系。[尽管连杆可能是柔性的（即可能弯曲），但在此忽略柔性效应。]
+
+关节可以由电机或液压执行器驱动。机器人关节有两种类型，涉及两种运动方式：
+\begin{itemize}
+    \item \textbf{旋转关节（R）}：允许绕旋转轴旋转运动，例如人类肘部。
+    \item \textbf{移动关节（P）}：允许伸展或伸缩运动，例如伸缩式汽车天线。
+\end{itemize}
+
+移动连杆没有拟人化的类比。操作器的关节变量是关节的可变参数。对于旋转关节，变量是角度，记为$\theta$；对于移动关节，它是长度，记为$d$。
+
+图A.1.1展示了一些基本的臂几何结构。
+
+\textbf{RRR铰接臂}（图A.1.1a）类似于人类手臂；\textbf{PPP笛卡尔臂}（图A.1.1e）与操作器工作空间中使用的坐标紧密相关，通常使用笛卡尔坐标$(x, y, z)$描述要执行的任务。工作空间是末端执行器在机器人执行所有可能运动时扫过的总体积。
+
+旋转关节的关节轴是旋转$\theta$发生的轴。（旋转方向使用右手螺旋定则确定：如果右手弯曲的手指指示旋转方向，拇指指示旋转轴的方向。）对于移动关节，它是伸缩动作$d$发生的轴。臂关节轴的相对方向决定了其基本属性。
+
+图A.1.1c所示的RRP操作器称为\textbf{SCARA}（选择性柔性装配机器人手臂）。它与图A.1.1b所示的RRP球形臂结构非常不同，因为其关节轴全部平行。另一方面，球形臂的关节轴交于一点。
+
+\textbf{工业实例}：
+\begin{itemize}
+    \item RRR臂：PUMA和Cincinnati-Milacron T3 735操作器
+    \item 球形RRP臂：斯坦福操作器
+    \item SCARA RRP臂：AdeptOne
+    \item RPP臂：GMF M-100
+    \item PPP臂：Cincinnati-Milacron T3龙门机器人
+\end{itemize}
+
+许多工业机器人是\textbf{串联连杆操作器}，因为它们由一系列通过驱动关节连接的连杆组成。基座称为连杆0，最后一个连杆由工具或末端执行器终止。许多机器人有六个关节，对应于在三维空间中获得末端执行器的任意位置和姿态所需的六个自由度。
+
+如PUMA 560这样的臂有六个旋转关节。在这样的臂中，关节可以分为两组，每组三个关节。前三个关节可用于将末端执行器放置在三维工作空间内的任意位置。后三个关节可用于在该位置获得末端执行器的任意姿态。在PUMA 560中，关节4、5和6的轴交于一点且相互正交。这使得末端执行器定向变得方便。后三个关节称为\textbf{腕部机构}（见示例A.2.4）。
+
+\section{A.2 机器人运动学}
+
+本节回顾机器人操作器的运动学，包括臂$A$矩阵、齐次变换、$T$矩阵、正向和逆向运动学，以及关节空间和笛卡尔坐标。文中给出了多个说明性示例。
+
+\subsection{$A$矩阵}
+
+给定关节变量的值，能够指定连杆相对于彼此的位置非常重要。这通过使用操作器运动学方程来实现。
+
+我们可以为每个连杆$i$关联一个固定在该连杆上的坐标系$(x_i, y_i, z_i)$（见图A.2.1）。一个标准且一致的方法是Denavit-Hartenberg（D-H）表示法。固定在连杆0（即操作器基座）上的框架称为基座坐标系或惯性坐标系。
+
+坐标系$i-1$与坐标系$i$之间的关系由变换矩阵给出：
+\begin{equation}
+A_i = \begin{bmatrix}
+\cos\theta_i & -\sin\theta_i\cos\alpha_i & \sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\
+\sin\theta_i & \cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\
+0 & \sin\alpha_i & \cos\alpha_i & d_i \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\tag{A.2.1}
+\end{equation}
+
+连杆$i$的$A$矩阵中的大多数参数是固定的：
+\begin{itemize}
+    \item $\alpha_i$：连杆$i$的扭转角
+    \item $a_i$：连杆$i$的长度
+\end{itemize}
+这些参数在臂制造商的规格表中给出。
+
+关节参数为：
+\begin{itemize}
+    \item $\theta_i$：关节角度
+    \item $d_i$：关节偏移量
+\end{itemize}
+
+如果关节$i$是旋转关节，则关节变量为$\theta_i$，$d_i$为规格表中给出的常数。如果连杆是移动关节，则$d_i$是关节变量，$\theta_i$为规格表中提供的常数。对于移动关节，参数$a_i$定义为零，因为连杆长度是变量，由$d_i$描述。
+
+根据D-H约定，对于旋转关节，旋转$\theta_i$发生在$z_{i-1}$轴周围。对于移动关节，$d_i$沿$z_{i-1}$轴发生。因此，连杆坐标系被认为是附加在连杆的外端。
+
+$A$矩阵$A_i$仅是单个变量的函数，即关节变量$\theta_i$或$d_i$，因为$A_i$中的所有其他参数对于特定关节是固定的。如果操作器有$n$个连杆，则关节变量向量$q$是由单个关节变量组成的$n$向量。因此，$q$通常是角度$\theta_i$和长度$d_i$的组合。例如，对于RRP臂：
+\begin{equation}
+q = \begin{bmatrix} \theta_1 & \theta_2 & d_3 \end{bmatrix}^T
+\end{equation}
+
+$q$的分量记为$q_i$；即，一般关节变量$q_i$可以根据情况表示角度$\theta_i$或长度$d_i$。
+
+\subsection{齐次变换}
+
+$A$矩阵是以下形式的齐次变换矩阵：
+\begin{equation}
+A_i = \begin{bmatrix} R_i & p_i \\ 0 & 1 \end{bmatrix}
+\tag{A.2.2}
+\end{equation}
+
+其中$R_i$是旋转矩阵，$p_i$是平移向量。因此，如果${}^ir$是相对于连杆$i$的坐标系描述的点，则同一点相对于连杆$i-1$的框架的坐标${}^{i-1}r$由下式给出：
+\begin{equation}
+\begin{bmatrix} {}^{i-1}r \\ 1 \end{bmatrix} = A_i \begin{bmatrix} {}^ir \\ 1 \end{bmatrix}
+\tag{A.2.3}
+\end{equation}
+
+齐次变换是一个$4\times 4$矩阵，因此它可以描述旋转和平移；因此，在给定坐标系中描述位置的向量是4向量。它们的形式为：
+\begin{equation}
+\begin{bmatrix} x & y & z & 1 \end{bmatrix}^T
+\tag{A.2.4}
+\end{equation}
+
+其中$(x, y, z)$是帧$i$中的点的坐标。
+
+\subsection{臂$T$矩阵}
+
+要获得相对于基座（即连杆0）框架的点的坐标，我们可以使用矩阵：
+\begin{equation}
+T_i = A_1 A_2 \cdots A_i
+\tag{A.2.7}
+\end{equation}
+
+然后，给定相对于连杆$i$的附加框架表达的点的坐标${}^ir$，同一点在基座框架中的坐标由下式给出：
+\begin{equation}
+\begin{bmatrix} {}^0r \\ 1 \end{bmatrix} = T_i \begin{bmatrix} {}^ir \\ 1 \end{bmatrix}
+\tag{A.2.8}
+\end{equation}
+
+我们称$T_i$为运动学变换链。我们定义臂$T$矩阵为：
+\begin{equation}
+T = T_n = A_1 A_2 \cdots A_n
+\tag{A.2.9}
+\end{equation}
+
+其中$n$是操作器中的连杆数。然后，如果${}^nr$是相对于最后一个连杆的坐标，则该点的基座坐标为：
+\begin{equation}
+\begin{bmatrix} {}^0r \\ 1 \end{bmatrix} = T \begin{bmatrix} {}^nr \\ 1 \end{bmatrix}
+\tag{A.2.10}
+\end{equation}
+
+这是一个重要的关系，因为${}^nr$——第$n$帧中物体的坐标——可以表示物体相对于工具或末端执行器的位置。因此，这对于指定要执行的任务非常重要。
+
+\subsection{正向运动学}
+
+末端执行器相对于操作器基座框架的位置和姿态通过评估臂$T$矩阵给出。传统上，这个齐次变换表示为：
+\begin{equation}
+T = \begin{bmatrix} n & o & a & p \\ 0 & 0 & 0 & 1 \end{bmatrix} = \begin{bmatrix} R & p \\ 0 & 1 \end{bmatrix}
+\tag{A.2.11}
+\end{equation}
+
+因此，末端执行器参考框架轴的方向由旋转矩阵$R = [n \, o \, a]$相对于基座坐标描述，末端执行器框架的原点在基座坐标中的位置为$p$。
+
+3向量$n$、$o$、$a$和$p$定义如下：
+\begin{itemize}
+    \item $a$（approach向量）：末端执行器的接近向量
+    \item $o$（orientation向量）：指定手部方向的方向向量，从指尖到指尖
+    \item $n$（normal向量）：选用来使用$n = o \times a$完成右手坐标系定义的向量
+    \item $p$：指定$(n, o, a)$框架原点相对于基座框架的位置向量
+\end{itemize}
+
+因此，$(n, o, a)$是附加在末端执行器上的$(x, y, z)$笛卡尔坐标系相对于基座的坐标。
+
+\textbf{关节空间与笛卡尔空间}：
+\begin{itemize}
+    \item $q$是末端执行器位置和姿态的\textbf{关节空间描述}
+    \item $(n, o, a, p)$是\textbf{笛卡尔或任务空间描述}
+\end{itemize}
+
+机器人臂运动学问题如下：给定关节变量$q$，找到操作器末端的笛卡尔位置和姿态。因此，运动学问题涉及将给定关节变量转换为基座坐标中表达的末端执行器笛卡尔位置和姿态。
+
+\section{A.3 操作器雅可比矩阵}
+
+给定从关节变量$q(t) \in \mathbb{R}^n$到$y \in \mathbb{R}^p$的一般非线性变换：
+\begin{equation}
+y = h(q)
+\tag{A.3.1}
+\end{equation}
+
+我们定义与$h(q)$相关的雅可比矩阵为：
+\begin{equation}
+J(q) \equiv \frac{\partial h(q)}{\partial q}
+\tag{A.3.2}
+\end{equation}
+
+正如我们刚刚看到的，雅可比矩阵在反馈线性化中很有用，因此在机器人操作器控制中也很重要。它还是我们在坐标系之间转换速度、加速度和力的手段。
+
+\subsection{速度和加速度的变换}
+
+由于：
+\begin{equation}
+\dot{y} = \frac{\partial h}{\partial q}\dot{q} = J(q)\dot{q}
+\tag{A.3.3}
+\end{equation}
+
+雅可比矩阵允许我们将速度从关节空间转换到"$y$空间"。让我们讨论$y(t)$是笛卡尔速度的特殊情况。则$J(q)$称为\textbf{操作器雅可比矩阵}。
+
+通常将广义笛卡尔速度定义为：
+\begin{equation}
+\dot{y} = \begin{bmatrix} v \\ \omega \end{bmatrix}
+\tag{A.3.4}
+\end{equation}
+
+其中$v = [v_x \, v_y \, v_z]^T$是线速度，$\omega = [\omega_x \, \omega_y \, \omega_z]^T$是角速度。例如，$\omega_x$表示绕$x$轴的角速度。因此，$y$有六个分量，臂雅可比$J$是一个$6 \times n$矩阵，$n$是操作器中的关节数。如果$n=6$，雅可比是方阵。
+
+使用(A.3.3)，我们可以获得微分运动变换的表达式。令$dq = [dq_1 \cdots dq_n]^T$为关节空间中的微分运动，$dq_i$——如果关节$i$是旋转关节，则为小旋转；如果关节$i$是移动关节，则为小线位移。令：
+\begin{equation}
+dy = \begin{bmatrix} dx & dy & dz & \delta x & \delta y & \delta z \end{bmatrix}^T
+\tag{A.3.5}
+\end{equation}
+
+在同一笛卡尔坐标中描述相同的微分运动，$[dx \, dy \, dz]^T$是微分线运动，$[\delta x \, \delta y \, \delta z]^T$表示微分旋转。
+
+根据(A.3.3)，其中$\dot{y} = dy/dt$和$\dot{q} = dq/dt$，我们看到：
+\begin{equation}
+dy = J \, dq
+\tag{A.3.6}
+\end{equation}
+
+其中$J$是关联关节空间和笛卡尔空间的雅可比矩阵。
+
+加速度的变换通过对(A.3.3)微分得到：
+\begin{equation}
+\ddot{y} = \dot{J}\dot{q} + J\ddot{q}
+\tag{A.3.7}
+\end{equation}
+
+\subsection{力的变换}
+
+为了发现静态力在坐标系之间的变换，考虑以下情况。关节空间中施加的广义力/扭矩产生的微分运动$dq$所产生的虚功为：
+\begin{equation}
+\delta W = \tau^T dq
+\tag{A.3.8}
+\end{equation}
+
+其中$\tau$是臂控制力/扭矩的$n$向量，$dq = [dq_1 \cdots dq_n]^T$是关节变量的微分变化。如果在另一个坐标系中力的描述是$F$，位置的描述是$y$，我们也必须有：
+\begin{equation}
+\delta W = F^T dy
+\tag{A.3.9}
+\end{equation}
+
+现在考虑(A.3.6)，我们可以写成：
+\begin{equation}
+\tau^T dq = F^T J \, dq = (J^T F)^T dq
+\end{equation}
+
+因此，从力到扭矩的变换由下式给出：
+\begin{equation}
+\tau = J^T(q) F
+\tag{A.3.10}
+\end{equation}
+
+当$y(t)$是笛卡尔位置时，我们定义笛卡尔广义力为6向量：
+\begin{equation}
+F = \begin{bmatrix} f_c \\ \tau_c \end{bmatrix}
+\tag{A.3.11}
+\end{equation}
+
+其中$f_c = [f_x \, f_y \, f_z]^T$是笛卡尔力3向量，$\tau_c = [\tau_x \, \tau_y \, \tau_z]^T$是表示笛卡尔扭矩的3向量。例如，$\tau_x$表示绕$x$轴施加的扭矩。
+
+如果臂有六个连杆且雅可比是非奇异的，则从广义扭矩到广义力的变换由下式给出：
+\begin{equation}
+F = J^{-T}(q)\tau
+\tag{A.3.12}
+\end{equation}
+
+雅可比的奇异性通常发生在操作器工作空间的极端位置。
+
+\subsection{笛卡尔位置描述}
+
+现在有必要面对机器人学中一个令人困惑的问题。考虑方程(A.3.2)。不幸的是，当讨论从关节空间到笛卡尔空间的变换$h(q)$时，这个方程只能被解释为符号的便利，而不是严格的数学公式。原因虽然广义笛卡尔速度(A.3.4)和加速度以及广义笛卡尔力(A.3.11)是合法的6向量，但在方便地指定广义笛卡尔位置$y(t)$方面存在问题。
+
+\textbf{将广义笛卡尔位置表示为$(n, o, a, p)$}：在我们的背景下，必须在基座坐标中指定末端执行器框架原点的位置及其姿态。使用3向量$p(t) = [p_x \, p_y \, p_z]^T$在基座坐标$(x, y, z)$中指定末端执行器框架的原点很容易。然而，指定姿态却不那么容易。这是因为需要多于三个独立变量才能在相对于另一个框架唯一地指定一个框架的姿态。
+
+应该提到的是，欧拉角和滚转-俯仰-偏航等约定只涉及三个变量。然而，它们不能用于唯一地指定一个框架相对于另一个框架的绝对姿态，而只能用于姿态的相对变化。
+
+在我们的工作中，我们通过使用$(n, o, a, p)$方法（见A.2节）在基座坐标中指定末端执行器的笛卡尔位置$y(t)$。在那里，我们将广义笛卡尔位置定义为：
+\begin{equation}
+y(t) \equiv T(t)
+\tag{A.3.13}
+\end{equation}
+
+其中$T(t)$是臂$T$矩阵，$(n, o, a)$是描述末端执行器姿态所需的向量，$p = [p_x \, p_y \, p_z]^T$是指定末端执行器框架原点的笛卡尔描述位置部分。
+
+\subsection{计算臂雅可比}
+
+最后，我们可以展示如何给定关节变量$q_i$计算臂雅可比。程序如下：
+
+给定$q_i$，计算A.2节中定义的矩阵$T_i$：
+\begin{equation}
+T_i = A_1 A_2 \cdots A_i = \begin{bmatrix} R_i & p_i \\ 0 & 1 \end{bmatrix}
+\tag{A.3.29}
+\end{equation}
+
+其对应的旋转矩阵将记为：
+\begin{equation}
+R_i = \begin{bmatrix} x_i & y_i & z_i \end{bmatrix}
+\tag{A.3.30}
+\end{equation}
+
+定义$T_0 = I$，$R_0 = I$，以及臂$T$矩阵：
+\begin{equation}
+T = T_n = \begin{bmatrix} R & p \\ 0 & 1 \end{bmatrix}
+\tag{A.3.31}
+\end{equation}
+
+向量$z_i$表示基座坐标中框架$i$的$z$轴。向量$p$表示基座坐标中连杆框架$n$（末端执行器框架）原点的位置。雅可比使用向量$p$和$z_i$如下计算。
+
+广义笛卡尔速度是$\dot{y} = [v^T \, \omega^T]^T$。因此，我们可以将雅可比矩阵分成线性部分和定向部分，写成：
+\begin{equation}
+J(q) = \begin{bmatrix} J_p(q) \\ J_o(q) \end{bmatrix}
+\tag{A.3.32}
+\end{equation}
+
+其中$J_p(q)$是$J(q)$的前三行，$J_o(q)$是其最后三行。
+
+首先，考虑线性位置雅可比$J_p(q)$的计算。鉴于广义笛卡尔位置$y$的线性部分只是$p$，我们可以写成：
+\begin{equation}
+v = \dot{p} = \frac{\partial p}{\partial q}\dot{q} = J_p(q)\dot{q}
+\tag{A.3.33}
+\end{equation}
+
+因此，$J_p(q)$由下式给出：
+\begin{equation}
+J_p(q) = \frac{\partial p}{\partial q} = \begin{bmatrix} \frac{\partial p}{\partial q_1} & \cdots & \frac{\partial p}{\partial q_n} \end{bmatrix}
+\tag{A.3.34}
+\end{equation}
+
+现在转向雅可比的定向部分$J_o(q)$。正如线速度一样，只要在同一坐标框架中表示，就可以添加角速度。让我们将臂中连杆的单个角速度相加，以获得末端执行器的角速度。移动关节对末端执行器的角速度没有贡献。
+
+对于旋转关节，关节旋转$q_i = \theta_i$发生在关节轴$z_{i-1}$周围（见A.2节，特别是图A.2.1）。因此，关节变量$i$的角速度由$\omega_i = z_{i-1}\dot{q}_i$给出。要添加所有连杆的效果，有必要将$z_{i-1}$表示在公共框架中；我们选择基座坐标。然而，$R_{i-1}$的最后一列正是基座坐标中的$z_{i-1}$。因此，我们可以写成：
+\begin{equation}
+J_o = \begin{bmatrix} z_0\sigma_1 & z_1\sigma_2 & \cdots & z_{n-1}\sigma_n \end{bmatrix}
+\tag{A.3.35}
+\end{equation}
+
+其中$z_0 = [0 \, 0 \, 1]^T$，选择参数$\sigma_i$如果$q_i$是移动关节则为0，如果是旋转关节则为1。因此：
+\begin{equation}
+\sigma_i = \begin{cases} 0, & \text{如果关节}i\text{是移动关节} \\ 1, & \text{如果关节}i\text{是旋转关节} \end{cases}
+\tag{A.3.36}
+\end{equation}
+
+完整的雅可比现在通过将$J_p(q)$堆叠在$J_o(q)$上给出。现在应该清楚，臂雅可比必须通过对关节向量$q$使用大量计算来找到。因此，每当在机器人臂控制方案中需要雅可比时，应该使用计算机子程序计算。
+
+重新做示例A.3.1和A.3.2以确定完整的雅可比，包括角部分，是一个很好的练习（见习题）。
+
+\section*{参考文献}
+
+\begin{enumerate}
+    \item[{[Craig 1989]}] Craig, J.J., Introduction to Robotics. Reading, MA: Addison-Wesley, 1989.
+    
+    \item[{[Ickes 1970]}] Ickes, B.P., "A new method for performing digital control system altitude computations using quaternions," AIAA J., vol. 8, no. 1, pp. 13--17, Jan. 1970.
+    
+    \item[{[IMSL]}] IMSL, Library Contents Document, 8th ed. Houston, TX: International Mathematical and Statistical Libraries.
+    
+    \item[{[MATMAN 1986]}] MATMAN, Symbolic Matrix Manipulation, M.R. Driels, Pembroke, MA: Kern International, 1986.
+    
+    \item[{[Paul 1981]}] Paul, R.P., Robot Manipulators, Cambridge, MA: MIT Press, 1981.
+    
+    \item[{[Schilling 1990]}] Schilling, R.J., Fundamentals of Robotics, Englewood Cliffs, NJ: Prentice Hall, 1990.
+    
+    \item[{[Sheppard 1978]}] Sheppard, S.W., "Quaternion from rotation matrix," Eng. Notes, pp. 223--224, May/June 1978.
+    
+    \item[{[Spong and Vidyasagar 1989]}] Spong, M.W., and M. Vidyasagar, Robot Dynamics and Control. New York: Wiley, 1989.
+    
+    \item[{[Stevens and Lewis 1992]}] Stevens, B.L., and F.L. Lewis, Aircraft Modeling, Dynamics, and Control. New York: Wiley, 1992.
+    
+    \item[{[Yuan 1988]}] Yuan, J.S.-C., "Closed-loop manipulator control using quaternion feedback," IEEE J. Robot. Autom., vol. 4, no. 4, pp. 434--440, Aug. 1988.
+\end{enumerate}
+
+\ifstandalone
+  \end{document}
+\fi

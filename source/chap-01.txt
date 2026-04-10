@@ -1,0 +1,767 @@
+Chapter 1
+
+Commercial Robot
+Manipulators
+This chapter sets the stage for this book by providing an overview of
+commercially available robotic manipulators, sensors, and controllers. We
+make the point that if one desires high performance flexible robotic workcells,
+then it is necessary to design advanced control systems for robot manipulators
+such as are found in this book.
+
+
+1.1 Introduction
+
+When studying advanced techniques for robot control, planning, sensors,
+and human interfacing, it is important to be aware of the systems that are
+commercially available. This allows one to develop new technology in the
+context of existing technology, which allows one to implement the new
+techniques on existing robotic systems.
+   A National Association of Manufacturer’s report [NAM 1998] states that
+the two most important drivers for US commercial business manufacturing
+success in the 1990’s have been reconfigurable manufacturing workcells and
+local area networks in the factory. In this chapter we discuss flexible robotic
+workcells, commercial robot configurations, commercial robot controllers,
+information integration to the internet, and robot workcell sensors. More
+information on these topics can be found in the Mechanical Engineering
+Handbook [Lewis 1998] and the Computer Science Engineering Handbook
+[Lewis and Fitzgerald 1997].
+
+
+
+                                                                             1
+Copyright © 2004 by Marcel Dekker, Inc.
+2                                                    Commercial Robot Manipulators
+
+Flexible Robotic Workcells
+In factory automation and elsewhere it was once common to use fixed
+layouts built around conveyors or other transportation systems in which
+each robot performed a specific task. These assembly lines had distinct
+workstations, each performing a dedicated function. Robots have been
+used at the workstation level to perform operations such as assembly,
+drilling, surface finishing, welding, palletizing, and so on. In the assembly
+line, parts are routed sequentially to the workstations by the transport
+system. Such systems are very expensive to install, require a cadre of
+engineering experts to design and program, and are extremely difficult to
+modify or reprogram as needs change. In today’s high-mix low-volume
+(HMLV) manufacturing scenario, these characteristics tolled the death knell
+for such rigid antiquated designs.
+
+
+
+
+                    Figure 1.1.1: UTA’s Automation and Robotics Test Cell.
+
+
+   In the assembly line, the robot is restricted by placing it into a rigid
+sequential system. Robots are versatile machines with many capabilities,
+and their potential can be significantly increased by using them as a basis
+for flexible robotic workcells [Decelle 1988], [Jamshidi et al. 1992], [Pugh
+1983] such as the UTA Automation and Robotics Test Cell in Figure 1.1.1.
+In the flexible robotic workcell, robots are used for part handling, assembly,
+and other process operations. By reprogramming the robots one changes the
+entire functionality of the workcell. The workcell is designed to make full
+use of the workspace of the robots, and components such as milling machines,
+drilling machines, vibratory part feeders, and so on are placed within the
+robots’ workspaces to allow servicing by the robots. Contrary to the assembly
+line, the physical layout does not impose a priori a fixed sequencing of the
+operations or jobs. Thus, as product requirements change, all that is required
+is to reprogram the workcell in software [Mireles and Lewis 2001]. The
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+1.2 Commercial Robot Configurations and Types                               3
+
+workcell is ideally suited to emerging HMLV conditions in manufacturing
+and elsewhere.
+   The rising popularity of robotic workcells has taken emphasis away from
+hardware design and placed new emphasis on innovative software techniques
+and architectures that include planning, coordination, and control (PC&C)
+functions. A great deal of research into robot controllers has been required
+to give robots the flexibility, precision, and functionality needed in modern
+flexible workcells. The remainder of this book details such advanced control
+techniques.
+
+
+1.2 Commercial Robot Configurations and Types
+
+Much of the information in this section was prepared by Mick Fitzgerald,
+who was then Manager at UTA’s Automation and Robotics Research Institute
+(ARRI).
+   Robots are highly reliable, dependable and technologically advanced
+factory equipment. The majority of the world’s robots are supplied by
+established companies using reliable off-the-shelf component technologies.
+All commercial industrial robots have two physically separate basic
+elements—the manipulator arm and the controller. The basic architecture of
+most commercial robots is fundamentally the same, and consists of digital
+servocontrolled electrical motor drives on serial-link kinematic machines,
+usually with no more than six axes (degrees of freedom). All are supplied
+with a proprietary controller. Virtually all robot applications require
+significant design and implementation effort by engineers and technicians.
+What makes each robot unique is how the components are put together to
+achieve performance that yields a competitive product. The most important
+considerations in the application of an industrial robot center on two issues:
+manipulation and integration.
+
+Manipulator Performance
+The combined effects of kinematic structure, axis drive mechanism design,
+and real-time motion control determine the major manipulation performance
+characteristics: reach and dexterity, pay load, quickness, and precision.
+Caution must be used when making decisions and comparisons based on
+manufacturers’ published performance specifications because the methods
+for measuring and reporting them are not standardized across the industry.
+Usually motion testing, simulations, or other analysis techniques are used to
+verify performance for each application.
+   Reach is characterized by measuring the extent of the workspace described
+by the robot motion and dexterity by the angular displacement of the
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+4                                            Commercial Robot Manipulators
+
+individual joints. Some robots will have unusable spaces such as dead zones,
+singular poses, and wrist-wrap poses inside of the boundaries of their reach.
+   Payload weight is specified by the manufacturers of all industrial robots.
+Some manufacturers also specify inertial loading for rotational wrist axes. It
+is common for the payload to be given for extreme velocity and reach
+conditions. Weight and inertia of all tooling, workpieces, cables and hoses
+must be included as part of the payload.
+   Quickness is critical in determining throughput but difficult to determine
+from published robot specifications. Most manufacturers will specify a
+maximum speed of either individual joints or for a specific kinematic tool
+point. However, average speed in a working cycle is the quickness
+characteristic of interest.
+   Precision is usually characterized by measuring repeatability. Virtually
+all robot manufacturers specify static position repeatability. Accuracy is
+rarely specified, but it is likely to be at least four times larger than
+repeatability. Dynamic precision, or the repeatability and accuracy in
+tracking position, velocity, and acceleration over a continuous path, is not
+usually specified.
+
+Common Kinematic Configurations
+All common commercial industrial robots are serial-link manipulators,
+usually with no more than six kinematically coupled axes of motion. By
+convention, the axes of motion are numbered in sequence as they are
+encountered from the base on out to the wrist. The first three axes account
+for the spatial positioning motion of the robot; their configuration
+determines the shape of the space through which the robot can be positioned.
+Any subsequent axes in the kinematic chain generally provide rotational
+motions to orient the end of the robot arm and are referred to as wrist
+axes. In a robotic wrist, three axes usually intersect to generate true
+independent positioning in terms of 3-D orientation. See Appendix A for a
+kinematic analysis of the spherical robot wrist mechanism. Note that in
+our 3-dimensional space, one requires three degrees of freedom for fully
+independent spatial positioning and three degrees of freedom for fully
+independent orientational positioning.
+   There are two primary types of motion that a robot axis can produce
+in its driven link- either revolute or prismatic. Revolute joints are
+anthropomorphic (e.g. like human joints) while prismatic joints are able
+to extend and retract like a car radio antenna. It is often useful to classify
+robots according to the orientation and type of their first three axes.
+There are four very common commercial robot configurations:
+Articulated, Type I SCARA, Type II SCARA, and Cartesian. Two other
+configurations, Cylindrical and Spherical, are now much less common.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+1.2 Commercial Robot Configurations and Types                                  5
+
+
+
+
+Figure 1.2.1: Articulated Arm. Six-axis CRS A465 arm (courtesy of CRS
+robotics).
+
+
+
+
+Figure 1.2.2: Type I SCARA Arm. High precision, high speed midsized SCARA I.
+(courtesy of Adept Technologies, Inc.).
+
+
+   Appendix C contains the dynamics of some common robot manipulators
+for use in controls simulation in this book.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6                                              Commercial Robot Manipulators
+
+Articulated Arms. The variety of commercial articulated arms, most of
+which have six axes, is very large (Fig. 1.2.1). All of these robots’ axes
+are re volute. The second and third axes are co-planar and work together
+to produce motion in a vertical plane. The first axis in the base is vertical
+and revolves the arm to sweep out a large work volume. Many different
+types of drive mechanisms have been devised to allow wrist and forearm
+drive motors and gearboxes to be mounted close to the first and second
+axis of rotation, thus minimizing the extended mass of the arm. The
+workspace efficiency of well designed articulated arms, which is the degree
+of quick dexterous reach with respect to arm size, is unsurpassed by other
+arm configurations when five or more degrees of freedom are needed. A
+major limiting factor in articulated arm performance is that the second
+axis has to work to lift both the subsequent arm structure and the pay
+load. Historically, articulated arms have not been capable of achieving
+accuracy as high as other arm configurations, as all axes have joint angle
+position errors which are multiplied by link radius and accumulated for
+the entire arm.
+
+Type I SCARA. The Type I SCARA (selectively compliant assembly robot
+arm) arm, Figure 1.2.2, uses two parallel revolute joints to produce motion
+in the horizontal plane. The arm structure is weight-bearing but the first and
+second axes do no lifting. The third axis of the Type I SCARA provides work
+volume by adding a vertical or z axis. A fourth revolute axis will add rotation
+about the z axis to control orientation in the horizontal plane. This type of
+robot is rarely found with more than four axes. The Type I SCARA is used
+extensively in the assembly of electronic components and devices, and it is
+used broadly for the assembly of small- and mediumsized mechanical
+assemblies.
+
+Type II SCARA. The Type II SCARA, Figure 1.2.3, also a four axis
+configuration, differs from Type I in that the first axis is a long vertical
+prismatic z stroke which lifts the two parallel revolute axis and their links.
+For quickly moving heavier loads (over approximately 75 pounds) over longer
+distance (more than about three feet), the Type II SCARA configuration is
+more efficient than the Type I.
+
+Cartesian Coordinate Robots. Cartesian coordinate robots use orthogonal
+prismatic axes, usually referred to as x, y, and z, to translate their end-effector
+or payload through their rectangular workspace. One, two, or three revolute
+wrist axes may be added for orientation. Commercial robot companies supply
+several types of Cartesian coordinate robots with workspace sizes ranging
+from a few cubic inches to tens of thousands of cubic feet, and payloads
+ranging to several hundred pounds. Gantry robots, which have an elevated
+bridge structure, are the most common Cartesian style and are well suited to
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+1.2 Commercial Robot Configurations and Types                                      7
+
+
+
+
+           Figure 1.2.3: Type II SCARA (courtesy of Adept Technologies, Inc.).
+
+
+
+
+Figure 1.2.4: Cartesian Robot. Three-axis robot constructed from modular single-
+axis motion modules (courtesy of Adept Technologies, Inc.).
+
+
+
+
+material handling applications where large areas and/or large loads must be
+serviced. They are particularly useful in applications such as arc welding,
+waterjet cutting, and inspection of large complex precision parts.
+   Modular Cartesian robots, see Figure 1.2.4, are also commonly available
+from several commercial sources. Each module is a self-contained completely
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+8                                              Commercial Robot Manipulators
+
+functional single-axis actuator; the modules may be custom assembled for
+special-purpose applications.
+
+Spherical and Cylindrical Coordinate Robots. The first two axes of the
+spherical coordinate robot, Figure 1.2.5, are revolute and orthogonal to
+one another, and the third axis provides prismatic radial extension. The
+result is a natural spherical coordinate system with a spherical work volume.
+The first axis of cylindrical coordinate robots, Figure 1.2.6, is a revolute
+base rotation. The second and third are prismatic, resulting in a natural
+cylindrical motion. Commercial models of Spherical and Cylindrical robots
+were originally very common and popular in machine tending and material
+handling applications. Hundreds are still in use but now there are only a
+few commercially available models. The decline in use of these two
+configurations is attributed to problems arising from use of the prismatic
+link for radial extension/retraction motion; a solid boom requires clearance
+to fully retract.
+
+
+
+
+Figure 1.2.5: Hydraulic powered spherical robot (courtesy Kohol Systems, Inc.).
+
+
+Parallel-Link Manipulators. For some special purpose applications, parallel-
+link robots are more suitable than serial link robots. These robots generally
+have three or six links in parallel, each link attached to a fixed base and to a
+moving working platform. See Figure 1.2.7. With proper design, a six-link
+parallel-link manipulator can have six degrees of freedom motion of the
+working platform. The military Link trainer is a large parallellink robot
+moving a pilot’s seat. These robots have greater stiffness and precision than
+serial-link robots, where the positioning errors of each link are compounded
+as one moves outwards from the base. Thus, lightweight parallel-link robots
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+1.2 Commercial Robot Configurations and Types                                       9
+
+are able to precisely move large loads. These robots have been used for
+example in machining and surface finishing of precision industrial and
+aerospace components such as bulkheads and air vehicle outer skins.
+
+
+
+
+Figure 1.2.6: Cylindrical arm using scissor mechanism for radial prismatic motion
+(courtesy of Yamaha Robotics).
+
+
+   The parallel-link robot is a closed-kinematic-chain system, and as such is
+relatively difficult to analyze [Liu and Lewis 1993]. The control system design
+problem is more difficult for these robots.
+
+Drive Types of Commercial Robots
+The vast majority of commercial industrial robots use electric servo-motor
+drives with speed reducing transmissions. Both AC and DC motors are
+popular. Some servo-hydraulic articulated arm robots are available now for
+painting applications. It is rare to find robots with servo-pneumatic drive
+axes. All types of mechanical transmissions are used, but the tendency is
+toward low- and zero-backlash type drives. Some robots use direct drive
+methods to eliminate the amplification of inertia and mechanical backlash
+associated with other drives. Joint angle position sensors, required for real-
+time servo-level control, are generally considered an important part of the
+drive train. Less often, velocity feedback sensors are provided.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10                                                    Commercial Robot Manipulators
+
+
+
+
+                 Figure 1.2.7: Parallel-link robot (courtesy of ABB Robotics).
+
+
+
+
+1.3 Commercial Robot Controllers
+
+Commercial robot controllers are specialized multiprocessor computing
+systems that provide four basic processes allowing integration of the robot
+into an automation system: Motion Trajectory Generation and Following,
+Motion/Process Integration and Sequencing, Human User integration, and
+Information Integration.
+
+Motion Trajectory Generation and Following. There are two important
+controller-related aspects of industrial robot motion generation. One is the
+extent of manipulation that can be programmed, the other is the ability to
+execute controlled programmed motion. A unique aspect of each robot system
+is its real-time servo-level motion control. The details of real-time control
+are typically not revealed to the user due to safety and proprietary information
+secrecy reasons. Each robot controller, through its operating system programs,
+converts digital data from higher-level coordinators into coordinated arm
+motion through precise computation and high-speed distribution and
+communication of the individual axis motion commands which are executed
+by individual joint servo-controllers. Most commercial robot controllers
+operate at a sample period of 16 msec. The real-time motion controller
+invariably uses classical independent-joint proportional-integral-derivative
+(PID) control or simple modifications of PID. This makes commercially
+available controllers suitable for point-to-point motion, but most are not
+suitable for following continuous position/velocity profiles or exerting
+prescribed forces without considerable programming effort, if at all.
+    Recently, more advanced controllers have appeared. The Adept Windows
+family of automation controllers (http://www.adept.com) integrates
+robotics, motion control, machine vision, force sensing, and manufacturing
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+1.3 Commercial Robot Controllers                                             11
+
+logic in a single control platform compatible with Windows 98 & Windows
+NT/2000. Adept motion controllers can be configured to control other
+robots and custom mechanisms, and are standard on a variety of systems
+from OEMs.
+
+Motion/Process Integration and Sequencing. Motion/process integration
+involves coordinating manipulator motion with process sensors or other
+process controller devices. The most primitive process integration is through
+discrete digital input/output (I/O). For example a machine controller external
+to the robot controller might send a one bit signal indicating that it is ready
+to be loaded by the robot. The robot controller must have the ability to read
+the digital signal and to perform logical operations (if then, wait until, do
+until, etc.) using the signal. That is, some robot controllers have some
+programmable logic controller (PLC) functions built in. Coordination with
+sensors (e.g. vision) is also often provided.
+
+Human Integration. The controller’s human interfaces are critical to the
+expeditious setup and programming of robot systems. Most robot controllers
+have two types of human interface available: computer style CRT/keyboard
+terminals for writing and editing program code off-line, and teach pendants,
+which are portable manual input terminals used to command motion in a
+telerobotic fashion via touch keys or joy sticks. Teach pendants are usually
+the most efficient means available for positioning the robot, and a memory
+in the controller makes it possible to play back the taught positions to execute
+motion trajectories. With practice, human operators can quickly teach a series
+of points which are chained together in playback mode. Most robot
+applications currently depend on the integration of human expertise during
+the programming phase for the successful planning and coordination of robot
+motion. These interface mechanisms are effective in unobstructed workspaces
+where no changes occur between programming and execution. They do not
+allow human interface during execution or adaptation to changing
+environments.
+    More recent advanced robot interface techniques are based on behavior-
+based programming, where various specific behaviors are programmed into
+the robot controller at a low level (e.g. pick up piece, insert in machine
+chuck). The behaviors are then sequenced and their specific motion
+parameters specified by a higher-level machine supervisor as prescribed by
+the human operator. Such an approach was used in [Mireles and Lewis
+2001].
+
+Information Integration. Information integration is becoming more
+important as the trend toward increasing flexibility and agility impacts
+robotics. Many commercial robot controllers now support information
+integration functions by employing integrated PC interfaces through the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+12                                           Commercial Robot Manipulators
+
+communications ports (e.g. RS-232), or in some through direct connections
+to the robot controller data bus. Recent integration efforts are making it
+possible to interface robotic workcells to the internet to allow remote site
+monitoring and control. There are many techniques for this, the most
+convenient of which is Lab VIEW 6.1, which doe not require programming
+in Java.
+
+
+1.4 Sensors
+
+Much of the information in this section was prepared by Kok-Meng Lee
+[Lewis 1998]. Sensors and actuators [Tzou and Fukuda 1992] function as
+transducers, devices through which high-level workcell Planning,
+Coordination, and Control systems interface with the hardware components
+that make up the workcell. Sensors are a vital element as they convert states
+of physical devices into signals appropriate for input to the workcell PC&C
+control system; inappropriate sensors can introduce errors that make proper
+operation impossible no matter how sophisticated or expensive the PC&C
+system, while innovative selection of sensors can make the control and co-
+ordination problem much easier.
+   Sensors are of many different types and have many distinct uses. Having
+in mind an analogy with biological systems, proprioceptors are sensors
+internal to a device that yield information about the internal state of that
+device (e.g. robot arm joint-angle sensors). Exteroceptors yield information
+about other hardware external to a device. Sensors yield outputs that are
+either analog or digital; digital sensors often provide information about the
+status of a machine or resource (gripper open or closed, machine loaded, job
+complete). Sensors produce outputs that are required at all levels of the PC&C
+hierarchy, including uses for:
+
+•     servo-level feedback control (usually analog proprioceptors)
+•     process monitoring and coordination (often digital exteroceptors or part
+      inspection sensors such as vision)
+•     failure and safety monitoring (often digital—e.g. contact sensor,
+      pneumatic pressure-loss sensor)
+•     quality control inspection (often vision or scanning laser).
+
+Sensor output data must often be processed to convert it into a form
+meaningful for PC&C purposes. The sensor plus required signal processing
+is shown as a Virtual Sensor. It functions as a data abstraction—a set of data
+plus operations on that data (e.g. camera, plus framegrabber, plus signal
+processing algorithms such as image enhancement, edge detection,
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+1.4 Sensors                                                                  13
+
+segmentation, etc.). Some sensors, including the proprioceptors needed for
+servo-level feedback control, are integral parts of their host devices, and so
+processing of sensor data and use of the data occurs within that device; then,
+the sensor data is incorporated at the servocontrol level or Machine
+Coordination level. Other sensors, often vision systems, rival the robot
+manipulator in sophistication and are coordinated by a Job Coordinator,
+which treats them as valuable shared resources whose use is assigned to jobs
+that need them by some priority assignment (e.g. dispatching) scheme. An
+interesting coordination problem is posed by so-called active sensing, where,
+e.g., a robot may hold a scanning camera, and the camera effectively takes
+charge of the motion coordination problem, directing the robot where to
+move to effect the maximum reduction in entropy (increase in information)
+with subsequent images.
+
+Types of Sensors
+This section summarizes sensors from an operational point of view. More
+information on functional and physical principles can be found in [Fraden
+1993], [Fu et al. 1987], [Snyder 1985].
+
+Tactile Sensors. Tactile sensors rely on physical contact with external objects.
+Digital sensors such as limit switches, microswitches, and vaccuum devices
+give binary information on whether contact occurs or not. Sensors are
+available to detect the onset of slippage. Analog sensors such as spring-loaded
+rods give more information. Tactile sensors based on rubberlike carbon- or
+silicon-based elastomers with embedded electrical or mechanical components
+can provide very detailed information about part geometry, location, and
+more. Elastomers can contain resistive or capacitive elements whose electrical
+properties change as the elastomer conmpresses. Designs based on LSI
+technology can produce tactile grid pads with, e.g., 64×64 ‘forcel’ points on
+a single pad. Such sensors produce ‘tactile images’ that have properties akin
+to digital images from a camera and require similar data processing.
+Additional tactile sensors fall under the classification of ‘force sensors’
+discussed subsequently.
+
+Proximity and Distance Sensors. The noncontact proximity sensors include
+devices based on the Hall effect or inductive devices based on the
+electromagnetic effect that can detect ferrous materials within about 5 mm.
+Such sensors are often digital, yielding binary information about whether or
+not an object is near. Capacitance-based sensors detect any nearby solid or
+liquid with ranges of about 5mm. Optical and ultrasound sensors have longer
+ranges.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+14                                               Commercial Robot Manipulators
+
+   Distance sensors include time-of-flight rangefinder devices such as sonar
+and lasers. The commercially available Polaroid sonar offers accuracy of
+about 1 in. up to 5 feet, with angular sector accuracy of about 15 deg. For
+360 deg. coverage in navigation applications for mobile robots, both scanning
+sonars and ring-mounted multiple sonars are available. Sonar is typically
+noisy with spurious readings, and requires low-pass filtering and other data
+processing aimed at reducing the false alarm rate. The more expensive laser
+rangefinders are extremely accurate in distance and have very high angular
+resolution.
+
+Position, Velocity, and Acceleration Sensors. Linear position-measuring
+devices include linear potentiometers and the sonar and laser rangefinders
+just discussed. Linear velocity sensors may be laser- or sonar-based Doppler-
+effect devices.
+
+
+
+
+Figure 1.4.1: Optical Encoders, (a) Incremental optical encoder, (b) Absolute optical
+encoder with n=4 using Grey code. (Snyder, W.E., 1985. Industrial Robots, Prentice-
+Hall, NJ, with permission.)
+
+
+   Joint-angle position and velocity proprioceptors are an important part of
+the robot arm servocontrol drive axis. Angular position sensors include
+potentiometers, which use dc voltage, and resolvers, which use ac voltage
+and have accuracies of 15 min. Optical encoders can provide extreme accuracy
+using digital techniques. Incremental optical encoders use three optical sensors
+and a single ring of alternating opaque/clear areas, Figure 1.4.1(a), to provide
+angular position relative to a reference point and angular velocity information;
+commercial devices may have 1200 slots per turn. More expensive absolute
+optical encoders, Figure 1.4.1(b), have n concentric rings of alternating
+opaque/clear areas and require n optical sensors. They offer increased
+accuracy and minimize errors associated with data reading and transmission,
+particularly if they employ the Grey code, where only one bit changes between
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+1.4 Sensors                                                                15
+
+two consecutive sectors. Accuracy is 3600/2n with commercial devices having
+n=12 or so.
+   Gyros have good accuracy if repeatability problems associated with drift
+are compensated for. Directional gyros have accuracies of about 1.5 deg.
+Vertical gyros have accuracies of 0.5 deg and are available to measure
+multiaxis motion (e.g. pitch and roll). Rate gyros measure velocities directly
+with thresholds of 0.05 deg/sec or so.
+   Various sorts of accelerometers are available based on strain gauges (next
+paragraph), gyros, or crystal properties. Commercial devices are available
+to measure accelerations along three axes. A popular new technology involves
+microelectromechanical systems (MEMS), which are either surface or bulk
+micromachined devices. MEMS accelerometers are very small, inexpensive,
+robust, and accurate. MEMS sensors have especially been used in the
+automotive industry [Eddy 1998].
+
+Force and Torque Sensors. Various torque sensors are available, though they
+are often not required; for instance, the internal torques at the joints of a
+robot arm can be computed from the motor armature currents. Torque sensors
+on a drilling tool, for instance, can indicate when tools are becoming dull.
+Linear force can be measured using load cells or strain gauges. A strain gauge
+is an elastic sensor whose resistance is a function of applied strain or
+deformation. The piezoelectric effect, the generation of a voltage when a
+force is applied, may also be used for force sensing. Other force sensing
+techniques are based on vacuum diodes, quartz crystals (whose resonant
+frequency changes with applied force), etc.
+   Robot arm force-torque wrist sensors are extremely useful in dexterous
+manipulation tasks. Commercially available devices can measure both force
+and torque along three perpendicular axes, providing full information about
+the Cartesian force vector F. Standard transformations allow computation
+of forces and torques in other coordinates. Six-axis force-torque sensors are
+quite expensive.
+
+Photoelectric Sensors. A wide variety of photoelectric sensors are available,
+some based on fibreoptic principles. These have speeds of response in the
+neighborhood of 50 microsec with ranges up to about 45 mm, and are useful
+for detecting parts and labeling, scanning optical bar codes, confirming part
+passage in sorting tasks, etc.
+
+Other Sensors. Various sensors are available for measuring pressure,
+temperature, fluid flow, etc. These are useful in closed-loop servo-control
+applications for some processes such as welding, and in job coordination
+and/or safety interrupt routines in others.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+16                                               Commercial Robot Manipulators
+
+Sensor Data Processing
+Before any sensor can be used in a robotic workcell, it must be calibrated.
+Depending on the sensor, this could involve significant effort in
+experimentation, computation, and tuning after installation. Manufacturers
+often provide calibration procedures though in some cases, including vision,
+such procedures may not be obvious, requiring reference to the published
+scientific literature. Time-consuming recalibration may be needed after any
+modifications to the system.
+
+
+
+
+Figure 1.4.2: Signal Processing using FSM for Optical Encoders (a) Phase relations in
+incremental optical encoder output, (b) Finite state machine to decode encoder output
+into angular position. (Snyder 1985).
+
+
+
+
+Figure 1.4.3: Hardware design from FSM. (a) FSM for sonar transducer control on a
+mobile robot, (b) Sonar driver control system from FSM.
+
+
+
+   Particularly for more complex sensors such as optical encoders, significant
+sensor signal conditioning and processing is required. This might include
+amplification of signals, noise rejection, conversion of data from analog to
+digital or from digital to analog, and so on. Hardware is usually provided
+for such purposes by the manufacturer and should be considered as part of
+the sensor package for robot workcell design. The sensor, along with its
+signal processing hardware and software algorithms may be considered as a
+data abstraction and is called the ‘virtual sensor’.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+1.4 Sensors                                                                   17
+
+   If signal processing does need to be addressed, it is often very useful to use
+finite state machine (FSM) design. A typical signal from an incremental optical
+encoder is shown in Figure 1.4.2(a); a FSM for decoding this into the angular
+position is given in Figure 1.4.2(b). FSM are very easy to convert directly to
+hardware in terms of logical gates. A FSM for sequencing a sonar is given in
+Figure 1.4.3(a); the sonar driver hardware derived from this FSM is shown
+in Figure 1.4.3(b).
+   A particular problem is obtaining angular velocity from angular position
+measurements. All too often the position measurements are simply differenced
+using a small sample period to compute velocity. This is guaranteed to lead
+to problems if there is any noise in the signal. It is almost always necessary to
+employ a low-pass-filtered derivative where velocity samples vk are computed
+from position measurement samples pk using, e.g.,
+
+
+
+
+where T is the sample period and ␣ is a small filtering coefficient. A similar
+approach is needed to compute acceleration.
+
+Vision Systems, Cameras, and Illumination. Typical commercially available
+vision systems conform to the RS-170 standard of the 1950’s, so that frames
+are acquired through a framegrabber board at a rate of 30 frames/sec. Images
+are scanned; in a popular US standard, each complete scan or frame consists
+of 525 lines of which 480 contain image information. This sample rate and
+image resolutions of this order are adequate for most applications with the
+exception of vision-based robot arm servoing. Robot vision system cameras
+are usually TV cameras—either the solid-state charge-coupled device (CCD),
+which is responsive to wavelengths of light from below 350nm (ultraviolet)
+to 1100nm (near infrared) and has peak response at approximately 800nm,
+or the charge injection device (CID), which offers a similar spectral response
+and has a peak response at approximately 650nm. Both line-scan CCD
+cameras, having resolutions ranging between 256 and 2048 elements, and
+area-scan CCD cameras are available. Medium-resolution area-scan cameras
+yield images of 256×256, though high-resolution devices of 1024×1024 are
+by now available. Line-scan cameras are suitable for applications where parts
+move past the camera, e.g., on conveyor belts. Framegrabbers often support
+multiple cameras, with a common number being four, and may support black-
+and-white or color images.
+   If left to chance, illumination of the robotic workcell will probably result
+in severe problems in operations. Common problems include low-contrast
+images, specular reflections, shadows, and extraneuos details. Such prob-
+lems can be corrected by overly sophisticated image processing, but all of
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+18                                            Commercial Robot Manipulators
+
+this can be avoided by some proper attention to details at the work-cell design
+stage. Illumination techniques include spectral filtering, selection of suitable
+spectral characteristics of the illumination source, diffuse-lighting techniques,
+backlighting (which produces easily processed silhouettes), structured-lighting
+(which provides additional depth information and simplifies object detection
+and interpretation), and directional lighting.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+
+[Decelle 1988] Decelle, L.S., “Design of a Robotic Workstation For Compo-
+      nent Insertions,” AT&T Technical Journal, March/April 1988, Volume
+      67, Issue 2. pp 15–22.
+[Eddy 1998] Eddy, D.S., and D.R.Sparks, “Application of MEMS technol-
+    ogy in automotive sensors and actuators,” Proc. IEEE, vol. 86, no. 8,
+    pp. 1747–1755, Aug. 1998.
+[Fraden 1993] Fraden, J. AIP Handbook Of Modern Sensors, Physics, De-
+    sign, and Applications, American Institute of Physics. 1993.
+[Fu et al. 1987] Fu, K.S., R.C.Gonzalez, and C.S.G.Lee, Robotics, McGraw-
+    Hill, New York, 1987.
+[Jamshidi et al. 1992] Jamshidi, M., Lumia, R., Mullins, J., and Shahinpoor,
+    M., 1992. Robotics and Manufacturing: Recent Trends in Re-search,
+    Education, and Applications, Vol. 4, ASME Press, New York.
+[Lewis and Fitzgerald 1997] Lewis, F.L., M.Fitzgerald, and K.Liu “Robotics,”
+    in The Computer Science and Engineering Handbook, Allen B.Tucker,
+    Jr. ed., Chapter 33, CRC Press, 1997.
+[Lewis 1998] Lewis, F.L., “Robotics,” in Handbook of Mechanical Engi-
+    neering, F.Kreith ed., chapter 14, CRC Press, 1998.
+[Liu and Lewis 1993] Liu, K., F.L.Lewis, G.Lebret, and D.Taylor, “The
+    singularities and dynamics of a Stewart Platform Manipulator,” J.
+    Intelligent and Robotic Systems, vol. 8, pp. 287–308, 1993.
+[Mireles and Lewis 2001] Mireles, J., and F.L.Lewis, “Intelligent Mate-rial
+   Handling: Development and implementation of a matrix-based discrete-
+   event controller,” IEEE Trans. Industrial Electronics, vol. 48, no. 6, pp.
+   1087–1097, Dec. 2001.
+
+
+
+
+                                                                          19
+Copyright © 2004 by Marcel Dekker, Inc.
+20                                                           REFERENCES
+
+[NAM 1998] National Assoc. Manufacturers Report, “Technology on the
+   Factory Floor III,” ed. P.M.Swadimass, NAM Pub. Center, 1–800–637–
+   3005, Aug. 1998.
+[Pugh 1983] Pugh, A., ed., 1983. Robotic Technology, IEE Control Engi-
+    neering Series 23, Pergrinus, London.
+[Snyder 1985] Snyder, W.E., 1985, Industrial Robots: Computer Interfac-
+    ing and Control, Prentice-Hall, Inc., Englewood Cliffs, New Jersey, USA.
+[Tzou and Fukuda 1992] Tzou, H.S., and Fukuda, T., Precision Sensors,
+    Actuators, and Systems, Kluwer Academic, 1992.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

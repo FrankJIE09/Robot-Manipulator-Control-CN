@@ -1,0 +1,74 @@
+% 文件开头添加条件判断
+\newif\ifstandalone
+\standalonetrue  % 默认独立编译模式
+
+% 检测是否在主文档中
+\ifdefined\maindoc
+  \standalonefalse
+\fi
+
+\ifstandalone
+  % B-附录B-仿真软件.tex
+  \documentclass[UTF8]{ctexart}
+
+  \usepackage{amsmath,amssymb,amsfonts}
+  \usepackage{geometry}
+  \geometry{a4paper,margin=2.5cm}
+  \usepackage{graphicx}
+  \usepackage{float}
+\fi
+
+\ifstandalone
+  \begin{document}
+  \section*{附录B}
+  \addcontentsline{toc}{section}{附录B 控制器仿真软件}
+\fi
+
+% 当在主文档中使用时
+\ifstandalone
+\else
+  \section*{附录B}
+  \addcontentsline{toc}{section}{附录B 控制器仿真软件}
+\fi
+
+\subsection*{控制器仿真软件}
+
+理解控制系统设计和性能的直观感受的一种极好方法是进行计算机仿真。从概念上讲，从仿真到实际实现只是短短的一步，因为当今数字信号处理器上使用的子程序与仿真中使用的子程序非常相似。本附录包含本书中用于机器人控制器仿真的软件。
+
+有一些优秀的软件包可用于系统设计和仿真，我们应该了解并使用它们。例如 MATLAB、MATRIXX、Program CC、SIMNON 等。然而，在学习阶段使用自己的软件是非常有益的，特别是当涉及到数字控制时，有时不清楚这些软件包中具体发生了什么。
+
+对于连续系统的时间响应仿真，Runge-Kutta积分器工作得很好。在图B.1.1中展示了程序 TRESP，它使用四阶 Runge-Kutta 子程序实现第3.3节讨论的仿真过程。它以状态变量形式积分线性或非线性系统：
+
+\begin{equation}
+\dot{x} = f(x, u, t)
+\end{equation}
+
+在第2.4节中，我们展示了如何将机器人动力学转换为这种形式。注意，MATLAB 的函数 ode23 和 ode45 是自适应步长的 Runge-Kutta 积分器，它们需要相同形式的动力学方程。
+
+TRESP 需要一个子程序 F(time, x, xp)，它从当前状态 $x(t)$ 和控制输入 $u(t)$ 计算 $\dot{x}$（记为 xp，或 "x prime"）。控制 $u(t)$ 和任何形式的输出
+
+\begin{equation}
+y = h(x, u, t)
+\end{equation}
+
+被放入 COMMON 存储区（例如，$u(t)$ 可以在 F(time, x, xp) 外部计算，而 $y(t)$ 在 TRESP 中需要用于绘图）。在本书各章节的示例中给出了使用 TRESP 的示例。
+
+COMMON 中的参数数组 PAR( ) 使得使用不同参数值（如 PD 增益）进行连续运行变得容易。如果需要，可以向连续动力学注入时间延迟（例如使用环形缓冲区）。
+
+重要的是要认识到以下几点。为了将 $x(kT_R)$ 更新到 $x((k+1)T_R)$，Runge-Kutta 积分器在每个 Runge-Kutta 积分周期 $T_R$ 内调用子程序 F(time, x, xp) 四次。在这四次调用期间，控制输入应保持恒定值 $u(kT_R)$。使用子程序 SYSINP 计算 $u(kT_R)$ 可以实现这一点。
+
+对于数字控制仿真，TRESP 需要子程序 DIG(IK, T, x)，它包含离散控制器方程；它在每个采样周期 $T$ 中调用一次。时间 $T_R$ 应选择为 $T$ 的整数除数。每个采样周期内通常需要5到10个 Runge-Kutta 周期。
+
+该程序还允许数字滤波（例如，用于从关节位置编码器测量重建速度估计）。注意，对于数字控制目的，在调用 Runge-Kutta 程序之前调用子程序 DIG，而对于数字滤波，在调用 Runge-Kutta 之后调用 DIG。
+
+对于某些系统，图中的 Runge-Kutta 积分器可能无法工作；此时可以使用自适应步长的 Runge-Kutta 程序（例如 Runge-Kutta-Fehlberg）[Press et al. 1986]。（注：此处给出的程序适用于本书中的所有示例。）
+
+\vspace{1em}
+
+\subsection*{参考文献}
+
+\noindent [Press et al. 1986] Press, W.H., Flannery, B.P., Teukolsky, S.A., and Vetterling, W.T., \textit{Numerical Recipes}. New York: Cambridge University Press, 1986.
+
+\ifstandalone
+  \end{document}
+\fi

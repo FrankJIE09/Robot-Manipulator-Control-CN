@@ -1,0 +1,1346 @@
+Chapter 10
+
+Robot Control
+Implementation and
+Software
+The diversity of robot manipulator research along with the complex
+requirements of the associated hardware/software systems has always
+presented a challenge for software developers. As a result, many of the
+previously developed software control platforms were complex, expensive,
+and not very user friendly. Even though several of the previous platforms
+were designed to provide an open architecture-based system, very few of the
+previous platforms have been reused. To address previous disadvantages,
+this chapter describes the design and implementation of a software control
+platform called the Robotic Platform. The Robotic Platform is an open
+software development platform for robot manipulator applications. It
+includes hardware interfacing, servo control, trajectory generation, 3D
+simulation, a graphical user interface, and a math library. As opposed to
+distributed solutions, the Robotic Platform implements all of these
+components on a single hardware platform, with a single programming
+language (C++), and on a single operating system while guaranteeing hard
+real-time performance. This design leads to an open architecture that is less
+complex, easier to use, and easier to extend, and hence, builds on the following
+state-of-the-art technologies and general purpose components to further
+increase simplicity and reliability: i) PC technology, ii) the QNX Real-Time
+Operating System, iii) the Open Inventor and STL libraries, iv) object-oriented
+design, and v) an easy-to-use, previously-developed, low-level control
+environment.
+
+                                                                            517
+Copyright © 2004 by Marcel Dekker, Inc.
+518                                       Robot Control Implementation and Software
+
+
+10.1 Introduction
+
+Since the construction of a software control platform requires building
+blocks that cover a wide range of disciplines (see Figure 10.1.1), it would be
+desirable to create a common generic platform that can be reused by
+researchers for different applications. Considering the variety of robotic
+applications and research areas, this task is made even more challenging due
+to the fact that robot manipulator vendors often supply the user with
+proprietary robot control languages that run on proprietary hardware
+components. Due to the lack of flexibility and performance of proprietary
+robot control languages, some of the previous work has focused on building
+robot control libraries on top of a commonly used programming language
+(RCCL [Lloyd et al. 1988] and ARCL [Corke] are examples of such
+libraries). While many of the previous software approaches achieved new
+levels of flexibility and performance by using a common programming
+language, many software control platforms developed in the 80’s and early
+90’s were inherently complex due to the limitations of the operating systems
+and the hardware components of that time. That is, most operating systems
+did not support real-time programming, and hence, fostered the
+development of projects such as RCI [Lloyd 1990] and Chimera [Stewart
+1989]. In addition, procedural programming languages, such as “C”, tend
+to reach their limits with regard to reusability for complex projects. In
+addition, the limited performance of hardware components of that era
+forced system developers to utilize distributed architectures (see [Miller
+1991], [Kapoor 1996], and [Pelich 1996]) that integrated a mix of
+proprietary hardware and software. Besides the obvious advantages of
+distributed systems (e.g., greater extensibility and more computational
+power), there are several disadvantages. Specifically, a distributed
+architecture increases the complexity of the software significantly.
+Additionally, hard real-time behavior over network connections often
+requires expensive proprietary hardware. Generally, the overall hardware
+cost is also higher; furthermore, users have to familiarize themselves with
+different hardware architectures and operating systems. Even though many
+software control platforms have attempted to be flexible, reconfigurable,
+and open, these platforms are seldom reused (compared to non-robotic
+platforms like Open Inventor or Corba). Apparently, engineers consider it
+faster and easier to develop their applications from scratch. Indeed, as many
+researchers have noted, the learning curve of installing, learning, and
+modifying previously developed software control platforms of the past is
+extremely steep.
+   Over the last ten years, many innovations in the computing area have
+occurred. Specifically, the advent of object-oriented software design
+[Stroustrup 1991] facilitated the management of more complex projects
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.1 Introduction                                                                519
+
+while also fostering code reuse and flexibility. For example, robot control
+libraries like RIPE [Miller 1991], MMROC+ [Zielinski 1997], OSCAR
+[Kapoor 1996], and ZERO++ [Pelich 1996] utilized object-oriented
+techniques in robot programming. The engineering community has also
+witnessed the proliferation of real-time Unix-like operating systems for the
+PC [QSSL], which facilitates the replacement of proprietary hardware
+components for real-time control [Costescu 1999]. Likewise, in the
+hardware sector, the engineering community has witnessed the advent of
+high-speed, low-cost PCs, fast 3D graphics video boards, and inexpensive
+motion control cards. Consequently, the PC platform now provides versatile
+functionality, and hence, makes complex software architectures and
+proprietary hardware components superfluous. As a result of these
+technological advances, the QMotor Robotic Toolkit (QMotor RTK)
+[Loffler 2001] was developed. The QMotor RTK was one of the first
+software control platforms to integrate real-time manipulator control and
+the graphical user interface (GUI) all on a single PC. Despite, the many
+advantages of the QMotor RTK, it lacked some capabilities due to the
+limitations of the real-time operating system (i.e., QNX4) on which it was
+based. For example, it lacked a 3D simulation capability, and it did not
+support the use of threads.
+
+
+
+
+         Figure 10.1.1: Building Blocks of a Robotic Software Control Platform
+
+
+    In the late 1990’s, QSSL, one of the leading real-time software development
+houses, substantially upgraded QNX4 with the release of QNX6 [QSSL]
+(i.e., QNX6/Neutrino operating system). This microkernel-based operating
+system is probably the most advanced real-time operating system currently
+available; furthermore, it has additional components for software
+development and multimedia applications. Indeed, the new attributes of
+QNX6 greatly facilitated the potential capabilities of an upgrade of the
+QMotor RTK, in fact so much so, QMotor RTK was completely transformed
+into a new software control platform call the Robotic Platform [Bhargava
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+520                                       Robot Control Implementation and Software
+
+2001]. The rest of this chapter provides a broad overview of the Robotic
+Platform by examining its advantages, its design, and its operation. The word
+“broad” needs to be emphasized because it is really impossible to give a
+detailed explanation of how a software control platform should be developed
+for robot manipulators in one chapter of a book. With that being said, it is
+hope that this chapter will give the reader a better understanding of the
+associated complexities.
+
+
+10.2 Tools and Technologies
+
+Given recent technological advances, it now seems almost obvious that new
+software control platforms should integrate servo control loops, trajectory
+generation, task level programs, GUI programs, and 3D simulation in a
+homogeneous software architecture. That is, next-generation software
+control platforms should utilize one hardware platform (e.g., the PC), only
+one operating system (e.g., the QNX6 Real-Time Operating System
+[QSSL]), and only one programming language (e.g., C++ [Stroustrup
+1998]). The advantages of this next-generation software control platform
+are as follows:
+
+Simplicity. A homogeneous non-distributed architecture is much smaller and
+   simpler than a distributed inhomogeneous architecture. It is easier to
+   install, easier to understand, and easier to extend. Simplicity is critical
+   with regard to motivating code reuse of the platform for different
+   applications.
+
+Performance. The homogeneous, non-distributed architecture also ensures
+   high performance and hard real-time behavior, since overhead due to
+   interprocess communication is minimal.
+
+Flexibility at all Levels. Every component of the platform is open for
+   extensions and modifications. Many past platforms have utilized an open
+   architecture at some levels, but other levels had been implemented on
+   proprietary hardware such that they could not be modified.
+
+Cost. The Robotic Platform requires fewer hardware components than a
+   distributed platform. Basically, a single PC with one or more input/output
+   (I/O) boards is sufficient. Additionally, PC hardware is very cost effective
+   as compared to other hardware platforms.
+
+To explain the advantages in more detail and delineate how the Robotic
+Platform reduces software development and complexity, the general purpose
+tools and technologies that are used to develop the Robotic Platform are
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.2 Tools and Technologies                                              521
+
+now examined. It seems logical to begin this discussion with the hardware
+engine, namely the standard desktop PC. Due to its popularity in the consumer
+market, the standard desktop PC has evolved dramatically over the past 20
+years. While in the past, only expensive UNIX workstations provided the
+processing power necessary to control robotic systems, the PC has caught
+up or even exceeded the performance of workstations [Costescu 1999].
+Compared to UNIX workstations, a PC based system allows for a greater
+variety of hardware and software components. Additionally, these
+components and the PC itself are usually cheaper than their UNIX
+counterparts; furthermore, the PC is a well-known platform that is
+comfortable for most software developers.
+   The second most important part of any software control platform is the
+operating systems. Indeed since reliability is extremely important for robot
+manipulation, the QNX6 Real-Time Operating Systems by QSSL [QSSL]
+was selected. The programming interface of QNX6 is compliant with the
+POSIX standards and is the first platform that combines the following
+features:
+
+Hard Real-Time. QNX6 provides hard real-time response (e.g., it can execute
+  a control loop at a certain frequency without falling behind). The real-
+  time functionality is integrated in the microkernel.
+
+Self-Hosted Development. The development and the execution of software
+    are performed in the same environment and on the same PC.
+
+Fast 3D Graphics. QNX6 provides support for hardware-accelerated 3D, as
+   required for the graphical simulation of a robotic work cell.
+
+Threads. QNX6 supports the concurrent execution of processes, known as
+   threads.
+
+Device Driver Architecture. It is very easy to develop device drivers under
+  QNX6, as is required for integrating different robotic hardware.
+
+Cost. QNX6 is also very cost-effective as it is free for non-commercial use
+   and runs on low-cost standard PCs.
+
+The third most important part or design aspect of any software control
+platform is the programming philosophy. With regard to developing robot
+manipulator control software, object-oriented programming has three
+main benefits over procedural programming. First, it provides language
+constructs that allow for a much easier programming interface. For
+example, a matrix multiplication can be expressed by a simple “*”, similar
+to MATLAB programming. Second, object-oriented programming allows
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+522                                       Robot Control Implementation and Software
+
+for a system architecture that is very flexible but yet very simple. That is,
+the components (classes) of a system can have a built-in default behavior
+and default settings. The use of this default behavior and/or default settings
+allows the programmer to reduce the code size. The programmer, however,
+can still override the default behavior for specific applications. Finally,
+object-oriented programming supports generic programming by facilitating
+the development of components that are independent from a specific
+implementation (e.g., a generic class “Manipulator” will work with
+different manipulator types). All of the above benefits are based on the
+general concepts of object-oriented programming, such as abstraction,
+encapsulation, polymorphism, and inheritance [Stroustrup 1991]. As will
+be shown later in this chapter, these object-oriented design concepts lead to
+an intuitive system architecture. As one might expect, the language of
+choice is C++, as it provides the whole spectrum of object-oriented
+concepts while maintaining high performance [Stroustrup 1998] (e.g.,
+templates and inline functions can be used to create highly versatile and
+optimized code in the Robotic Platform). The power of C++ and object-
+oriented programming can be further increased when using strong object-
+oriented libraries such as STL [Musser 1996]. STL provides standard data
+structures (e.g., lists, vectors, etc.) and algorithms. These standard data
+structures and algorithms simplify programming effort since these tools are
+often required in common programming tasks. The data structures of the
+STL are very universal since they can be used with different data types (i.e.,
+template programming).
+   The last design aspect of a software control platform has do with how the
+roboticist interacts with the system. Specifically, how does the roboticist
+animate objects for simulation purposes and how does the roboticist
+implement and tune control algorithms. For purposes of simulation
+animation, Open Inventor [Wernecke] was utilized. Open Inventor,
+developed by Silicon Graphics, is an object-oriented C++ library for creating
+3D graphics and animation. Open Inventor minimizes development effort,
+as it is able to load 3D models that were created in the Virtual Reality
+Modeling Language (VRML) format [Hartman 1996]. A variety of software
+packages are available that facilitate the construction of 3D VRML models.
+These packages can be utilized to quickly create a graphical representation
+of robotic components. The Robotic Platform utilizes the built-in
+functionality of Open Inventor to animate these components. Open
+Inventor also provides advanced features like object picking, which is very
+useful in the programming of operator interfaces. For purposes of control
+implementation, QMotor [Loffler 2002] was utilized because it allows users
+to establish a real-time control loop, to log data, to tune control parameters,
+and to plot signals. QMotor control programs can be directly integrated in
+the class design of the Robotic Platform since QMotor supports object-
+oriented programming.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                        523
+
+
+10.3 Design of the Robotic Platform
+
+Overview
+Each component of the Robotic Platform (e.g., the teachpendant, the
+trajectory generator, etc.) is modeled by a C++ class. A C++ class definition
+combines the data and the functions related to that component. For example,
+the class “Puma560” contains the data related to the Puma 560 robot (e.g.,
+the current joint position) as well as functions related to the Puma 560 robot
+(e.g., enabling of the arm power). Hence, the design of the Robotic Platform
+results from grouping data and functions in a number of classes in a
+meaningful and intuitive way. A class can also use parts of the functionality
+and the data of another class (called the base class) by deriving this class
+from the base class. The classes of the Robotic Platform include GUI
+components and a 3D model for graphical simulation. These types of
+components are traditionally found in separate programs (e.g., see the RCCL
+robot simulator [Lloyd et al. 1988]). However, by including them in the
+same class, one can achieve tight integration of the user interface, 3D
+modeling, and other functional parts.
+   To provide new capabilities for different applications, the user creates
+new classes. Usually, new classes are derived from one of the already
+existing classes to minimize coding effort. This process is called
+inheritance, and it greatly facilitates code reuse and eliminates redundancy.
+To illustrate how classes are derived from each other, class hierarchy
+diagrams are used. The main class hierarchy diagram of the Robotic
+Platform is shown in Figure 10.3.1. Each arrow is drawn from the derived
+class to the parent class. The further to the right a class is listed, the more
+specific it must become. The further to the left a class is listed, the more
+generic it must become. The classes of the Robotic Platform can be
+separated into the following categories (note that some of the classes
+discussed below are not shown in Figure 10.3.1 since their class hierarchies
+will be discussed later):
+
+The Core Classes. The classes RoboticObject, FunctionalObject, and
+  PhysicalObject build the core of the Robotic Platform by defining the
+  overall behavior of all robotic objects. These classes by themselves can
+  be the basis for any robotic system.
+
+Generic Robotic Classes. Derived from the core classes are a number of
+  generic robotic classes. These classes (e.g., ServoControl, Manipulator,
+  and Gripper) cannot be instantiated. Rather, these classes serve as base
+  classes that implement common functionality while also presenting a
+  generic interface to the programmer (i.e., these classes can be used to
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+524                                       Robot Control Implementation and Software
+
+
+
+
+                    Figure 10.3.1: Class Hierarchy of the Robotic Platform.
+
+
+     create programs that are independent from the specific hardware or the
+     specific algorithm).
+
+Specific Robotic Classes. Derived from the generic robotic classes are classes
+   that implement a specific piece of hardware (e.g., the class Puma560
+   implements the Puma 560 robot) or a specific functional component (e.g.,
+   the class DefaultPositionControl implements a proportional integral
+   derivative (PID) position controller).
+
+The ControlProgram Class. This class is the basis for all real-time control
+   loops.
+
+Utility Classes. The utility classes manage common tasks (e.g., managing
+   configuration files).
+
+The Object Manager. The object manager supervises all objects and classes
+   existing in the system.
+
+The Math Library. The math library consists of classes for using matrices,
+   vectors, transformations, filters, differentiators, and integrators.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                            525
+
+The Manipulator Model Library. The manipulator model library consists
+   of classes that model the kinematic and dynamic behavior of
+   manipulators.
+
+
+
+
+               Figure 10.3.2: Run-Time Architecture of the Robotic Platform.
+
+
+
+
+                 Figure 10.3.3: Object Relationships in an Example Scenario.
+
+
+   In a robot control program, the user instantiates objects from classes.
+When instantiating an object, memory for the object is reserved, and the
+object initializes itself. The user can create as many objects as desired from
+the same class. For example, two Puma robots can be operated by simply
+creating two objects of the class Puma560. As soon as objects are created,
+the user can employ their functionality. The object manager maintains a list
+of all currently existing objects. With the object manager, it is possible to
+initiate functionality on multiple objects (e.g., shutdown all objects). The
+Scene Viewer is the default GUI of the Robotic Platform. It contains windows
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+526                                       Robot Control Implementation and Software
+
+to view the 3D scene of the robotic work cell and to list all objects. The
+overall run-time architecture is shown in Figure 10.3.2.
+   In a robotic system, different components are related to each other. To
+reflect this fact, object relationships are established between objects. For
+example, objects can specify their physical connection to each other. Object
+relationships are implemented by C++ pointers to the related object. The
+object relationships in an example scenario are shown in Figure 10.3.3.
+
+Core Classes
+The class RoboticObject is the base class for all classes. It defines a generic
+interface (i.e., a set of functions that can be used with all classes of the Robotic
+Platform). For example, a program can use the startShutdown( ) function to
+instruct an object of either the class Puma560 or the class Gripper to
+shutdown. Specifically, the following generic functionality is defined in the
+class RoboticObject (see also Figure 10.3.4):
+
+Error Handling. Every object must indicate its error status.
+
+Interactive Commands. Each object can define a set of interactive commands
+    (e.g., “Open Gripper”) that will show up in the object pop-up menu of
+    the Scene Viewer.
+
+Configuration Management. Each object can use the global configuration
+  file to set itself up. Additionally, each object can also have a local object
+  configuration file.
+
+Shutdown Behavior. Each object is able to shutdown itself.
+
+GUI Control Panel. Each object is able to create a control panel.
+
+Message Handler. Each object has a message handler that can interpret custom
+  messages.
+
+Thread Management. Each object indicates if additional threads are required
+   for its operation and also provides functions that execute those additional
+   threads.
+
+Note that the actual functionality is usually implemented in the derived class.
+However, the class RoboticObject also implements simple default
+functionality. This feature supports code reuse and simplicity by giving all
+classes derived from the class RoboticObject the ability to take over this
+default functionality if necessary. Table 10.3.1 shows all functions and their
+default behavior.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                           527
+
+
+
+
+                               Figure 10.3.4: The Class Robotic Object.
+
+
+    The class PhysicalObject is derived from the class RoboticObject. It is the
+base class for all classes that represent physical objects (e.g., manipulators,
+sensors, grippers, etc.). It defines a generic interface for these classes as
+illustrated in Figure 10.3.5 and Table 10.3.2. Specifically, the following generic
+functionality is defined in PhysicalObject:
+
+3D Visualization. Every physical object can create its Open Inventor 3D
+  model. The Scene Viewer loops through all physical objects to create the
+  entire 3D scene.
+
+Object Connections. A physical object can specify another object as a
+  mounting location. By using this object relationship, the Scene Viewer
+  draws objects at the right location (e.g., the gripper being mounted on
+  the end-effector of the manipulator).
+
+Position and Orientation. The position/orientation information specifies the
+   absolute location of the object in the scene (or the mounting location, if
+   an object connection is specified).
+
+Simulation Mode. Every physical object can be locked into simulation mode.
+   That is, the object does not perform any hardware I/O (i.e., its behavior
+   is only simulated).
+
+The class FunctionalObject does not contain any functionality; however, it is
+use to build other classes. For example, functional classes, such as the class
+TrajectoryGenerator, are derived from the class FunctionalObject.
+
+Robot Control Classes
+The central components of any robotic work cell are manipulators. The
+class Manipulator is a generic class that defines common functionality of
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+528                                       Robot Control Implementation and Software
+
+
+
+
+Table 10.3.1: The Interface of the Class RoboticObject and its Default
+Behavior.
+
+
+manipulators with any number of joints. Derived from the class Manipulator
+is the class DefaultManipulator, which contains the defaultimplementation
+of a manipulator. The class DefaultManipulator is a template class (i.e., it
+is parameterized with the number of joints). The generic programming
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                         529
+
+
+
+
+                                Figure 10.3.5: The Class Physical Object.
+
+
+
+
+Table 10.3.2: The Interface of the Class PhysicalObject and its Default
+Behavior.
+
+
+interface and the default implementation are illustrated in Table 10.3.3.
+Derived from the class DefaultManipulator are the classes that implement
+specific manipulator types. Currently, three manipulators are supported:
+the Puma 560 robot, the IMI robot [Berkeley 1992], and the Barrett Whole
+Arm Manipulator (WAM) [Barrett] in both the 4 link and 7 link
+configuration. More information about the specific control
+implementation of these robot manipulators can be found in [Loffler 2001]
+and [Costescu et al. 1999]. For simulation of the manipulators, their
+dynamic model is required. Additionally, for Cartesian control, forward/
+inverse kinematics and the calculation of the Jacobian matrix are needed.
+All of these functions are located in the ManipulatorModel classes. The
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+530                                        Robot Control Implementation and Software
+
+class hierarchy and the generic interface of the ManipulatorModel classes
+are displayed in Figure 10.3.6.
+
+
+
+
+Table 10.3.3: Functionality defined in the Classes Manipulator and Default-
+Manipulator.
+
+
+
+
+                           Figure 10.3.6: The ManipulatorModel Classes.
+
+
+  The class DefaultManipulator creates a real-time control loop, but it does
+not include the servo control algorithm. The servo control algorithm is
+contained in a separate object of the class ServoControl or of a derived class.
+The class ServoControl is a generic class that defines common properties
+and functionality of a ServoControl. That is, a servo control obtains the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                            531
+
+current position from the manipulator object and calculates the required
+output control signal to achieve the control task (e.g., servo the manipulator
+to a desired setpoint). Derived from the class ServoControl is the class
+DefaultPositionControl, which contains a PID position control with friction
+compensation in joint and Cartesian space. The control loop in the class
+DefaultManipulator first determines the current position of the manipulator
+and then calls the calculate() function of the class ServoControl. The
+advantage of the servo control being a separate object is that the user can
+switch between multiple servo control algorithms, even while the
+manipulator is moving.
+   The trajectory generation is also performed in a separate class. The
+class TrajectoryGenerator defines the interface of a generic trajectory
+generator. A trajectory generator is any object that creates a continuous
+stream of setpoints and forwards this stream to a servo control object. A
+trajectory generator must implement its own loop such that the trajectory
+generator can run independently and at a different frequency than the
+frequency used in the servo control. The servo control calls the
+getCurrentSetpoint () function of the trajectory generator to determine the
+current desired position. It is also possible to define multiple trajectory
+generators and switch between them while the manipulator is moving.
+The class QueueTrajectoryGenerator is derived from the class
+TrajectoryGenerator to implement the generic interface and common
+functionality of a trajectory generator that creates the trajectory along via
+points and target points (i.e., motion queue management functions are
+implemented). Derived from the class QueueTrajectoryGenerator is the
+class DefaultTrajectoryGenerator. This class is the specific implementation
+of a trajectory generator that can interpolate both in joint space and
+Cartesian space, including path blending between two motion segments at
+the via points. Table 10.3.4 shows the interface of the default trajectory
+generator.
+
+
+
+
+Figure 10.3.7: Object Setup for the Servo Control and the Trajectory Generation of a
+Manipulator.
+
+
+   Classes, such as Puma560 or WAM, automatically create a default
+trajectory generator and a default servo control for the convenience of the
+user. However, the user can switch to a different trajectory generator or
+servo control if desired. Figure 10.3.7 illustrates in a typical scenario how
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+532                                       Robot Control Implementation and Software
+
+
+
+
+               Table 10.3.4: Interface of the class DefaultTrajectoryGenerator.
+
+
+the manipulator object, the servo control object, and the trajectory generator
+object work together.
+
+External Device Classes
+Besides the classes related to specific manipulators, there are a several other
+classes that can be used for robotic applications. Specifically, these classes
+give the robot manipulator the ability to interface with other physical objects
+by means of grippers, robotic hands, and/or tools. These external device
+classes are given below:
+
+Gripper. The class Gripper is the generic interface for a gripper. Basically, it
+   defines the functions open(), close(), and relax().
+
+DefaultGripper. The class DefaultGripper assumes that two digital output
+   lines control the gripper, one digital line to open the gripper, and one to
+   close it.
+
+BarrettHand. This is a class to operate the BarrettHand [Barrett]. This class
+   allows the user to move each of the three fingers to certain positions and
+   also control the spread motion.
+
+ForceTorqueSensor. This class defines the generic interface for a force/
+   torque sensor. That is, it defines functions to read the forces and the
+   torques.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                           533
+
+AtiFTSensor. This class is the specific implementation of the ATI Industrial
+   Automation Gamma 30/100 Force/Torque sensor.
+
+ToolChanger. The class ToolChanger is the generic interface of a tool changer.
+   Basically, it defines the functions lock(), unlock(), and relax().
+
+DefaultToolChanger. The class Def aultToolChanger assumes that one digital
+   output line controls the lock function of the toolchanger and another
+   line the unlock function.
+
+StaticObject. An object of the class StaticObject has no functionality other
+   than specifying its 3D model. It can be used to add objects such as a table
+   or work pieces to the 3D scene.
+
+Utility Classes
+As with any complex software system, utility programs are needed for
+communication purposes and for providing the user with system related
+information. To this end, several separate, general-purpose utility classes
+are used throughout the Robotic Platform. These utility classes are given
+below:
+
+Status. The class Status provides functionality to stack status messages. It
+   returns detailed status reports to the user. Each class has a data member
+   of class Status that indicates the status of the object.
+
+Client. The class Client simplifies the sending of messages to a separate task
+   or thread.
+
+Server. The class Server, the counterpart to the class Client, simplifies receiving
+   of messages and replying to messages.
+
+Config. The class Conf ig handles configuration files in ASCII format.
+
+IOBoardClient. The class IOBoardClient allows communication with an I/
+  O board (e.g., providing encoders readings, writing D/A values, reading
+  A/D values, setting and reading digital inputs/outputs).
+
+Lock. The class Lock provides mutual exclusion between two threads.
+
+Configuration Management
+The Robotic Platform utilizes a global configuration file, which is parsed by
+the object manager and the objects to determine the system’s configuration.
+This file is called rp.cfg by default. The object manager searches for this file
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+534                                       Robot Control Implementation and Software
+
+in the path specified by the shell variable RP_CONFIG_PATH. By starting a
+Robotic Platform program with the option -config <filename>, a different
+filename and path for the configuration file can be specified. The format of
+the configuration file is now discussed. For each object, the configuration
+file lists the object name in brackets, the class name of the object, and some
+additional settings (see Figure 10.3.8). Table 10.3.5 lists possible object
+settings and their related member functions defined by the classes
+RoboticObject and PhysicalObject. Derived classes can be used to define
+additional settings.
+
+
+
+
+Figure 10.3–8: An Example Global Configuration File.
+
+
+Object Manager
+The object manager, implemented as the class ObjectManager, handles all
+objects in the system. Every time a new object is created, it registers itself
+with the object manager. Similarly, every time an object is destroyed, it is
+removed from the object list that is maintained by the object manager. The
+object manager contains the necessary functionality to loop through this
+list, and hence, allows one to perform operations on multiple objects. For
+example, the Scene Viewer retrieves a list of all objects that are derived
+from the class PhysicalObject. This list retrieval operation allows the Scene
+Viewer to render each of the objects, and thereby, render the entire 3D
+scene.
+
+The object manager also maintains a list of all the classes used in the Robotic
+Platform. This feature is essential for fostering generic programming. The
+advantages of generic programming for this application are obvious.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                          535
+
+Specifically, generic code utilizes only components that provide a generic
+interface; hence, generic code does not need to be changed when a component
+with a different implementation is used. That is, the same code can be used
+for a number of specific implementations, and hence, attributes to code reuse
+(e.g., a generic trajectory generator can be used with different manipulator
+types). Fortunately, C++ utilizes class inheritance and virtual functions to
+facilitate generic programming. To illustrate this concept, consider a section
+of the class hierarchy as shown in Figure 10.3.9. The following snippet of
+generic code demonstrates how to write a manipulator independent program
+that works with either the Puma robot, the WAM, the IMI, or any robot that
+might be added in the future:
+
+                Manipulator *manipulator;
+                ObjectManager om;
+
+                manipulator = om.createDerivedObject<Manipulator>(“leader”);
+                // Creates either a Puma, an IMI or a WAM object, depending on
+                // what is specified in the global configuration file under
+                the name “leader”
+
+                // Now, we can do generic operations
+                manipulator->enableArmPower();
+                Transform t = manipulator->getCurrentCartesianPosition();}
+
+   To utilize generic programming in C++, the above code creates an object
+of the derived class (e.g., an object of the class Puma or the class WAM),
+and operates the object via a pointer to the generic base class (i.e.,
+Manipulator *manipulator). The function createDerivedObject() of the
+object manager is utilized to create an object of either the class Puma560,
+Barrett Arm, WAM or IMI. To create the correct object, the
+createDerivedObject() function looks for the object name in the global
+configuration file (see Figure 10.3.8). Then, the createDerivedObject()
+function reads the class name of the object from the configuration file and
+creates an object of this class. Hence, to switch to a different manipulator
+type, only the class name in the global configuration file has to be changed
+when utilizing an existing generic program.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+536                                       Robot Control Implementation and Software
+
+
+
+
+                     Table 10.3.5: Object Settings of the Configuration File.
+
+
+
+
+         Figure 10.3.9: The Generic Class Manipulator and its Derived Classes.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                         537
+
+Concurrency/Communication Model
+An inherent complication associated with the development of a software
+control platform for robot manipulator systems is the issue of concurrency.
+That is, while it is often sufficient for many engineering systems to run as a
+single task, robotic systems require components, such as the servo control,
+to be executed concurrently with other components (e.g., the trajectory
+generator). The Robotic Platform addresses this issue by running all
+concurrent tasks on the same PC. It should be noted that since QNX6 supports
+symmetric multiprocessing, it is possible to distribute the tasks over multiple
+processors.
+
+
+
+
+                    Figure 10.3.10: Creating New Threads for Concurrency.
+
+    The predecessor of the Robotic Platform, the QMotor RTK [Loffler 2001],
+executed multiple programs to achieve concurrency on a single processor.
+While this concept fosters modularity, it is inconvenient to manage the startup
+and termination of multiple programs. In contrast, an application that uses
+the Robotic Platform is compiled and linked to a single program instead.
+This program spawns threads if concurrent execution is required. Once the
+program terminates; all threads terminate automatically. Figure 10.3.10
+illustrates an example of how a user program spawns multiple threads. At
+program start, only thread 1 is executing. At the initialization of the Robotic
+Platform library, a new thread is created that executes the 3D Scene Viewer.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+538                                       Robot Control Implementation and Software
+
+Then, the user utilizes a new object of a manipulator class. The creation of
+this manipulator object automatically spawns a third thread for the servo
+control loop. Hence, the first thread can go ahead and calculate target points
+for the manipulator, while the servo control loop and the Scene Viewer run
+in the background. To ensure real-time behavior of time critical tasks, the
+threads run at different priorities (e.g., the servo control loop runs at the
+high priority 27).
+   Since threads access the same address space, communication between
+threads can easily be performed by using this address space. However, it is
+important to synchronize this access to avoid corruption of the data structures.
+Synchronization is achieved by using the class Lock to provide mutual
+exclusion for accessing the data that is shared between multiple threads.
+
+Plotting and Control Tuning Capabilities
+The issue of tuning and debugging the low-level controller and trajectory
+planning algorithms has usually not addressed in many of the previously
+developed software control platforms. However, this is an extremely
+important issue given the level of complexity associated with accurately
+positioning a multi-degree of freedom system such as robot manipulator. To
+address this issue, the Robotic Platform utilizes QMotor for low-level
+algorithm development. QMotor [Loffler 2002] is a comprehensive
+environment for implementing and tuning control strategies. QMotor consists
+of: i) a client/server architecture for hardware access, ii) a C++ library to
+create control programs, and iii) custom GUI for control parameter tuning,
+data logging, and plotting.
+
+
+
+
+                   Figure 10.3.11: The QMotor Control Parameter Window.
+
+
+   To communicate with hardware, QMotor uses hardware servers that run
+in the background and perform hardware I/O at a fixed rate. Servers for
+different I/O boards are available (e.g., the ServoToGo board, the Quanser
+MultiQ board, and the ATI force/torque sensor interface board). The use of
+hardware servers provides an abstract client/server communication
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                      539
+
+
+
+
+                              Figure 10.3.12: The QMotor Plot Window.
+
+
+interface such that clients can perform the same generic operations with
+different servers. Hence, one can quickly reconfigure the system to use
+different I/O boards by simply starting different servers. For writing control
+programs, QMotor provides a library, which defines the class
+ControlProgram. To implement a real-time control loop, the user derives a
+specific class from the class ControlProgram and defines several functions
+that perform the control calculation and the necessary housekeeping. Once
+a control program is implemented and compiled, the user can start up the
+QMotor GUI, load the control program, start it, and tune the control
+strategy from the control parameter window (see Figure 10.3.11).
+Furthermore, the user can open multiple plot windows (see Figure 10.3.12)
+and set the logging parameters.
+   To utilize QMotor for the Robotic Platform, classes such as the class Def
+aultManipulator are derived from the class ControlProgram. Hence, these
+classes inherit the functionality of a control program (i.e., real-time
+execution, data logging, and communication with the GUI). If a class is
+derived from the class ControlProgram, the base class RoboticObject
+automatically creates a new thread of execution that runs the control loop in
+the background. QMotor was originally designed to load and tune one
+control program at a time. That is, to switch to a different control program,
+the current control program had to be stopped and unloaded. The Robotic
+Platform is designed to start and run multiple control loops at the same time;
+hence, it became necessary to upgrade QMotor. Specifically, QMotor can
+now attach itself to an executing control program instead of loading and
+starting the control program. This QMotor modification now allows the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+540                                       Robot Control Implementation and Software
+
+following operational scenario in the Robotic Platform. The user first starts
+the control program. This control program creates several threads that
+execute real-time control loops. The user can then start the QMotor GUI
+and attach it to any of the control programs. Once the QMotor GUI is
+attached to a control program, control parameters can be changed and data
+can be plotted.
+
+Math Library
+Past robot control libraries often introduced their own specific robotic data
+types. Most of these data types are based on vectors or matrices (e.g., a
+homogeneous transformation is a 4x4 matrix). Hence, it is more feasible to
+use a general C++ matrix library and define robotic types on top of it. Most
+of the matrix libraries available for C++ use dynamic memory allocation,
+which risks the loss of deterministic real-time response [Loffler 2001]. Hence,
+the big disadvantage of libraries that use dynamic memory allocation is that
+they can not be used in large sections of the Robotic Platform. To overcome
+this problem, special real-time matrix classes were developed for the Robotic
+Platform that use templates for the matrix size. This means that the matrix
+size is known at compile time and dynamic memory allocation is not required.
+Besides being feasible for real-time applications, this solution also produces
+highly optimized code. That is, due to the use of templates and inline functions,
+the matrix classes can be as fast as direct programming. Specifically, with
+optimized implementation, the multiplication of two 2x2 matrices C=A * B
+is as fast as writing
+
+                c11=a11 * b11 + a12 * b21;
+                c12=a11 * b12 + a12 * b22; etc.
+
+   An additional advantage is that the compiler can check for the correct
+matrix sizes at compile time (e.g., a matrix multiplication of two matrices
+with incompatible size is detected during compilation). Figure 10.3.13,
+Table 10.3.6, and Table 10.3.7. Functions of the Matrix, Vector, and
+Transformation Classes illustrates the class hierarchy, the types classes, and
+the data types. The classes MatrixBase, VectorBase, Matrix, Column
+Vector, and RowVector are parameterized with the data type of the
+elements. The default element data type is double, which is the standard
+floating-point data type of the Robotic Platform. The classes MatrixBase
+and VectorBase are pure virtual base classes that allow for manipulation of
+matrices and vectors of an unknown size (matrices and vectors of an
+unknown size are required during generic manipulator programming).
+Figure 10.4.1 shows an example program that uses the math library to
+calculate a position equation.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.3 Design of the Robotic Platform                                                541
+
+
+
+
+                     Figure 10.3.13: Class Hierarchy of the Matrix Classes.
+
+
+
+
+                              Table 10.3.6: Classes of the Math Library.
+
+
+
+
+      Table 10.3.7: Functions of the Matrix, Vector, and Transformation Classes.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+542                                       Robot Control Implementation and Software
+
+
+
+
+                   Figure 10.3.14: Example Program for the Matrix classes.
+
+
+   In addition to the matrix, vector, and transformation classes, the classes
+ButterworthFilter, Differentiator and Integrator are part of the math library.
+The class ButterworthFilter is used for low-pass filtering. The class
+Differentiator implements numerical differentiation via the backwards
+difference method plus low-pass filtering. Finally, the class Integrator utilizes
+the trapezoidal method for numerical integration. The user can derive a
+specific class from the class Integrator to implement more advanced
+integration methods. Both classes are parameterized with the data type (i.e.,
+they work with scalars, vectors, and matrices).
+
+Error Management and the Front-End GUI
+Each object is responsible for maintaining the appropriate error status. If a
+fatal error occurs, any object can request the object manager to shut down
+the system. For example, this could be the case when a control torque exceeds
+its limit. For such a system shutdown, the object manager loops through all
+objects in the system and calls their start Shut down () function. Then, the
+object manager waits until all objects have completed their shutdown. The
+completion of the object shutdown is indicated by the is ShutdownComplete()
+function.
+    The front-end GUI components for the Robotic Platform were developed
+with the C++ GUI class library QWidgets++. QWidgets++ allows for object-
+oriented techniques in GUI programs. The GUI consists of three parts:
+
+•     The Scene Viewer is the default supervising GUI, which is opened
+      automatically at startup of every Robotic Platform program.
+
+•     Each class can have its own control panel. The control panels are opened
+      from the Scene Viewer.
+
+•     Several utility programs (e.g., the Manual Move program and the
+      Teachpendant program) have a GUI.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.4 Operation of the Robotic Platform                                       543
+
+Operation of the front-end GUI for the Robotic Platform is further explained
+in the next section.
+
+
+10.4 Operation of the Robotic Platform
+
+Scene Viewer and Control Panels
+When a program running inside the Robotic Platform is executed, the Scene
+Viewer window opens up. The Scene Viewer window displays the entire 3D
+scene and also allows the user to open a window that displays a list of
+currently running objects (see Figure 10.4.2). To create a 3D scene, the Scene
+Viewer loops through all objects that are derived from the class
+PhysicalObject and calls the get3DModel() function to obtain the Open
+Inventor 3D data of that object. Then, the Scene Viewer uses the object
+connection relationships (specified by the function setConnection() of the
+class PhysicalObject) to display the 3D objects at the right position (e.g., to
+display a gripper being mounted at the end-effector of a robot manipulator).
+Furthermore, the Scene Viewer continuously updates the 3D scene with the
+current state of all objects (e.g., it uses the current joint position of a robot
+manipulator to display the robot joints in the correct position). Hence, the
+3D scene rendered in the Scene Viewer window always represents the
+current state of the actual hardware (in simulation mode, the simulated state
+of the hardware is represented). To select the best viewing position, the user
+navigates in the 3D scene using a mouse. The user can rotate the view, move
+forward and backward, and also store/restore desired viewing positions.
+Additionally, the user can hide objects in the scene to increase the frame rate.
+Many different Scene Viewer windows can be opened to view the 3D scene
+from different viewing positions at the same time. The user can also open the
+Object Viewer window to display the list of all objects that are currently
+being instantiated.
+   Each object also has an individual pop-up menu (See Figure 10.4.3. The
+Object Pop-Up Menu). This pop-menu appears if the user either: i) right
+clicks on the object in the Scene Viewer rendering area, or ii) right clicks
+on an entry in the Object Viewer window. Options associated with pop-up
+menu can be used to hide the object in the rendering area and to select
+between a wire frame or a solid display. In addition, the pop-up menu
+displays interactive commands that are defined in the specific class of the
+object. For example, a gripper object has additional menu items to open,
+close, and relax the gripper. Finally, the user can open the control panel
+from the object pop-up menu. Figure 10.4.5 shows the control panel of the
+Barrett WAM as an example. Each control panel appears in a new
+window.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+544                                         Robot Control Implementation and Software
+
+
+
+
+                  Figure 10.4.1: The Scene Viewer and Object List Windows.
+
+
+
+
+                               Figure 10.4.2: The Object Pop-Up Menu.
+
+
+
+
+                      Figure 10.4.3: The Control Panel of the WAM Class.
+
+
+Utility Programs for Moving the Robot To facilitate low-level
+algorithm development, utility programs for moving the robot must be
+created. For example, the Manual Move utility (see Figure 10.4.6) is a
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.4 Operation of the Robotic Platform                                    545
+
+program that gives the user the ability to test the low-level servo control of
+a robot manipulator. Specifically, the Manual Move utility contains a
+slider for each joint. As, the user can move the sliders with the mouse, the
+selected robot manipulator joint immediately follows the commanded user
+input.
+
+
+
+
+                               Figure 10.4.4: The Manual Move Utility.
+
+
+
+
+                                     Figure 10.4.5: The Teachpendant.
+
+
+   The Teachpendant (see Figure 10.5.1) implements a low-level zero gravity
+controller that allows the user to physically position the robot manipulator
+joints in any location. Once the user has moved the robot manipulator joints
+to a desired target position, this position can be stored as in list of robot
+manipulator positions. The Teachpendant utilizes the Robotic Platform’s
+trajectory generator to move the robot manipulator to the stored positions.
+In this way, the user can cycle the robot manipulator through all or some of
+the stored positions.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+546                                       Robot Control Implementation and Software
+
+Writing, Compiling, Linking, and Starting Control Programs
+A control program is first compiled and then linked to the Robotic Platform
+library. The entire Robotic Platform (i.e., all classes and the Scene Viewer) is
+contained in one library. As explained earlier, the Robotic Platform can easily
+be extended by adding new classes. If the extension is specific to a certain
+control program, the classes can be added to the code of the associated control
+program. If an extension is used in different control programs, it would
+probably be more convenient to add this new functionality to the Robotic
+Platform library. To reflect the extensions in preexisting compiled and linked
+programs, the Robotic Platform library is constructed to be a dynamic library
+(i.e., a program loads the library whenever it is started). Therefore, after the
+library is extended with new functionality, programs such as the Teachpendant
+will take advantage of the new functionality (e.g., the teachpendant will be
+able to operate new manipulator types).
+    Figure 10.4.6 shows the listing of an example control program for a simple
+pick and place operation. Every Robotic Platform control program must
+first call RoboticPlatform::init(). This function initializes the Robotic Platform
+and starts up the Scene Viewer. The command line arguments are passed to
+RoboticPlatform:: init () such that any Robotic Platform program can be
+started with certain default command line options (see Table 10.4.1).
+Additionally, these options can be controlled from C++ code as well by using
+the functions listed in the third column of Table 10.4.1. After
+RoboticPlatform::init() is called, the user’s program creates all objects that
+are required for the associated robotic task (i.e., a gripper object, a Puma
+560 object, and a trajectory generator object are created). If the option -wait
+was specified in the command line, no control loops are started until the
+user’s program executes the RoboticPlatf orm:: start () function. This function
+waits for the user to hit the start button. This feature is necessary since this
+function gives the user the ability to start the QMotor GUI, set control
+parameters, and select logging modes before the control loops are started.
+The last part of the example program utilizes the trajectory generator object
+and the gripper object to move the robot to the workpiece, close the gripper,
+pick up the workpiece, and drop it at the target position.
+
+                // Simple pick and place operation
+                #include “RoboticPlatform.hpp”
+
+                void main(int argc, char *argv[])
+                {
+                  RoboticPlatform::init(argc, argv);
+
+                    Puma560 puma;                // Create Puma560 object
+                    DefaultGripper gripper;     // Create gripper object
+
+                    DefaultTrajectoryGenerator tragen;
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.4 Operation of the Robotic Platform                                     547
+
+
+
+
+Table 10.4.1: Default Command Line Options of Robotic Platform Programs.
+
+
+
+
+Figure 10.4–6: A Simple Pick and Place Program
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+548                                       Robot Control Implementation and Software
+
+
+10.5 Programming Examples
+Comparison of Simulation and Implementation
+A very interesting option is to forward the setpoints created by a trajectory
+generator to two manipulators. In this way, the motion of two manipulators
+with the same kinematics can be compared, or the behavior of a real
+manipulator can be compared with a dynamic simulation. The latter
+application is implemented in the program in Figure 10.5.1. First, two objects
+of the class Puma 560 are created, and one of the objects is configured into
+simulation mode. Then, both objects are connected to the same trajectory
+generator to receive the same setpoints.
+
+
+
+
+    Figure 10.5–1: Example to Forward the Same Trajectory to two Robots.
+
+Virtual Walls
+This is a good example on how to create a custom servo control. It also
+demonstrates the use of the manipulator model functions and the math library.
+Virtual walls are virtual planes in the manipulator’s workspace that generate
+a reaction force once the manipulator is moved into the wall. Given a plane
+with the plane equation (using homogeneous coordinates):
+
+
+
+   where n is the normal vector of the plane, and d0 is the distance from the
+origin. If xEndEf fector is the current end-effector position, then
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+10.5 Programming Examples                                                     549
+
+
+
+
+Using the control law
+
+
+
+
+   creates a joint torque that resists moving the robot into the wall.
+   To implement a new servo control algorithm, a class is derived from the
+class ServoControl (See line (1) of Figure 10.5.2). The above virtual wall
+functions are implemented in the function calculate(), which calculates the
+control output. In the function main(), the robot object is created as usual.
+In addition, an object of the virtual wall servo control class is created (See
+line (2) of Figure 10.5.2). Finally, the robot object is instructed to utilize the
+new servo control instead of the default position control, and the gravity
+compensation is enabled to allow the robot to be pushed around (See line (3)
+of Figure 10.5.2).
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+550                                       Robot Control Implementation and Software
+
+
+
+
+Figure 10.5–2: Virtual Walls Example.
+
+
+10.6 Summary
+
+The Robotic Platform is a software framework to support the implementation
+of a wide range of robotic applications. As opposed to past distributed
+architecture-based software control platforms, the Robotic Platform presents
+a homogeneous, non-distributed object-oriented architecture. That is, based
+on PC technology and the real-time operating system QNX6, all non real-
+time and real-time components are integrated in a single C++ library. The
+architecture of the Robotic Platform provides efficient integration and
+extensibility of devices, control strategies, trajectory generation, and GUI
+components. In addition, software-based control systems implemented with
+the Robotic Platform are inexpensive and offer high performance. The
+Robotic Platform is also built on the QMotor control environment for data
+logging, control parameter tuning, and real-time plotting. A real-time math
+library simplifies operations and provides an easy-to-use programming
+interface. Built-in GUI components like the Scene Viewer and the control
+panels provide for easy operation of the Robotic Platform and a quick ramp-
+up-time for users that are inexperienced in C++ programming.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+
+[Lloyd et al. 1988] J. Lloyd, M.Parker and R.McClain, “Extending the RCCL
+    Programming Environment to Multiple Robots and Processors”, Proc.
+    IEEE International Conference on Robotics & Automation, 1988, pp. 465–
+    469.
+
+[Corke] P.Corke and R.Kirkham, “The ARCL Robot Programming System”,
+    Proc. of the International Conference on Robots for Competitive Industries,
+    Brisbane, Australia, pp. 484–493.
+
+[Lloyd 1990] J.Lloyd, M.Parker and G.Holder, “Real Time Control Under
+    UNIX for RCCL”, Proceedings of the 3rd International Symposium on
+    Robotics and Manufacturing (ISRAM ‘90).
+
+[Stewart 1989] D.B.Stewart, D.E.Schmitz, and P.K.Khosla, “CHIMERA II: A
+    Real-Time UNIX-Compatible Multiprocessor Operating System for Sensor-
+    based Control Applications”, Technical Report CMU-RI-TR-89–24,
+    Robotics Institute, Carnegie Mellon University, September, 1989.
+
+[Stroustrup 1991] B.Stroustrup, “What is ‘Object-Oriented Programming’?”,
+     Proc. 1st European Software Festival. February, 1991.
+
+[Miller 1991] D.J.Miller and R.C.Lennox, “An Object-Oriented Environment
+    for Robot System Architectures”, IEEE Control Systems Magazine, Feb.
+    1991, pp. 14–23.
+
+[Zielinski 1997] C.Zielinski, “Object-Oriented Robot Programming”,
+    Robotica, Vol.15, 1997, pp. 41–48.
+
+[Kapoor 1996] Chetan Kapoor, “A Reusable Operational Software Architecture
+    for Advanced Robotics”, Ph.D. thesis, University of Texas at Austin,
+    December 1996.
+
+
+                                                                           551
+Copyright © 2004 by Marcel Dekker, Inc.
+552                                                           REFERENCES
+
+[Pelich 1996] C.Pelich & F.M.Wahl, “A Programming Environment for a
+     Multiprocessor-Net Based Robot Control Unit”, Pr oc. 10th
+     International Conference on High Performance Computing, Ottawa,
+     Canada, 1996.
+
+[QSSL] QSSL, Corporate Headquarters, 175 Terence Matthews Crescent,
+   Kanata, Ontario K2M 1W8 Canada, Tel: +1 800–676–0566 or +1 613–
+   591–0931, Fax: +1 613–591–3579, Email:info@qnx.com, http://qnx.com.
+
+[Costescu 1999] N.Costescu, D.M.Dawson, and M.Loffler, “QMotor 2.0—A
+    PC Based Real-Time Multitasking Graphical Control Environment”, IEEE
+    Control Systems Magazine, Vol. 19 Number 3, Jun., 1999, pp. 68–76.
+
+[Loffler 2001] M.Loffler, D.Dawson, E.Zergeroglu, and N.Costescu, “Object-
+    Oriented Techniques in Robot Manipulator Control Software
+    Development”, Proc. of the American Control Conference, Arlington, VA,
+    June 2001, pp. 4520–4525.
+
+[Bhargava 2001] M.Loffler, A.Bhargava, V.Chitrakaran, and D.Dawson,
+    “Design and Implementation of the Robotic Platform”, Proc. of the IEEE
+    Conference on Control Applications, Mexico City, Mexico, Sept., 2001, pp.
+    357–362.
+
+[Stroustrup 1998] B.Stroustrup, “An Overview of the C++ Programming
+    Language”, Handbook of Object Technology, CRC Press. 1998. ISBN 0–
+    8493–3135–8.
+
+[Musser 1996] D.R.Musser, A.Saini, “STL Tutorial and Reference Guide”,
+   Addison-Wesley, 1996. ISBN 0–201–63398–1.
+
+[Wernecke] Josie Wernecke, “The Inventor Mentor”, Addison-Wesley, ISBN 0–
+   201–62495–8.
+
+[Hartman 1996] Hartman, Jed and Josie Wernecke, “The VRML 2.0
+   Handbook”, Addison-Wesley, Reading Massachusetts, 1996.
+
+[Loffler 2002] M.Loffler, N.Costescu, and D.Dawson, “QMotor 3.0 and the
+    QMotor Robotic Toolkit—An Advanced PC-Based Real-Time Control
+    Platform”, IEEE Control Systems Magazine, Vol. 22, No. 3, pp. 12–26,
+    June, 2002
+
+[Berkeley 1992] “Direct Drive Manipulator Research and Development
+    Package, Operations Manual”, Integrated Motion Inc., Berkeley, CA,
+    1992.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                              553
+
+[Barrett] Barrett Technologies, 139 Main St, Kendall Square, Cambridge, MA
+    02142, http://www.barretttechnology.com/robot.
+
+[Costescu et al. 1999] N.Costescu, M.Loffler, E.Zergeroglu, and D.M. Dawson,
+    “QRobot—A Multitasking PC Based Robot Control System”,
+    Microcomputer Applications Journal Special Issue on Robotics, Vol. 18,
+    No. 1, pp.13–22, 1999.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

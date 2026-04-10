@@ -1,0 +1,2216 @@
+Chapter 9
+
+Force Control
+In this chapter the fundamentals of position/force controllers are studied.
+The topics that are covered include stiffness control, hybrid position/force
+control, hybrid impedance control, and reduced-state position/force control.
+Emphasis is placed on controller development, stability, and implementation
+issues.
+
+
+9.1 Introduction
+
+For tasks performed by robot manipulators, such as moving payloads or
+painting objects, position controllers give adequate performance because
+these types of tasks only require the robot to follow a desired trajectory.
+However, during grinding or an assembly task, the robot manipulator comes
+in contact with the environment; therefore, interaction forces develop
+between the robot manipulator and the environment. Consequently, these
+interaction forces, as well as the position of the end effector, must be
+controlled.
+   To motivate the need for using a combination of force and position control,
+consider the problem of controlling a manipulator to write a sentence on a
+blackboard. To form the letters in the sentence, we must certainly control
+the end-effector position or, equivalently, the position of the chalk. As anyone
+who has written on a blackboard knows, the force with which one presses
+on the blackboard must also be controlled. That is, pressing too lightly can
+result in letters that are not easily readable, while pressing too hard can
+result in broken chalk. This example clearly illustrates that many robotic
+applications will require that a desired positional trajectory and a desired
+force trajectory must be specified. In this chapter we present some general
+
+                                                                            463
+Copyright © 2004 by Marcel Dekker, Inc.
+464                                                              Force Control
+
+control strategies that control not only the robot end-effector position but
+also the force that the end effector exerts on the environment. It should be
+noted that throughout this chapter, we assume that the desired velocity and
+force trajectories, which are commanded by the controllers, are consistent
+with the model of the environment [Lipkin and Duffy 1988]. If this is not the
+case, it may be possible to modify the desired velocity and force trajectories
+to be consistent with the model of the environment. The interested reader is
+referred to [Lipkin and Duffy 1988] for information on this modifying or
+“kinestatic filtering” of the desired trajectories.
+
+
+9.2 Stiffness Control
+
+Since the first robot manipulators involved in industrial processes were
+required to perform positional tasks (e.g., spray painting), robot manipulators
+were manufactured to be very rigid. This rigid design allowed the robot
+control designer to obtain reasonable positional accuracy by utilizing simple
+control laws. As one might expect, force control applications (e.g., grinding
+or sanding) are extremely difficult to accomplish with such a “stiff” robot.
+Therefore, if the robot manipulator “stiffness” could be controlled, force
+control applications could be accomplished more easily. In this section the
+concept of stiffness control is formulated for a simple single-degree-of-freedom
+example. The robot manipulator equation is then modified to account for
+the forces exerted on the environment. Using this new model, the stiffness
+control concept [Salisbury and Craig 1980] is then generalized to an n-link
+robot manipulator.
+
+
+Stiffness Control of a Single-Degree-of-Freedom Manipulator
+To motivate the concept of stiffness control, consider the problem of force
+control for the system depicted by Figure 9.2.1. Here the manipulator with
+mass m is assumed to be in contact with the environment, which is located
+at the static position xe. The control problem is to specify an input force
+(i.e.,␶) so that the manipulator moves to a desired constant position (i.e.,
+xd). In this system, we also assume that if the position of the manipulator
+(i.e., x) is greater than xe, the force (i.e., f) exerted on the environment is
+given by
+
+
+                                          f=ke(x-xe),                   (9.2.1)
+
+
+where ke is a positive constant used to denote the environmental stiffness.
+That is, we are assuming that the environmental stiffness can be modeled as
+a linear spring with a spring constant denoted by ke. From this assumption
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.2 Stiffness Control                                                          465
+
+we can visualize the single-degree-of-freedom system as the mass-spring
+diagram given by Figure 9.2.2.
+
+
+
+
+                           Figure 9.2.1: Single-degree-of-freedom system.
+
+
+
+
+                                    Figure 9.2.2: Mass-spring diagram.
+
+
+   Assuming that gravity and friction are negligible, the equation of motion
+for the system given in Figure 9.2.2 is given by
+
+                                                                            (9.2.2)
+
+The system block diagram for (9.2.2) is given by Figure 9.2.3. Note that in
+Figure 9.2.3, we have used the variable s to denote the Laplace transform
+variable.
+   The form of the dynamics given by (9.2.2) motivates the simple PD control
+law
+
+                                                                            (9.2.3)
+
+where kv and kp are positive scalar control gains. After substituting (9.2.3)
+into (9.2.2), we obtain the closed-loop system
+
+                                                                            (9.2.4)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+466                                                                         Force Control
+
+
+
+
+                                   Figure 9.2.3: System block diagram.
+
+
+
+
+                          Figure 9.2.4: Closed-loop system block diagram.
+
+
+which can be represented by the block diagram given by Figure 9.2.4. From
+Figure 9.2.4 we know that the closed-loop system is stable since we have
+defined the constants m, kv, kp, and ke to be positive. That is, we can show
+that the poles of the transfer function
+
+
+
+
+are in the open left-half s-plane.
+   To investigate how the PD control given in (9.2.3) controls the force exerted
+on the environment, we examine the system in steady-state conditions. Because
+xd and xe are constant, the Laplace transform of x can be found from (9.2.4)
+to be
+
+
+                                                                                  (9.2.5)
+
+
+Therefore, the steady-state manipulator position (i.e.,) can easily be shown
+to be
+
+
+                                                                                  (9.2.6)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.2 Stiffness Control                                                        467
+
+The steady-state manipulator position can now be used to calculate the steady-
+state force (i.e., f) exerted on the environment. Specifically, upon substituting
+(9.2.6) into (9.2.1), the steady-state force is given by
+
+
+                                                                         (9.2.7)
+
+
+As one would expect, the spring constant of the environment is often
+considered to be large because the robot is pushing on a nearly rigid surface
+in most robot force control applications. Thus, if we assume that         we
+can approximate the steady-state force in (9.2.7) as
+
+                                                                         (9.2.8)
+
+From the discussion above, we can see that the position control strategy
+given by (9.2.3) does indeed exert a force on the environment. Specifically,
+this force is created by commanding a desired trajectory that is slightly inside
+the contact surface. In attempting to eliminate the position error, the position
+controller exerts a steady-state force on the surface. From the approximate
+steady-state force given by (9.2.8), the position gain (i.e., kp) can be thought
+of as representing the desired “stiffness” of the manipulator. That is, the
+manipulator can be visualized as a spring, with spring constant kp, exerting
+a force on the environment. Hence the term “stiffness control” has often
+been associated with the PD control given by (9.2.3) since the stiffness of the
+manipulator can be set by the adjustment of kp.
+
+
+The Jacobian Matrix and Environmental Forces
+Before the stiffness controller can be generalized to an n-link robot
+manipulator, we must define some notation with regard to the forces that
+the robot exerts on the environment. As explained in [Spong and Vidyasagar
+1989], the forces are commonly transformed into the joint-space via a
+Jacobian matrix. In this chapter we define the Jacobian matrix in terms of a
+task space coordinate system which is defined for the specific robot application
+in question. That is, for a certain application, we may wish to have the end
+effector apply forces along a particular set of directions while moving along
+other directions. This concept is illustrated in Figure 9.2.5, which depicts a
+manipulator moving along a slanted surface. The task space coordinate system
+is given by the directions u and v since we wish to move the end effector
+along the surface in the direction v while applying a force normal to the
+surface along the direction u. An appropriate task space coordinate system
+is usually defined in most robotic applications from this line of reasoning.
+   Following this logic, let x be the n×1 task space vector defined by
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+468                                                                      Force Control
+
+                                                                               (9.2.9)
+
+
+where h(q) is found from the manipulator kinematics and the appropriate
+relationships between the joint and task spaces. The derivative of x is defined
+as
+
+                                                                              (9.2.10)
+
+where the n×n task space Jacobian matrix J(q) [Spong and Vidyasagar 1989]
+is defined as
+
+
+                                                                              (9.2.11)
+
+
+
+
+                    Figure 9.2.5: Manipulator moving along slanted surface.
+
+
+with the identity matrix I, the zero matrix 0, and the transformation matrix
+T having dimensions dependent on the task space coordinate system selected.
+The transformation matrix T is typically used when converting joint velocities
+to the derivatives of the roll, pitch, and yaw angles associated with end-
+effector orientation. For brevity we assume that the robot manipulators
+discussed in this chapter are nonredundant and are always in a nonsingular
+configuration; therefore, the Jacobian matrix is a nonsingular square matrix.
+   Using the task space coordinate concept, we now examine how the robot
+equation must be modified for the purposes of force control. If the end effector
+of the manipulator is in contact with the environment, force interactions
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.2 Stiffness Control                                                      469
+
+will exist between the end effector and the environment. If the interaction
+forces are measured in the joint space, the manipulator dynamic equation
+can be written as
+
+                                                                      (9.2.12)
+
+where ␶e is an n×1 vector in joint space coordinates, which denotes the force
+exerted on the environment. The dynamic equation given by (9.2.12) makes
+sense because if the manipulator is not moving (i.e.,         ), then (9.2.12)
+reduces to
+
+                                                                      (9.2.13)
+
+That is, if the robot manipulator is in static operation, the actuator force is
+equal to the force exerted on the environment plus the force needed to
+withstand the gravitational forces. Note that in (9.2.13), we have assumed
+that static friction can be neglected.
+   A joint space representation for the force exerted on the environment is
+not the standard notation in the robotics literature; rather, the robot
+manipulator equation is usually given by
+
+                                                                      (9.2.14)
+
+where f is the n×1 vector of contact forces and torques in task space.
+  To understand the origin of (9.2.14), equate the right-hand sides of (9.2.12)
+and (9.2.14) to yield
+
+                                                                      (9.2.15)
+
+This equation can be shown to be true quite easily by using a conservation
+of energy argument. Specifically, by conservation of energy, we know that
+
+                                                                      (9.2.16)
+
+Substituting (9.2.10) into (9.2.16) yields
+
+
+
+
+Since the relationship above must hold for all q, we can see that (9.2.15)
+obviously represents a true statement. To shed some light on the process of
+developing the Jacobian and the task space formulation, two examples are
+now discussed.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+470                                                              Force Control
+
+EXAMPLE 9.2–1: Task Space Formulation for a Slanted Surface
+    We want to find the manipulator dynamics for the Cartesian manipulator
+    system (i.e., both joints are prismatic) given in Figure 9.2.5 and to
+    decompose the forces exerted on the surface into a normal force and a
+    tangent force. First, the motion portion of the dynamics can easily be
+    determined when the robot is not constrained by the surface. After
+    removing the surface and the interaction forces f1, and f2, the manipulator
+    dynamics can be shown to be
+
+                                                                             (1)
+
+    where
+
+
+
+
+    and F(q) is the 2×1 vector                      that models the friction as
+    discussed in Chapter 2.
+       To account for the interaction forces, let x be the 2×1 task space vector
+    defined by
+
+
+                                                                             (2)
+
+
+    where u and v define a fixed coordinate system such that u represents the
+    normal distance to the surface, and v represents the tangent distance along
+    the surface. As in (9.2.9), the task space coordinates can be expressed in
+    terms of the joint space coordinates by
+
+
+                                                                             (3)
+
+
+    where h(q) is found from the geometry of the problem to be
+
+
+                                                                             (4)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.2 Stiffness Control                                                          471
+
+    The task space Jacobian matrix is found from (9.2.11) by utilizing the
+    fact that T is the identity matrix for this problem because we do not have
+    to concern ourselves with any end-effector angles of orientation. That is,
+    J(q) is given as
+
+
+                                                                               (5)
+
+
+    Following (9.2.14), the robot manipulator equation is given by
+
+                                                                               (6)
+
+    where
+
+
+
+
+    It is important to realize that the normal force (i.e., f1) and the tangent
+    force (i.e., f2) are drawn in the direction of the task space coordinate system
+    given by (2) (see Fig. 9.2.5).
+                                                                                䊏
+
+
+EXAMPLE 9.2–2: Task Space Formulation for an Elliptical Surface
+    We wish to find the manipulator dynamics for the Cartesian
+    manipulator system given in Figure 9.2.6 and to decompose the forces
+    exerted on the surface into a normal force and a tangent force. The
+    motion portion of the dynamics is the same as in Example 9.2.1;
+    however, due to the change in the environmental surface, a new task
+    space coordinate system must be defined. Specifically, let x be the 2×1
+    task space vector defined by
+
+
+                                                                               (1)
+
+
+    where u and v define a rotating coordinate system such that u represents
+    the normal distance to the surface and v represents the tangent distance
+    along the surface. As in (9.2.9), the task space coordinates can be expressed
+    in terms of the joint space coordinates by
+
+
+                                                                               (2)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+472                                                                       Force Control
+
+
+
+
+                   Figure 9.2.6: Manipulator moving along elliptical surface.
+
+
+
+
+    where h(q) is found to be
+
+
+                                                                                    (3)
+
+
+with u, v, q1 and q2 being appropriately defined unit vectors used in the dot
+product notation given in (3). The unit vectors q1 and q2 are defined in terms
+of the fixed coordinate set given by q1 and q2. These unit vectors are defined
+as
+
+
+                                                                                    (4)
+
+
+To find the unit vectors u and v, we first use the function of the surface
+
+                                                                                    (5)
+
+to parameterize the surface in terms of one variable (i.e., q2) as follows:
+
+
+                                                                                    (6)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.2 Stiffness Control                                                        473
+
+The partial derivative of (6) with respect to q2 divided by the length of the
+vector yields a unit vector (i.e., v) that is always tangent to the surface. That
+is, v is given by
+
+
+                                                                             (7)
+
+
+where
+
+
+
+
+By using (5) again, the expression for v can be simplified to yield
+
+
+                                                                             (8)
+
+
+where
+
+
+
+
+Because the vectors u and v must be orthogonal (i.e., u.v=0), via (8) and the
+geometry of the problem, we know that
+
+
+                                                                             (9)
+
+
+Substituting (4), (8), and (9) into (3) yields
+
+
+                                                                            (10)
+
+
+The task space Jacobian matrix is found from (9.2.11) by utilizing the fact
+that T is the identity matrix. That is, J(q) is given as
+
+
+                                                                            (11)
+
+
+where
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+474                                                                Force Control
+
+
+
+
+Following (9.2.14), the robot manipulator equation is given by
+
+                                                                             (12)
+
+where ␶, M, q, G, f, and F(q) are as defined in Example 9.2.1. It is important
+to note that the normal force (i.e., f1) and the tangent force (i.e., f2) are
+drawn in the direction of the task space coordinate system given by (1) (see
+Fig. 9.2.6).
+
+
+Stiffness Control of an N-Link Manipulator
+Now that we have the robot manipulator dynamics in a form which includes
+the environmental interaction forces, the stiffness controller for the n-link
+robot manipulator can be formulated. As before, the force exerted on the
+environment is defined as
+
+
+                                                                         (9.2.17)
+
+
+where Ke is an n×n diagonal, positive semi-definite, constant matrix used to
+denote the environmental stiffness, and xe is an n×1 vector measured in task
+space that is used to denote the static location of the environment. Note that
+if the manipulator is not constrained in a particular task space direction, the
+corresponding diagonal element of the matrix Ke is assumed to be zero. Also,
+the environmental surface friction is typically neglected in the stiffness control
+formulation.
+    The multidimensional stiffness controller is the PD-type controller
+
+                                                                         (9.2.18)
+
+where Kv and Kp are n×n diagonal, constant, positive-definite matrices and
+the task space tracking error is defined as
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.2 Stiffness Control                                                      475
+
+As before, xd is used to denote the desired constant end-effector position
+that we wish to move the robot manipulator to; however, xd is now an n×1
+vector. Substituting (9.2.17) and (9.2.18) into (9.2.14) yields the closed-loop
+dynamics
+
+                                                                      (9.2.19)
+
+To analyze the stability of the system given by (9.2.19), we utilize the
+Lyapunov-like function
+
+                                                                      (9.2.20)
+
+Differentiating (9.2.20) with respect to time and utilizing (9.2.10) yields
+
+
+                                                                      (9.2.21)
+
+
+Note that in (9.2.21) we have used the fact that xe and xd are constant and
+that the transpose of either a scalar function or a diagonal matrix is equal to
+that function or matrix, respectively. Substituting (9.2.19) into (9.2.21) and
+utilizing (9.2.10) yields
+
+                                                                      (9.2.22)
+
+
+Applying the skew-symmetric property (see Chapter 2) to (9.2.22) yields
+
+                                                                      (9.2.23)
+
+which is nonpositive. Since the matrices J(q) and hence JT(q)KvJ(q) are
+nonsingular, V can only remain zero along trajectories where q=0 and hence
+q=0 (see LaSalle’s theorem in Chapter 1). Substituting q=0 and q=0 into
+(9.2.19) and utilizing (9.2.10) yields
+
+                                                                      (9.2.24)
+
+or, equivalently,
+                                                                      (9.2.25)
+
+where the subscript i is used to denote the ith component of the vectors x, xd,
+xe, and the ith diagonal element of the matrices Kp and Ke.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+476                                                                       Force Control
+
+    The stability analysis above can be interpreted to mean that the robot
+manipulator will stop moving when the task space coordinates are given by
+(9.2.25). That is, the final position or steady-state position of the end effector
+is given by (9.2.25), which in the single-degree-of-freedom case is equivalently
+given by (9.2.6). To obtain the ith component of the steady-state force exerted
+on the environment, we substitute (9.2.25) into the ith component of (9.2.17)
+to yield
+
+                                                                               (9.2.26)
+
+
+Thus the steady-state force exerted by the end effector on the environment
+is given by (9.2.26), which in the single-degree-of-freedom case is
+equivalently given by (9.2.7). As in the single-degree-of-freedom case, we
+assume that Kei is much larger than Kpi for the task space directions that
+are to be force controlled. That is, the steady-state force in (9.2.26) can be
+approximated by
+
+
+
+
+                                      Table 9.2.1: Stiffness Controller
+
+
+
+
+                                                                               (9.2.27)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.2 Stiffness Control                                                       477
+
+therefore, Kpi can interpreted as specifying the stiffness of the manipulator in
+these task space directions.
+   If the manipulator is not constrained in a task space direction, the
+corresponding stiffness constant Kei is equal to zero. Substituting Kei=0 into
+(9.2.25) yields
+
+                                                                       (9.2.28)
+
+This means that for the nonconstrained task space directions, we obtain set-
+point control; therefore, in steady state the desired position set point is
+reached. The stiffness controller along with the corresponding stability result
+are both summarized in Table 9.2.1. We now illustrate the concept of stiffness
+control with an example.
+
+EXAMPLE 9.2–3: Stiffness Controller for a Cartesian Manipulator
+We want to design and simulate a stiffness controller for the robot
+manipulator system given in Figure 9.2.5. The control objective is to move
+the end effector to a desired final position of vd=3 m while exerting a final
+desired normal force of fd1=2 N. We neglect the surface friction (i.e., f2) and
+joint friction, and assume that the normal force (i.e., f1) satisfies the
+relationship
+
+
+                                                                            (1)
+
+
+where                  and ke=1000 N/m. The robot link masses are assumed
+to be unity, and the initial end-effector position is given by
+
+                                                                            (2)
+
+
+To accomplish the control objective, the stiffness controller from Table 9.2.1
+is given by
+
+                                                                            (3)
+
+where
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+478                                                                            Force Control
+
+␶, J, G, and x are as defined in Example 9.2.1, ud is defined as the desired
+normal position, and the gain matrices Kv and Kp have been taken to be
+Kv=kvI and Kp=kpI. For this example we select kv= kp=10, which will
+guarantee that kp<<ke as required in the stiffness control formulation. To
+satisfy the control objective that fd1=2 N, we utilize (9.2.27) to determine
+the desired normal position. Specifically, substituting the values of fd1, ke,
+and ue into
+
+
+                                                                                         (4)
+
+
+yields
+   The simulation of the stiffness controller given by (3) for the robot
+manipulator system (Figure 9.2.5) is given in Figure 9.2.7. As indicated by
+the simulation, the desired tangential position and normal force are reached
+in about 4 s.
+                                                                          䊏
+
+
+
+
+                           Figure 9.2.7: Simulation of stiffness controller.
+
+
+
+
+9.3 Hybrid Position/Force Control
+
+A major disadvantage of the stiffness controller given in Section 9.2 is that it
+can only be used for set-point control; in other words, the desired end effector
+manipulator position and the desired force exerted on the environment must
+be constant. In many robotic applications, such as grinding, the end effector
+must track a desired positional trajectory along the object surface while
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.3 Hybrid Position/Force Control                                              479
+
+tracking a desired force trajectory exerted onto the object surface. In this
+type of application, a stiffness controller will not perform adequately;
+therefore, another control approach must be utilized.
+   The so-called hybrid position/force controller [Chae et al. 1988] and
+[Raibert and Craig 1981] can be used for tracking position and force
+trajectories simultaneously. The basic concept of the hybrid position/force
+controller is to decouple the position and force control problems into subtasks
+via a task space formulation. As we have seen, the task space formulation is
+valuable in determining which directions should be force or position
+controlled. That is, the position and force control subtasks are easily
+determined from the task space formulation. After the control subtasks have
+been identified, separate position and force controllers can then be developed.
+
+
+Hybrid Position/Force Control of a Cartesian Two-Link Arm
+To illustrate this concept of hybrid position/force control, consider the robot
+manipulator system given by Figure 9.3.1. For this application, the position
+along the surface and the normal force exerted on the surface should both be
+controlled; therefore, one must determine which variables should be force
+controlled and which should be position controlled.
+
+
+
+
+               Figure 9.3.1: Manipulator moving along perpendicular surface.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+480                                                               Force Control
+
+   Following the task space concept given in Section 9.2, the task space
+formulation for the manipulator system given in Figure 9.3.1 is
+
+
+                                                                         (9.3.1)
+
+with the task-space Jacobian matrix given by
+
+
+
+
+As illustrated by (9.3.1), the task space and the joint space are equivalent for
+this problem; therefore, we will refer to joint variables as task-space variables
+throughout this problem.
+   To design the position/force controller for the manipulator system, we
+must first determine the dynamic equations for the task space formulation
+given by (9.3.1). Using this task space formulation and neglecting joint
+friction, the manipulator dynamics can be shown to be
+                                                                         (9.3.2)
+
+where ␶, M, G, and f are as defined in Example 9.2.1. The two dynamic
+equations given in the matrix form represented by (9.3.2) are
+
+                                                                         (9.3.3)
+
+and
+                                                                         (9.3.4)
+
+In formulating a hybrid position/force controller, we design separate
+controllers for the dynamics given by (9.3.3) and (9.3.4). As illustrated by
+Figure 9.3.1, the position along the task space direction q2 should be position
+controlled; therefore, we should use (9.3.4) for designing the position
+controller. [This is obvious because the dynamics given by (9.3.3) do not
+contain the task space variable q2.]
+   Because we are designing a position controller to track a desired trajectory,
+we will define the “tangent space” tracking error to be
+                                                                         (9.3.5)
+
+where qd2 represents the desired position trajectory along or tangent to the
+surface. The position controller will be the computed-torque controller (see
+Chapter 3)
+                                                                         (9.3.6)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.3 Hybrid Position/Force Control                                           481
+
+where
+
+                                                                        (9.3.7)
+
+with kTv and kTp being positive control gains. Substituting (9.3.6) into (9.3.4)
+gives the position tracking error system
+                                                                        (9.3.8)
+
+By using the fact that kTv and kTp are positive, we can apply standard linear
+control results to (9.3.8) to yield
+
+
+
+therefore, asymptotic positional tracking is guaranteed with the controller
+given by (9.3.6). Note that the position controller requires measurement of
+the joint position, joint velocity, and surface friction force; therefore, from
+an implementation point of view, force measurements are required in the
+position controller.
+   The position controller given in (9.3.6) will ensure good position tracking
+along the surface of the environment; however, we also want to control the
+force exerted on the environment. For the manipulator system given in Figure
+9.3.1, the task space direction normal to the surface is q1; therefore, we will
+assume that in this direction the environment can be modeled as a spring.
+Specifically, the normal force f1 exerted on the environment is given by
+
+                                                                        (9.3.9)
+
+where ke represents the environment stiffness and qe=3. Taking the second
+derivative of (9.3.9) with respect to time gives the expression
+
+                                                                       (9.3.10)
+
+
+where the normal task space acceleration is written in terms of the second
+derivative of the normal force. Substituting (9.3.10) into (9.3.3) yields the
+force dynamic equation
+
+                                                                       (9.3.11)
+
+
+We can now use the force dynamic equation given in (9.3.11) to design a
+force controller to track a desired force trajectory. First, define the force
+tracking error to be
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+482                                                             Force Control
+
+                                                                     (9.3.12)
+
+where fd1 represents the desired normal force that is to be exerted on the
+environment. Similar to the position controller, the force controller will be
+the computed-torque controller
+
+                                                                     (9.3.13)
+
+where
+
+                                                                     (9.3.14)
+
+with kNv and kNp being positive control gains. Substituting (9.3.13) into
+(9.3.11) gives the force tracking error system,
+
+                                                                     (9.3.15)
+
+Using the fact kNv and kNp are positive in (9.3.15) yields
+
+
+
+therefore, asymptotic force tracking is guaranteed with the controller given
+by (9.3.13). It is important to realize that the force controller requires
+measurement of the normal force and the derivative of the normal force.
+Because the force derivative is often not available for measurement, it is
+manufactured from (9.3.9), that is,
+
+                                                                     (9.3.16)
+
+therefore, the stiffness of the environment and the normal task space velocity
+are used to simulate the derivative of the force.
+
+
+Hybrid Position/Force Control of an N-Link Manipulator
+The hybrid position/force controller given in the preceding section can easily
+be extended to the multidegree case by using the task space formulation
+concept. Specifically, one can develop a feedback-linearizing control that
+will globally linearize the robot manipulator equation and then develop linear
+controllers to track the desired force and position trajectories.
+   First, the control designer selects a task space formulation
+
+
+                                                                     (9.3.17)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.3 Hybrid Position/Force Control                                          483
+
+such that the normal and tangent surface motions are decomposed as
+discussed in Section 9.2. The robot dynamics given in (9.3.14) are then written
+in terms of the task space acceleration by differentiating (9.3.17) twice with
+respect to time to obtain
+                                                                      (9.3.18)
+
+where J(q) is the task space Jacobian defined in (9.2.11). Solving (9.3.18) for
+q yields
+
+                                                                      (9.3.19)
+
+
+Substituting (9.3.19) into (9.2.14) yields
+
+
+
+                                                                      (9.3.20)
+
+The corresponding feedback linearizing control for the dynamics given by
+(9.3.20) is given by
+
+
+
+                                                                      (9.3.21)
+
+where a is an n×1 vector used to represent the linear position and force
+control strategies, which will be discussed later. After substituting (9.3.21)
+into (9.3.20), we have
+                                                                      (9.3.22)
+
+From (9.3.22), we can see that the task space motion has been globally
+linearized and decoupled; therefore, we can design the position and force
+controllers independently in a method similar to that of the preceding section.
+Specifically, linear position controllers can be designed for the task space
+variables that represent tangent motion; moreover, linear force controllers
+can be designed for the task space variables that represent normal force.
+   Because the dynamics given in (9.3.20) have been decoupled in the task
+space, we will define the tangent space components of x as xTi, where the
+subscript T is used to denote the tangent space, and the subscript i is used to
+denote the ith component of xT. From this notation the tangent space
+components of (9.3.22) are given as
+
+                                                                      (9.3.23)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+484                                                                 Force Control
+
+where aTi is the ith linear tangent space position controller. For the purpose
+of feedback control, we define the tangent space tracking error to be
+
+                                                                         (9.3.24)
+
+where xTdi represents the ith desired position trajectory tangent to the
+environment surface. As in the preceding section, the corresponding linear
+controller is then given as
+
+                                                                         (9.3.25)
+
+with kTvi and kTpi being the ith positive control gains. Substituting (9.3.25)
+into (9.3.23) gives the position tracking error system
+
+                                                                         (9.3.26)
+
+Using the fact that kTvi and kTpi are positive in (9.3.26) yields
+
+
+
+
+therefore, asymptotic positional tracking is guaranteed.
+    For purposes of force control, we define the normal space components of
+x as xNj where the subscript N is used to denote normal space, and the subscript
+j is used to denote the jth component of xN. From this notation, the normal
+space components of (9.3.22) are given as
+                                                                         (9.3.27)
+
+where aNj is the jth linear normal space force controller. As in the preceding
+section, we assume that the environment can be modeled as a spring.
+Specifically, the normal force fNj exerted on the environment is given by
+                                                                         (9.3.28)
+
+where kej is the jth component of environmental stiffness, and xej is used to
+represent the static location of the environment in the direction of the normal
+space xNj.
+   As done for the single-degree-of-freedom robot in the preceding subsection,
+we must formulate the force dynamics before we can develop the force
+controller. Taking the second derivative of (9.3.28) with respect to time gives
+the expression
+
+                                                                         (9.3.29)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.3 Hybrid Position/Force Control                                         485
+
+where the normal task space acceleration is written in terms of the second
+derivative of the normal force. Substituting (9.3.29) into (9.3.27) yields the
+force dynamics
+
+
+                                                                     (9.3.30)
+
+
+For the purpose of feedback control, we define the force tracking error to be
+
+                                                                     (9.3.31)
+
+where fNdj represents the jth component of the desired force exerted normal
+to the environment. As in the preceding section, the corresponding linear
+controller is then given by
+
+                                                                     (9.3.32)
+
+with kNvj and kNpj being the jth positive control gains. Substituting (9.3.32)
+into (9.3.30) gives the force tracking error system
+
+                                                                     (9.3.33)
+
+
+Using the fact that kNvj and kNpj are positive in (9.3.33) yields
+
+
+
+
+therefore, asymptotic force tracking is guaranteed.
+   The hybrid position/force controller and the corresponding stability result
+are both summarized in Table 9.3.1. We now illustrate the concept of hybrid
+position/force control with an example.
+
+EXAMPLE 9.3–1: Hybrid Position/Force Control Along a Slanted Surface
+    We want to design and simulate a hybrid position/force controller for the
+    robot manipulator system given in Figure 9.2.5. The control objective is
+    to move the end effector with a desired surface trajectory of vd=sin(t) m
+    while exerting a normal force trajectory of                 . We neglect
+    joint friction and assume that the normal force (i.e., f1) satisfies the
+    relationship
+
+
+                                                                           (1)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+486                                                                         Force Control
+
+                            Table 9.3.1: Hybrid Position/Force Controller
+
+
+
+
+    where                 and ke=1000 N/m. The robot link masses are assumed
+    to be unity, and the initial end-effector position is given by
+
+                                                                                      (2)
+
+
+    To accomplish the control objective, the hybrid position/force controller
+    from Table 9.3.1 is given by
+
+                                                                                      (3)
+
+    where a is a 2×1 vector representing the linear position and force
+    controllers with ␶, J, G, and f as defined in Example 9.2.1. The controller
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.3 Hybrid Position/Force Control                                           487
+
+    given by (3) decouples the robot dynamics in the task space as follows:
+
+
+                                                                            (4)
+
+
+    From Figure 9.2.5, we can see that the task space variable u represents the
+    normal space, and the task space variable v represents the tangent space;
+    therefore, (4) may rewritten in the notation given in Table 9.3.1 as
+
+
+                                                                            (5)
+
+
+    From Table 9.3.1, the corresponding linear position and force controllers
+    are then given by
+
+                                                                            (6)
+
+    and
+
+                                                                            (7)
+
+
+    where                              , and ke1=1000.
+       The simulation of the hybrid position/force controller given by (3), (6),
+    and (7) for the robotic manipulator system (Figure 9.2.5) is given in Figure
+    9.3.2. The controller gains were selected as
+
+
+
+
+    As indicated by the simulation, the position and force tracking error go to
+    zero in about 4 s.
+                                                                             䊏
+
+
+Implementation Issues
+After reexamining the hybrid position/force controller, one can see that the
+task space forces are needed for implementation of the control law. Often
+a wrist-mounted force sensor is used for measuring the end-effector forces;
+however, in general, these forces will not be the task space forces that are
+needed for control implementation. Fortunately, a transformation can be
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+488                                                                         Force Control
+
+
+
+
+                  Figure 9.3.2: Simulation of hybrid position/force controller.
+
+
+
+
+used to obtain the task space forces for any particular force application.
+That is, the task space forces are related to the sensor forces by
+
+                                                                                  (9.3.34)
+
+where Js(q) is an n×n Jacobian sensor matrix, and fs is an n×1 vector of
+sensor forces. Using (9.3.34), the task space forces are given by
+
+                                                                                  (9.3.35)
+
+As we mentioned earlier, the force control law requires measurement of the
+task space force derivative; however, this signal is not usually available. Often,
+the stiffness equation (9.3.28) is used to obtain the jth task space force
+derivative as
+
+                                                                                  (9.3.36)
+
+which is in terms of the measurable jth task space normal velocity.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.4 Hybrid Impedance Control                                                      489
+
+
+
+
+                            Figure 9.3.3: Hybrid position/force controller.
+
+
+
+
+With these implementational concerns in mind, the overall hybrid position/
+force control strategy is depicted in Figure 9.3.3. The feedforward terms in
+the block diagram are used to represent the terms
+
+                                                                              (9.3.37)
+
+in the control law given in Table 9.3.1.
+
+
+9.4 Hybrid Impedance Control
+
+Impedance control is based on the concept that the controller should be used
+to regulate the dynamic behavior between the robot manipulator motion
+and the force exerted on the environment [Hogan 1987] rather than
+considering the motion and force control problems separately. Using this
+concept, the control designer specifies the desired dynamic behavior between
+the motion of the manipulator and the force exerted on the environment.
+This desired behavior is sometimes referred to as the target impedance because
+it is used to represent an Ohm’s law type of relationship between motion and
+force.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+490                                                               Force Control
+
+Modeling the Environment
+As pointed out in [Hogan 1987], the environmental model is central to any
+force control strategy. In the force control strategies discussed previously,
+the environment has simply been modeled as a spring; however, as one might
+imagine, a simple spring model may not adequately describe all types of
+environments. To classify the many types of environments, we use the linear
+transfer function relationship
+
+                                                                         (9.4.1)
+
+where the variable s is the Laplace transform variable, f represents the force
+exerted on the environment, x represents the velocity of the manipulator at
+the environmental contact point, and Ze(s) represents the environmental
+impedance. For now, all quantities are assumed to be scalar functions;
+however, at the end of this section we generalize impedance control to the
+multidimensional case.
+   The quantity Ze(s) is called an impedance because (9.4.1) represents an
+Ohm’s law type of relationship between motion and force. As in circuit theory,
+environmental impedances can be separated into different categories. To
+further our impedance control discussion, we now give three commonly used
+categories which are used to classify environmental impedances.
+
+DEFINITION 9.4–1 An impedance is inertial if and only if |Z(0)|=0.
+                                                                              䊏
+
+An illustration of an inertial environment is given in Figure 9.4.1a. This
+figure depicts a robot manipulator moving a payload of mass h with velocity
+x. The corresponding interaction force is given by
+
+
+
+therefore, utilizing (9.4.1) yields an inertial environmental impedance of
+
+                                                                         (9.4.2)
+
+We can easily verify that this impedance is indeed inertial by applying
+Definition 9.4.1.
+
+DEFINITION 9.4–2 An impedance is resistive if and only if |Z(0)|=c where
+0<c<⬁.                                                                䊏
+
+An illustration of a resistive environment is given in Figure 9.4.1b. This figure
+depicts a robot manipulator moving through a liquid medium with velocity x.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.4 Hybrid Impedance Control                                                491
+
+
+
+
+                               Figure 9.4.1: Environmental impedances.
+
+
+
+The liquid medium is assumed to have a damping coefficient of b. The
+corresponding interaction force is given by
+
+
+
+
+therefore, utilizing (9.4.1) yields a resistive environmental impedance of
+
+                                                                         (9.4.3)
+
+We can easily verify that this impedance is indeed resistive by applying
+Definition 9.4.2.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+492                                                                Force Control
+
+DEFINITION 9.4–3 An impedance is capacitive if and only if |Z(O)|= ⬁.
+                                                                               䊏
+
+An illustration of a capacitive environment is given in Figure 9.4.1c.
+This figure depicts a robot manipulator pushing against an object of
+mass h with velocity x. The object is assumed to have a damping
+coefficient of b and a spring constant of k. The corresponding interaction
+force is given by
+
+
+
+
+therefore, utilizing (9.4.1) yields a capacitive environmental impedance of
+
+
+                                                                          (9.4.4)
+
+
+We can easily verify that this impedance is indeed capacitive by applying
+Definition 9.4.3.
+
+
+Position and Force Control Models
+As we have seen in the preceding section, the environment can be modeled as
+an impedance defined by the force/velocity relationship in (9.4.1). For our
+impedance control formulation, we will assume that the environmental
+impedance is either inertial, resistive, or capacitive. The question then
+becomes: How does one design a controller for a given environmental
+impedance? The solution is obtained by formulating a manipulator impedance
+model, Zm(s) [Anderson and Spong 1988]. In other words, a manipulator
+impedance (or target impedance) is selected after the environment has been
+modeled. The criterion for selecting the manipulator impedance is related to
+the dynamic performance of the manipulator. That is, the manipulator
+impedance is selected such that there is zero steadystate error to a step input
+(which may be a force or velocity command). As we will show, this
+performance criterion can be achieved if the manipulator impedance is the
+dual of the environmental impedance.
+   Before the concept of duality can be illustrated fully, the models for position
+and force control must be formulated. For position control [Anderson and
+Spong 1988], the relationship between force and velocity is modeled by
+
+                                                                          (9.4.5)
+
+where xd represents the input velocity of the manipulator at the environmental
+contact point and Zm(s) represents the manipulator impedance.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.4 Hybrid Impedance Control                                                   493
+
+   As we will show subsequently, the manipulator impedance Zm(s) is selected
+to “zero-out” the steady state to a step input by utilizing the dynamic
+relationship between x and xd, To determine the dynamic relation between x
+and xd. we combine (9.4.1) with (9.4.5) to yield the position control block
+diagram given in Figure 9.4.2. We can use this block diagram to illustrate
+the concept of duality. Specifically, we examine the steady-state velocity error
+
+                                                                            (9.4.6)
+
+where               for a step velocity input. Utilizing Figure 9.4.2, we can
+easily show that (9.4.6) can be reduced to
+
+
+                                                                            (9.4.7)
+
+
+For Ess to be equal to zero in (9.4.7), Ze(s) must be a noncapacitive impedance
+[i.e., Ze(s) must be inertial or resistive], and Zm(s) must be a noninertial
+impedance. That is, zero steady-state error can be achieved for a velocity
+step input if inertial environments are position controlled with noninertial
+manipulator impedances, while resistive environments are position controlled
+with capacitive manipulator impedances. The aforementioned term duality
+is used to emphasize the fact that inertial environmental impedances can be
+position controlled with capacitive manipulator impedances.
+
+
+
+
+                            Figure 9.4.2: Position control block diagram.
+
+
+
+From the development above, it is obvious that a capacitive environment
+cannot be position controlled and maintain the zero steady-state error
+specification. However, subsequently we will show that capacitive
+environments can be force controlled while maintaining the zero steady-
+state error specification. With regard to force control, the dynamic relationship
+between force and velocity is modeled [Anderson and Spong 1988] by
+
+                                                                            (9.4.8)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+494                                                              Force Control
+
+where fd is used to represent the input force exerted at the environmental
+contact point.
+   As we will show subsequently, the manipulator impedance Zm(s) is selected
+to “zero-out” the steady state to a step input by utilizing the dynamic
+relationship between f and fd. To determine the dynamic relation between f
+and fd, we combine (9.4.1) with (9.4.8) to yield the force control block diagram
+given in Figure 9.4.3. We can use this block diagram to illustrate the concept
+of duality. Specifically, we examine the steady-state force error
+
+                                                                        (9.4.9)
+
+where fd(s)=1/s for a step force input. Utilizing Figure 9.4.3, we can easily
+show that (9.4.9) can be reduced to
+
+
+                                                                       (9.4.10)
+
+
+For Ess to be equal to zero in (9.4.10), Ze(s) must be a noninertial impedance,
+and Zm(s) must be a noncapacitive impedance. That is, zero steady-state
+error can be achieved for a force step input if capacitive environments are
+force controlled with noncapacitive manipulator impedances while resistive
+environments are force controlled with inertial manipulator impedances.
+The term “duality” is used to emphasize the fact that capacitive
+environmental impedances can be force controlled with inertial manipulator
+impedances.
+   The discussion above can be summarized by the following duality
+principle.
+
+DUALITY PRINCIPLE Capacitive environments are force controlled with
+noncapacitive manipulator impedances, inertial environments are position
+controlled with noninertial manipulator impedances, and resistive
+environments are force controlled with inertial manipulator impedances or
+position controlled with capacitive manipulator impedances.
+
+
+Impedance Control Formulation
+Now that we have illustrated how the environment and the manipulator can
+be modeled as impedances, we develop an “impedance” controller based on
+this model. To utilize an impedance control approach, the control designer
+selects a task space formulation
+
+
+                                                                       (9.4.11)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.4 Hybrid Impedance Control                                                   495
+
+
+
+
+                              Figure 9.4.3: Force control block diagram.
+
+
+
+for the particular position/force control application. As in Section 9.3, we
+can show that the torque control
+
+
+
+                                                                           (9.4.12)
+
+yields the linear set of equations
+
+                                                                           (9.4.13)
+
+where a is an n×1 vector used to represent the impedance position and force
+control strategies.
+   As delineated by (9.4.13), the task space motion has been globally
+linearized; therefore, we can design separate position and force controllers
+for each task space degree of freedom. That is, in each task space direction
+represented by a component xk, an environmental impedance relationship
+between xk and the corresponding environmental force fk is assigned. Based
+on this assignment of environmental impedance, the duality principle is
+used to determine if the corresponding element of a should be a force or
+position controller. After this determination is made, (9.4.5) and (9.4.8)
+are then used to obtain the specific position and force control components
+of a.
+   As a means of separating the position control design from the force control
+design, we use (9.4.13) to define the equations that are position controlled
+in the task space directions as
+
+                                                                           (9.4.14)
+
+where the subscript i denotes the ith position-controlled task space
+variable, and the subscript p denotes position control. The associated
+environmental forces in the position controlled task space directions are
+denoted by fpi.
+   Assuming zero initial conditions, the Laplace transform of (9.4.14) can
+be written as
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+496                                                              Force Control
+
+                                                                       (9.4.15)
+
+From the position control model given by (9.4.5), we can also write the left-
+hand side of (9.4.15) as
+
+                                                                       (9.4.16)
+
+where Zpmi is the ith position-controlled manipulator impedance. Therefore,
+equating (9.4.16) and (9.4.15) gives the ith position controller
+
+                                                                       (9.4.17)
+
+where L-1 is used to represent the inverse Laplace transform operation.
+   Continuing with the separation of position and force control designs, we
+use (9.4.13) to define the equations that are to be force controlled in the task
+space directions as
+
+                                                                       (9.4.18)
+
+where the subscript j denotes the jth force-controlled task space variable,
+and the subscript f denotes force control. The associated environmental forces
+in the force-controlled task space directions are denoted by ffj.
+   Assuming zero initial conditions, the Laplace transform of (9.4.18) can
+be written as:
+
+                                                                       (9.4.19)
+
+From the force control model given in (9.4.8), the left-hand side of (9.4.19)
+can also be written as
+
+                                                                       (9.4.20)
+
+
+
+                                                                       (9.4.21)
+
+where Zfmj is the jth force-controlled manipulator impedance. Therefore,
+equating (9.4.21) and (9.4.19) gives the jth force controller
+   The overall “hybrid” impedance control strategy is obtained by using
+(9.4.12) in conjunction with (9.4.17) and (9.4.20). This hybrid impedance
+control strategy is summarized in Table 9.4.1. Note that a higher-level
+controller would be used to select the components of the task space which
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.4 Hybrid Impedance Control                                                  497
+
+                              Table 9.4.1: Hybrid Impedance Controller
+
+
+
+
+would be position or force controlled and then the appropriate manipulator
+impedances would be assigned. As delineated by the duality principle, the
+manipulator impedances Zfmj in (9.4.20) are assigned to be noncapacitive
+and the manipulator impedances Zpmi in (9.4.17) are assigned to be non-
+inertial. To illustrate the concept of hybrid impedance control, we now present
+an example.
+
+EXAMPLE 9.4–1: Hybrid Impedance Control Along a Slanted
+Surface
+    We wish to formulate a hybrid impedance controller for the robot
+    manipulator system given in Figure 9.2.5. The joint and surface friction
+    may be neglected, and we assume that the tangential force (i.e., f2) satisfies
+    the relationship
+
+                                                                              (1)
+
+    and the normal force (i.e., f1) satisfies the relationship
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+498                                                             Force Control
+
+                                                                           (2)
+
+where he, be, de, and ke are all positive scalar constants.
+  From Table 9.4.1, the hybrid impedance controller is given by
+
+                                                                           (3)
+
+where a is a 2×1 vector representing the separate position and force control
+strategies, and ␶, J, G, and f are as defined in Example 9.2.1. The torque
+controller given by (3) decouples the robot dynamics in the task space as
+follows:
+
+
+                                                                           (4)
+
+
+therefore, we can easily determine which task space directions should be
+force or position controlled.
+   Applying Definition 9.4.2 to (1) allows us to state that the environmental
+impedance in the task space direction given by v is a resistive impedance;
+therefore, by the duality principle, we will select a position controller that
+utilizes the capacitive manipulator impedance
+
+
+                                                                           (5)
+
+
+where hm, bm, and km are all positive scalar constants. Since the task space
+variable v will be position controlled, we use the notation from (9.4.14) to
+yield
+
+
+
+
+and
+
+
+
+
+Now using (5) and the definition of ap1 given in Table 9.4.1, we can easily
+show that
+
+                                                                           (6)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.4 Hybrid Impedance Control                                                  499
+
+Applying Definition 9.4.3 to (2) allows us to state that the environmental
+impedance in the task space direction given by u is capacitive; therefore, by
+the duality principle, we will select a force controller that utilizes the inertial
+manipulator impedance
+
+                                                                               (7)
+
+where dm is a positive scalar constant. Since the task space variable u will be
+force controlled, we use the notation from (9.4.18) to yield
+
+
+
+
+and
+
+
+
+
+Using (7) and the definition of a f1 given in Table 9.4.1, we can easily show
+that
+
+                                                                               (8)
+
+
+The overall impedance control strategy is obtained by substituting
+
+
+                                                                               (9)
+
+
+into (3), where ap1 and af1 are as given by (6) and (8), respectively.
+                                                                                䊏
+
+
+Implementation Issues
+As mentioned earlier, the manipulator impedance Zm(s) is selected such
+that the duality principle is maintained. However, from a practical point of
+view, Zm(s) should also be selected in the expressions for api and afj such
+that only measurements of f, x, and x are required. In other words, our
+controller should not require acceleration (i.e., x) or force derivative (i.e.,
+f) measurements. We can easily show that the expressions for api and afj
+will not require measurements of f and x if the manipulator impedance is
+selected as
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+500                                                                        Force Control
+
+
+
+
+                              Figure 9.4.4: Hybrid impedance controller.
+
+
+
+
+where h is some positive scalar constant, and Zr is selected to be a proper
+transfer function [Anderson and Spong 1988].
+   As delineated by Table 9.4.1, the hybrid impedance controller requires
+task space force measurements. As stated previously for the hybrid position/
+force controller, a transformation can be used to obtain the task space forces
+for any particular force application. Specifically, the task space forces are
+related to the sensor forces by
+
+
+
+
+where Js(q) is an n×n Jacobian sensor matrix, and fs is an n×1 vector of
+sensor forces.
+   With these implementation concerns in mind, the overall hybrid impedance
+control strategy is depicted in Figure 9.4.4. The feedforward terms in the
+block diagram are used to represent the terms
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.5 Reduced State Position/Force Control                                    501
+
+
+
+
+9.5 Reduced State Position/Force Control
+
+If a rigid manipulator is constrained by a rigid environment, the degrees
+of freedom are reduced because the manipulator end effector cannot
+move through the environment; therefore, one or more degrees of
+freedom with regard to position are lost. Consequently, as the
+manipulator end effector contacts the environmental constraint,
+interaction forces between the end effector and the environment
+(sometimes referred to as constraint forces) develop. This process of
+“reducing” positional freedom while developing constraint forces leads
+one to believe that position/force controllers should be designed
+according to this natural phenomenon.
+   Recently, researchers have begun to formulate a theoretical framework
+[McClamroch and Wang 1988], [Kankaanranta and Koivo 1988] that
+incorporates the effects of the constraint forces into the robot manipulator
+model by utilizing classical results in dynamics. The reasoning for
+postulating that controllers should be designed for a rigid manipulator
+contacting a rigid constraint is that in most force control applications, the
+environment is much more rigid than the manipulator. Therefore, it seems
+unreasonable to assume that the manipulator is rigid while the environment
+is compliant.
+
+
+Effects of Holonomic Constraints on the Manipulator Dynamics
+For the controller given in this section, we assume that the environmental
+constraints are holonomic and frictionless. That is, we assume the existence
+of a constraint function    (a p×1 vector function) in joint-space coordinates
+that satisfies
+
+                                                                        (9.5.1)
+
+The relationship given by (9.5.1) illustrates that the environmental constraints
+are holonomic. The dimension of the constraint function is assumed to be
+less than the number of joint variables (i.e., p<n). For a specific problem, the
+function       is found from the robot kinematics and the environmental
+configuration. To illustrate the holonomic concept, we now present an
+example.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+502                                                               Force Control
+
+EXAMPLE 9.5–1: Holonomic Constraints
+    We wish to formulate the constraint function ␺(q) for the robot/
+    environmental configurations given in Figs. 9.2–5 and 9.2–6. In both of
+    these configurations, the joint space has a dimension of 2 and the constraint
+    function has a dimension of 1 (i.e., the constraint is a one-dimensional
+    surface). For the manipulator system given in Figure 9.2.5, the constraint
+    function is given by
+
+
+
+
+    For the manipulator system given in Figure 9.2.6, the constraint function
+    is given by
+
+
+
+                                                                              䊏
+    For the general n-link robot manipulator with holonomic and frictionless
+    constraints, the constrained robot dynamics can be written in the form
+
+                                                                         (9.5.2)
+
+    where ␭ is a p×1 vector that represents the generalized force multipliers
+    associated with the constraints, and the constraint Jacobian matrix A(q)
+    is a p×n matrix defined by
+
+                                                                         (9.5.3)
+
+    As in [Kankaanranta and Koivo 1988], we will assume that the p columns
+    of AT(q) are linearly independent over the joint space. Also, note that the
+    force variable ␭ is independent of q and q.
+       To motivate the origin of (9.5.2), we reexamine Lagrange’s equation
+
+
+                                                                         (9.5.4)
+
+
+    where the modified Lagrangian for the constrained robot manipulator is
+    given by
+                                                                         (9.5.5)
+
+    Note that the Lagrangian given in (9.5.5) is really the same Lagrangian as
+    given in Chapter 2, since
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.5 Reduced State Position/Force Control                                  503
+
+
+
+
+as required by (9.5.1).
+   From (9.5.4) and (9.5.5), we can see that the structure of the robot
+manipulator dynamic equation is the same for the constrained manipulator
+as for the unconstrained manipulator with the exception of any new terms
+contributed by the substitution of                  in Lagrange’s equation.
+Specifically, the constrained robot manipulator equation given in (9.5.2) is
+obtained by substituting (9.5.5) into (9.5.4) utilizing the identity
+
+
+
+
+Before we develop the reduced-state position/force controller, we explain
+briefly, from a heuristic point of view, how the position and force variables
+have been reduced in dimension. First, note that for the constrained robot
+dynamics given in (9.5.2), the variable ␭ is used to represent the constraint
+forces that should be controlled. Note that the dimension of ␭ is p, which,
+by definition, is less than n. In previous formulations of the environmental
+forces given in this chapter, the dimension of the forces was assumed to be
+equal to n. In this approach we are able to reduce the number of forces
+that must be controlled because we have initially assumed that the constraint
+surface is frictionless. Of course, in reality, surface friction will exist in
+most robot force control applications; however, it is often treated as a
+disturbance because such friction is a function of the applied normal contact
+force.
+   Second, we examine the position constraints on robot motion given by
+(9.5.1). Because ␺ (q)=0 by assumption, we can differentiate (9.5.1)
+withrespect to time to obtain
+
+                                                                       (9.5.6)
+
+where A(q) is defined in (9.5.3). The expression given by (9.5.6) gives a
+concise form for the kinematic velocity constraints. From the position and
+velocity constraints given in (9.5.1) and (9.5.6), we can state that the
+manipulator dynamics belong to the invariant manifold C, in R2n, defined by
+
+
+
+
+That is, the motion of the robot manipulator remains on the manifold defined
+by C. As stated in [McClamroch and Wang 1988], the manifold C is singular
+on R2n; therefore, we can reduce the order of the motion dynamics.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+504                                                              Force Control
+
+Reduced State Modeling and Control
+A robot system consisting of a single n-joint nonredundant manipulator
+constrained by a rigid environment has n-p degrees of motion freedom. Note,
+however, that the joint variable model of a manipulator as given in (9.5.2)
+contains n position variables (q), which, in combination with the p force
+variables (␭), cause the total number of control variables (i.e., states) n+p to
+exceed the number of control inputs n. In this section we show how a variable
+transformation can be used to reduce the states of the dynamical model and
+thereby reduce the number of control variables from n+p to n.
+   A reduced state model can be obtained by representing the manipulator
+dynamics given in (9.5.2) in terms of another set of independent coordinates,
+called the constraint space coordinates, which will be denoted by x. It is
+intended that x be an (n-p)×1 vector of joint space coordinates. That is, x is
+a subset of q.
+   The constrained robot model is reduced by assuming that there exists an
+n×1 vector function g(x) that relates the constraint space vector x [an (n-
+p)×1 vector] to the joint space vector q. This function is given by
+
+                                                                        (9.5.7)
+
+where the function g(x) must be selected such that
+
+
+                                                                        (9.5.8)
+
+
+and such that the n×(n-p) Jacobian matrix ⌺(x) defined as
+
+                                                                        (9.5.9)
+
+contains n-p independent rows along the constraint space motion given by x.
+   Even though the constraint space vector x is of smaller dimension than the
+joint space vector q, one is usually able to find the functional mapping from x
+to q given in (9.5.7). For particular problems, the algebraic relations given by
+the holonomic equation (9.5.1) and the robot kinematics are used to find g(x).
+Also note that the choice of g(x) is nonunique and that the conditions on g(x)
+given by (9.5.8) and on the rows of ⌺(x) are related to the reduced state model.
+Specifically, the condition that ⌺(x) contain n-p independent rows ensures
+that the decoupled model represents n-p independent equations. The condition
+on g(x) given by (9.5.8) is used to ensure that the forces represented by ␭ can
+be decoupled from the constraint space motion represented by x. It should be
+noted that since the constraints are assumed to be holonomic and the matrix
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.5 Reduced State Position/Force Control                                      505
+
+AT(q) is assumed to have p linearly independent columns, we can show that
+both of the conditions above always hold. The reader is referred to
+[McClamroch and Wang 1988] for details.
+  To obtain the reduced state dynamics in terms of the constraint space
+coordinates, we first differentiate (9.5.7) with respect to time to yield
+
+                                                                          (9.5.10)
+
+where Σ(x) is defined in (9.5.9). Differentiating (9.5.10) with respect to time
+gives
+                                                                          (9.5.11)
+
+After substituting q, q, and q, from (9.5.7), (9.5.10), and (9.5.11), respectively,
+into (9.5.2), we obtain the reduced-state model
+
+                                                                          (9.5.12)
+
+where
+
+
+
+
+The significance of the reduced state model given by (9.5.12) is illustrated by
+premultiplying (9.5.12) by ΣT(x) to obtain
+                                                                          (9.5.13)
+
+where
+
+
+
+
+Note that the contact forces in (9.5.12) have been removed as a consequence
+of (9.5.8), which ensures that                   The model given by (9.5.13)
+is useful because the dynamics that govern the motion of the manipulator on
+the constraint surface have been reduced from n differential equations to n-
+p differential equations; furthermore, the motion has been decoupled from
+the contact forces. These two results are important in the design and stability
+analysis of the subsequent position/force controllers.
+    Before the reduced state position/force controller is presented, we give
+some definitions with regard to position/force tracking problems. First, the
+constraint position tracking error is defined as
+
+                                                                          (9.5.14)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+506                                                                 Force Control
+
+We assume that the desired constraint space trajectory and its first two
+derivatives, denoted by xd, xd, and xd, respectively, are all bounded functions.
+We also assume that the desired force multiplier trajectory, ␭d, is a known
+bounded function, from which the corresponding force multiplier tracking
+error variable is defined as
+
+                                                                          (9.5.15)
+
+The reduced state position/force controller is a feedback linearizing controller;
+therefore, exact knowledge of the robot dynamics is required. The reduced
+state controller [McClamroch and Wang 1988] is
+
+
+
+                                                                          (9.5.16)
+where Kv and Kp are diagonal, positive-definite (n-p)×(n-p) matrices, and Kf
+is a diagonal, positive-definite p×p matrix.
+   To determine the type of stability for the position error and force tracking
+error, we substitute (9.5.16) into (9.5.12) to yield
+
+                                                                          (9.5.17)
+
+
+Premultiplying (9.5.17) by ⌺T(x) yields
+                                                                          (9.5.18)
+
+as a consequence of (9.5.8). Because ⌺T(x) contains n-p independent columns
+along the constraint space motion and M(x) is a positive-definite symmetric
+matrix, M* is a positive-definite symmetric matrix. Therefore, we can
+premultiply (9.5.18) by M*-1 to obtain
+
+                                                                          (9.5.19)
+
+Because Kv and Kp are diagonal positive-definite matrices, one can apply
+standard linear control arguments to (9.5.19) to yield
+
+                                                                          (9.5.20)
+
+
+To obtain the stability result for the force tracking error, we substitute (9.5.20)
+into (9.5.17) to yield
+
+                                                                          (9.5.21)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.5 Reduced State Position/Force Control                                         507
+
+where I in (9.5.21) is the p×p identity matrix. Because the p columns of
+AT(x) are assumed to be linearly independent and the composite matrix (I+Kf)
+is a positive-definite, diagonal matrix, we can write (9.5.21) as
+
+                                                                             (9.5.22)
+
+
+As delineated by (9.5.20) and (9.5.22), the reduced state position/force
+controller given in (9.5.16) yields an asymptotic stability result for both
+the constraint position error and force tracking error. The reduced state
+position/force control strategy is summarized in Table 9.5.1. To illustrate
+the concept of reduced state position/force control, we now present an
+example.
+
+
+                      Table 9.5.1: Reduced State Position/Force Controller
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+508                                                                Force Control
+
+EXAMPLE 9.5–2: Reduced State Position/Force Control Along a Slanted
+Surface
+    We wish to formulate a reduced state position/force controller for the
+    robot manipulator system given in Figure 9.2.5. The joint and surface
+    friction may be neglected. As given in Example 9.5.1, the constraint
+    function for this problem is
+
+
+
+
+    therefore, utilizing (9.5.2) and (9.5.3), the robot dynamics on the constraint
+    surface can be written as
+
+                                                                              (1)
+
+    where ␶, M, q, and G are as defined in Example 9.2.1 and
+
+
+                                                                              (2)
+
+
+    For this problem, assume that x=q1; therefore, according to (9.5.7), we
+    must find the function g(x) such that
+
+
+
+
+    From the holonomic constraints, we can easily verify from the kinematic
+    relationships that
+
+
+                                                                              (3)
+
+
+    Utilizing (9.5.9), we can show that
+
+
+                                                                              (4)
+
+
+    therefore, from Table 9.5.1, the reduced state position/force controller is
+    given by
+
+                                                                              (5)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.5 Reduced State Position/Force Control                                      509
+
+    where xd represents the desired trajectory of q1 and ␭d represents the desired
+    force multiplier.
+       For this problem we can easily examine how ␭ is related to the normal
+    force exerted on the surface by equating the expression for the forces in
+    Example 9.2.1 and this example. Specifically, we have
+
+
+                                                                              (6)
+
+
+    where J and f are as defined in Example 9.2.1. Because the surface
+    friction has been neglected (i.e., f2=0 in Figure 9.2.5), we can use (6) to
+    show that
+
+                                                                              (7)
+
+
+    where f1 is defined as the normal force exerted on the surface in Figure
+    9.2.5. Similarly, from the kinematic relationships, we have
+
+                                                                              (8)
+
+
+    where v is defined to be the end-effector position measured along the
+    surface. It should be noted that the relationships given by (7) and (8)
+    would be used for trajectory generation since the position and force
+    control objectives would be formulated in terms of the variables f1 and
+    v. That is, ␭d would be obtained from the desired normal force (i.e., fd1),
+    and qd1 would be obtained from the desired end-effector surface position
+    (i.e., vd).
+
+Implementation Issues
+As delineated by Table 9.5.1, the reduced state position/force controller
+requires measurements of the force variable ␭. As stated previously for the
+hybrid position/force control development, a transformation can be used to
+obtain measurements of ␭ for any particular force application. That is, the
+force variables ␭ are related to the sensor forces by
+
+                                                                         (9.5.23)
+
+where Js (q) is an n×n Jacobian sensor matrix, and fs is an n×1 vector of
+sensor forces. From (9.5.23), p independent equations can be obtained such
+that ␭ is given by
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+510                                                                             Force Control
+
+
+
+
+                       Figure 9.5.1: Reduced state position/force controller.
+
+
+
+where g1(q, fs) is a p×1 vector function that depends only on the measurable
+quantities q and fs.
+   With these implement at ional concerns in mind, the overall reduced order
+position/force control strategy is depicted in Figure 9.5.1. The feedforward
+terms in the block diagram are used to represent the terms
+
+
+
+
+9.6 Summary
+
+In this chapter several position/force control strategies for rigid robots
+have been given. The intent has been to chronicle the evolution of force
+control development. Some new research areas, such as the effects of
+actuator dynamics, sensor dynamics, joint flexibilities, manipulator
+dynamic uncertainty, surface uncertainty, and environmental impact
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+9.6 Summary                                                           511
+
+instability on position/force controller performance are now being studied
+by many researchers. After some of these problems have been solved, one
+can expect to see robot manipulators used more frequently in force control
+applications.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+
+[Anderson and Spong 1988] Anderson, R., and M.Spong, “Hybrid impedance control
+    of robotic manipulators,” J. Robot. Autom., vol. 4, no. 5, pp. 549–556, Oct.
+    1988.
+[Chae et al. 1988] Chae, A., C.Atkeson, and J.Hollerbach, Model-Based Control of a
+    Robot Manipulator. Cambridge, MA: MIT Press, 1988.
+[Hogan 1987] Hogan, N., “Stable execution of contact tasks using impedance control,”
+    Proc. IEEE Int. Conf Robot. Autom., pp. 595–601, Raleigh NC, Mar. 1987.
+[Kankaanranta and Koivo 1988] Kankaanranta, R., and H.Koivo, “Dynamics and
+    simulation of compliant motion of a manipulator,” IEEE Trans. Robot. Autom.,
+    vol. 4, pp. 163–173, Apr. 1988.
+[Lipkin and Duffy 1988] Lipkin, H., and J.Duffy, “Hybrid twist and wrench control
+    for a robot manipulator,” Trans. AS ME J. Median. Transmissions Autom. Design,
+    vol. 110, pp. 138–144, June 1988.
+[McClamroch and Wang 1988] McClamroch, N., and D.Wang, “Feedback
+   stabilization and tracking of constrained robots,” IEEE Trans. Autom. Control,
+   vol. 33, no. 5, pp. 419–426, May 1988.
+[Raibert and Craig 1981] Raibert, M., and J.Craig, “Hybrid position/force control of
+    manipulators,” J. Dyn. Syst. Meas. Control, vol. 102, pp. 126–132, June 1981.
+[Salisbury and Craig 1980] Salisbury, J., and J.Craig, “Active stiffness control of
+     manipulator in Cartesian coordinates,” Proc. 19th IEEE Conf. Decision Control,
+     Dec. 1980.
+[Spong and Vidyasagar 1989] Spong, M., and M.Vidyasagar, Robot Dynamics and
+    Control. New York: Wiley, 1989.
+
+
+
+
+                                                                               513
+Copyright © 2004 by Marcel Dekker, Inc.
+514                                                                 REFERENCES
+
+
+PROBLEMS
+
+Section 9.2
+9.2–1        Find the associated task space Jacobian matrix for the normal and
+             tangent forces exerted on the environmental surface for the
+             manipulator given in Figure 9.2.6 with the new surface function
+             given by
+
+
+
+
+9.2–2        Design and simulate a stiffness controller for the robot manipulator
+             system given in Figure 9.2.5 with the surface function given by
+
+
+
+
+             The control objective is to move the end effector to a desired final
+             position of qd2=0.3 m while exerting a final desired normal force of
+             2 N. Neglect the surface and joint friction and assume that the normal
+             force satisfies the relationship
+
+
+
+
+             where ke=100 N/m, and ue is the static normal distance to the surface.
+             The robot link masses can be assumed to be unity while the initial
+             end-effector position is assume to be given by
+
+
+
+
+Section 9.3
+9.3–1        Since the position and force error systems for the hybrid position/
+             force control strategies are linear, discuss how the selection of the
+             controller gains can be used to change the performance of the
+             manipulator end effector.
+
+9.3–2        Design and simulate a hybrid position/force controller for the robot
+             manipulator system given in Figure 9.2.5 with the surface function
+             given
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                        515
+
+             The control objective is to move the end effector along the surface
+             with trajectory
+
+
+
+
+             while exerting a desired normal force of
+
+
+
+
+             Neglect the surface and joint friction and assume that the normal
+             force satisfies the relationship
+
+
+
+
+             where ke=1000 N/m, and ue is the static normal distance to the
+             surface. The robot link masses can be assumed to be unity while the
+             initial end-effector position is assumed to be given by
+
+
+
+
+9.3–3        Explain why the hybrid position/force control strategy is really a
+             positional control strategy.
+
+
+Section 9.4
+9.4–1        Suppose that for force or position control, the manipulator
+             impedance is selected to be
+
+
+
+
+             where h is positive scalar constant, and Zr(s) is a proper stable transfer
+             function. With the manipulator impedance above, show that the
+             hybrid impedance controller will only require measurements of the
+             joint position, joint velocity, and contact force.
+
+9.4–2        Design a hybrid impedance controller for the robot manipulator
+             system given in Figure 9.2.5 with the surface function given by
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+516                                                                    REFERENCES
+
+             Neglect the surface and joint friction and assume that the normal
+             force and tangent force satisfies the relationship
+
+
+
+
+             where ke=10 N/m, be=1 N-s/m, and ue is the static normal distance
+             to the surface.
+
+9.4–3        Explicitly show how Table 9.4.1 can be used to find equation (6) in
+             Example 9.4.1.
+
+
+Section 9.5
+9.5–1        Design a reduced state controller for the robot manipulator system
+             given in Figure 9.2.6.
+
+9.5–2        For the controller developed in Problem 9.5–1, show how the normal
+             force (i.e., f1) is related to the force multiplier (i.e., ␭), and how the
+             reduced motion variable (i.e., x) is related to the motion along the
+             surface (i.e., v).
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

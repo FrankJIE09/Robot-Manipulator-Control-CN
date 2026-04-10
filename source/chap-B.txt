@@ -1,0 +1,110 @@
+Appendix B
+
+Software for Controller
+Simulation
+An excellent way to gain an intuitive feel for control systems design and
+performance is to perform computer simulations. It is conceptually a short
+step from simulation to actual implementation, since the subroutines that are
+used on today’s digital signal processors are very similar to those used for
+simulation. This appendix contains the software used in the text for robot
+controller simulation.
+   There are some good software packages available for design and simulation
+of systems, and one should be aware of them and employ them. Examples are
+MATLAB, MATRIXX, Program CC, SIMNON, and so on. However, it is
+very instructive to use one’s own software during the learning phase, especially
+since it is sometimes not clear exactly what is going on in some of these
+packages when dealing with digital control.
+   For the time-response simulation of continuous systems, a Runge-Kutta
+integrator works very well. In Figure B.1.1 is shown program TRESP, which
+uses a fourth-order Runge-Kutta subroutine to implement the simulation
+procedure discussed in Section 3.3. It integrates linear or nonlinear systems in
+the state-variable form
+
+
+
+In Section 2.4 we showed how to place the robot dynamics into this form.
+Note that MATLAB’s functions ode 23 and ode 45 are adaptive step size
+Runge-Kutta integrators that need the same form for the dynamics.
+   TRESP requires a subroutine F(time, x, xp), which computes x (denoted
+
+
+                                                                            591
+Copyright © 2004 by Marcel Dekker, Inc.
+592                                         Software for Controller Simulation
+
+
+
+xp, or “x prime”) from the current state x(t) and control input u(t). The control
+u(t) and any outputs of the form
+
+
+
+   are placed into COMMON storage [e.g., u(t) can be computed outside
+F(time, x, xp), and y(t) is needed for plotting in TRESP]. Samples of the use of
+TRESP are given in examples throughout the book.
+   A parameter array PAR( ) in common makes it easy to perform successive
+runs with different parameter values (e.g., PD gains). A time delay can be
+injected into the continuous dynamics if desired (e.g., using a ring buffer).
+   It is important to realize the following. To update x(kTR) to x((k+ 1)TR),
+the Runge-Kutta integrator calls subroutine F(time, x, xp) four times during
+each Runge-Kutta integration period TR. During these four calls, the control
+input should be held constant at u(kTR). Using subroutine SYSINP to compute
+u(kTR) accomplishes this.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+                                          593
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+594                                       Software for Controller Simulation
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+                                                                           595
+
+
+
+
+Figure B.1–1: Program TRESP for time response of nonlinear continuous systems.
+
+
+   For digital control simulation, TRESP needs subroutine DIG(IK, T, x),
+which contains the discrete controller equations; it is called once in every
+sample period T. The time TR should be selected as an integral divisor of T.
+Five or 10 Runge-Kutta periods within each sample period is usually sufficient.
+   The program also allows digital filtering (e.g., for reconstruction of ve-
+locity estimates from joint position encoder measurements). Note that for
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+596                                          Software for Controller Simulation
+
+digital controls purposes, subroutine DIG is called before the Runge-Kutta
+routine, while for digital filtering, DIG is called after the call to Runge-Kutta.
+   For some systems the Runge-Kutta integrator in the figure may not work;
+then an adaptive step-size Runge-Kutta routine (e.g., Runge-KuttaFehlburg)
+can be used [Press et al. 1986]. (Note: The program given here works for all
+examples in the book.)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCE
+
+[Press et al. 1986] Press, W.H., Flannery, B.P., Teukolsky, S.A., and
+    Vetterling, W.T., Numerical Recipes. New York: Cambridge University
+    Press, 1986.
+
+
+
+
+                                                                   597
+Copyright © 2004 by Marcel Dekker, Inc.

@@ -1,0 +1,2266 @@
+Chapter 6
+
+Adaptive Control of
+Robotic Manipulators
+In this chapter adaptive controllers are formulated by separating unknown
+constant parameters from known functions in the robot dynamic equation.
+The type of stability for each adaptive control strategy is discussed at length
+to motivate the formulation of the controllers. Some issues regarding
+parameter error convergence, persistency of excitation, and robustness are
+also discussed.
+
+
+6.1 Introduction
+The problem of designing adaptive control laws for rigid-robot manipulators
+that ensure asymptotic trajectory tracking has interested researchers for many
+years. The development of effective adaptive controllers represents an
+important step toward high-speed/precision robotic applications. Even in a
+well-structured industrial facility, robots may face uncertainty regarding the
+parameters describing the dynamic properties of the grasp load (e.g., unknown
+moments of inertia). Since these parameters are difficult to compute or
+measure, they limit the potential for robots to manipulate accurately objects
+of considerable size and weight. It has recently been recognized that the
+accuracy of conventional approaches in high-speed applications is greatly
+affected by parametric uncertainties.
+   To compensate for this parametric uncertainty, many researchers have
+proposed adaptive strategies for the control of robotic manipulators. An
+advantage of the adaptive approach over the robust control strategies
+discussed in Chapter 5 is that the accuracy of a manipulator carrying unknown
+
+                                                                           329
+Copyright © 2004 by Marcel Dekker, Inc.
+330                                       Adaptive Control of Robotic Manipulators
+
+loads improves with time because the adaptation mechanism continues
+extracting information from the tracking error. Therefore, adaptive controllers
+can give consistent performance in the face of load variations.
+   It is only recently that adaptive control results have included rigorous
+proofs for global convergence of the tracking error. Now that the existence
+of globally convergent adaptive control laws has been established, it is difficult
+to justify control schemes based on approximate models, local linearization
+techniques, or slowly time varying assumptions. In the control literature
+there also seems to be no general agreement as to what constitutes an adaptive
+control algorithm; therefore, in this chapter, the discussion will be limited to
+control schemes that explicitly incorporate parameter estimation in the control
+law.
+
+
+6.2        Adaptive Control by a Computed-Torque
+           Approach
+In Chapter 3 we motivated the use of the computed-torque control law for
+controlling the robotic manipulator dynamics given by
+
+                                                                           (6.2.1)
+
+This motivation was actually quite simple. Specifically, if there are some
+nonlinear dynamics which one does not wish to deal with, one can change
+the nonlinear control problem to a linear control problem by directly canceling
+the nonlinearities. There is a wealth of available knowledge for controlling
+linear systems; therefore, if exact knowledge of the robot model is available,
+there is not much need for sophisticated nonlinear control techniques.
+
+
+Approximate Computed-Torque Controller
+Of course, in reality, we never have exact knowledge of the robot model due
+to many problems associated with model formulation. Two common
+uncertainties that do not allow exact model cancellation in robotic
+applications are unknown link masses due to payload disturbances and
+unknown friction coefficients. One way of dealing with these types of
+parametric uncertainties would be to use the computed-torque controller
+given in Chapter 3 with some fixed estimate of the unknown parameters in
+place of the actual parameters. This approximate computed-torque controller
+would have the form
+
+                                                                           (6.2.2)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.2 Adaptive Control by a Computed-Torque Approach                       331
+
+where the superscript “ˆ” denotes the estimated dynamics with the unknown
+actual parameters replaced by the parameter estimates, Kv and Kp are control
+gain matrices, qd is used to denote the desired trajectory, and the tracking
+error e is defined by
+
+                                                 e=qd-q.
+
+We now illustrate the approximate computed-torque controller by examining
+an example.
+
+EXAMPLE 6.2–1: Approximate Computed-Torque Controller
+    We wish to design and simulate an approximate computed-torque
+    controller for the two-link arm given in Figure 6.2.1 (see Chapter 2 for
+    the two-link revolute robot arm dynamics). Assuming that the friction is
+    negligible, the link lengths are exactly known, and the masses m1 and m2
+    are known to be in the regions 0.8±0.05 kg and 2.3±0.1 kg, respectively,
+    a possible approximated computed-torque controller can be written as
+
+
+
+
+                                    Figure 6.2.1: Two-link planar arm.
+
+
+
+
+                                                                         (1)
+
+
+
+
+                                                                         (2)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+332                                       Adaptive Control of Robotic Manipulators
+
+where l1=l2=1 m and g is the gravitational constant. We choose 1=0.85 kg
+and 2=2.2 kg since the actual values are assumed to be unknown. After
+substituting the control law above into the two-link robot dynamics, we can
+form the error system
+
+                                                                                    (3)
+
+
+where -1 (q) is the inverse of the inertia matrix M(q) with m1 and m2 replaced
+by 1, and 2, respectively. The matrix W(q, , ), sometimes called the
+regression matrix [Craig 1985], is a 2×2 matrix given by
+
+
+                                                            ,                       (4)
+
+
+where
+
+
+
+
+The vector            called the parameter error vector, is a 2×1 vector given by
+
+
+                                                                                    (5)
+
+
+where
+
+
+
+
+and
+
+
+
+
+The associated tracking error 2×1 vector and 2×2 gain matrices in (3) are
+given by
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.2 Adaptive Control by a Computed-Torque Approach                            333
+
+
+
+
+   We cannot use the error system (3) to select the values for Kv and Kp with
+standard linear control methods since the right-hand side of the error system
+is composed of nonlinear functions of q, , and . For the approximate
+computed-torque controller, simulation can be used to select the appropriate
+values for Kv and Kp. A good starting point for selecting the values of Kp and
+Kv for the approximate computed-torque controller is to use the same values,
+as the computed-torque scheme would dictate, for a given desired damping
+ratio and natural frequency.
+
+For m1=0.8 kg and m2=2.3 kg, the approximate computed torque controller
+(1)–(2) was simulated with q(0)= (0)=0, with the controller gains set at
+
+
+                                                                                (6)
+
+
+and with a desired trajectory of
+
+                                          qd1=qd2=sin t.                        (7)
+
+   The tracking error is depicted in Figure 6.2.2. As illustrated by these figures,
+the tracking error remains bounded rather than going to zero. The reason
+for this type of bounded tracking error performance is that the error system
+given by (3) is constantly being excited by the dynamics on the right-hand
+side of (3).
+                                                                                 䊏
+
+Adaptive Computed-Torque Controller
+For unknown parametric quantities such as link masses or friction coefficients,
+the approximate computed-torque controller simply substitutes a fixed estimate
+   for the unknown parametric quantities. From Equation (3) in Example
+6.2.1, one can clearly see that if the parameter error vector is equal to zero,
+the tracking error can be shown to be asymptotically stable. For many
+applications, we cannot assume that is equal to zero. For example, in the
+case of an unknown payload mass attached to the end effector of a robot,
+there will always be an unknown parametric quantity related to the payload
+mass that would appear in the parameter error vector.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+334                                       Adaptive Control of Robotic Manipulators
+
+
+
+
+          Figure 6.2.2: Simulation of approximate computed-torque controller.
+
+
+
+   The adaptive control strategy can, heuristically, be motivated by reasoning
+that one could expect better tracking performance if the parameter estimate
+was adjusted as the robot manipulator moves instead of always being a fixed
+quantity. That is, it seems reasonable to attempt to change our parameter
+estimates based on an adaptive update rule that would be a function of the
+robot configuration and the tracking error. The question then becomes: How
+do we formulate an adaptive control strategy, and how does this adaptive
+update rule affect the stability of the tracking error? The answer to both of
+these questions is that the adaptive update rule is formulated from the stability
+analysis of the tracking error system. That is, we ensure stability of the tracking
+error system by formulating the adaptive update rule and by analyzing the
+stability of the tracking error system at the same time.
+   The first adaptive control strategy that we will examine is the method
+outlined in [Craig 1985]. The adaptive computed-torque controller is the
+same as the approximate computed-torque controller (6.2.2) with the addition
+of an adaptive update rule for adjusting the parameter estimates. This adaptive
+controller is based on the fact that the parameters appear linearly in the
+robot model (see Chapter 2). That is, the robot dynamics (6.2.1) can be
+written in the form
+
+                                                                                (6.2.3)
+
+where W(q, , ) is an n×r matrix of known time functions and is an r×1
+vector of unknown constant parameters. This property is crucial for the type
+of adaptive control that Craig formulated in that it illustrates the separation
+of unknown parameters and the known time functions. The reason that the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.2 Adaptive Control by a Computed-Torque Approach                        335
+
+robot dynamics can be separated in this form is that the robot dynamics are
+linear in the parameters expressed in the vector form . This separation of
+unknown parameters and known time functions will be used in the
+formulation of the adaptive update rule and also in the stability analysis of
+the tracking error system.
+   The first step in the study of the adaptive computed-torque controller is
+to form the tracking error system. Note that, by using (6.2.3), we may write
+the robot dynamic Equation given by (6.2.1) as
+
+                                                                       (6.2.4)
+
+From [Craig 1985], the adaptive computed-torque controller is given by
+
+                                                                       (6.2.5)
+
+It is easy to see from our definition of the tracking error how (6.2.5) can be
+written as
+
+                                                                      (6.2.6)
+
+By utilizing (6.2.3), (6.2.6) can be written as
+
+                                                                       (6.2.7)
+
+where is an n×1 vector used to represent a time-varying estimate of the
+unknown constant parameters. Substituting (6.2.7) into (6.2.4), we can form
+the tracking error system
+
+                                                                       (6.2.8)
+
+where the parameter error is
+
+                                                                       (6.2.9)
+
+Now for convenience, rewrite (6.2.8) in the state-space form
+
+                                                                      (6.2.10)
+
+where the tracking error vector is
+
+
+
+
+and
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+336                                       Adaptive Control of Robotic Manipulators
+
+
+
+
+with In being the n×n identity matrix, and On being the n×n zero matrix.
+   Now that the tracking error system has been formed, we use Lyapunov
+stability analysis (see Chapter 1) to show that the tracking error vector e is
+asymptotically stable with the right choice of adaptive update law. We first
+select the positive-definite Lyapunov-like function
+
+                                                                          (6.2.11)
+
+where P is a 2n×2n positive-definite, constant, symmetric matrix, and Γ is a
+diagonal, positive-definite r×r matrix. That is, Γ can be written as
+
+
+
+where the γi’s are positive scalar constants.
+  Differentiating (6.2.11) with respect to time yields
+
+                                                                          (6.2.12)
+
+It is important to note in (6.2.12) that we have used the fact that
+
+                                                                          (6.2.13)
+
+since Γ=ΓT. (Note that a scalar quantity can always be transposed.) Now,
+substituting for e from (6.2.10) into (6.2.12) yields
+
+
+
+                                                                          (6.2.14)
+
+
+Combining terms in (6.2.14) and using the scalar transportation property
+gives
+
+                                                                          (6.2.15)
+
+
+where Q is a positive-definite, symmetric matrix that satisfies the Lyapunov
+equation
+
+                                                                          (6.2.16)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.2 Adaptive Control by a Computed-Torque Approach                            337
+
+    From Chapter 1 we note that for stability, it is always desirable to have
+at least negative semidefinite; therefore, the choice of adaptation update rule
+becomes obvious. Specifically, by substituting
+
+                                                                         (6.2.17)
+
+(6.2.15) becomes
+
+                                                                         (6.2.18)
+
+   To determine explicitly the type of stability, we must do further analysis;
+however, note first that (6.2.17) gives the adaptive update rule for the parameter
+estimate vector since is equal to zero. That is, by recalling that the actual
+unknown parameters are constant, we can substitute (6.2.9) into (6.2.17) to
+obtain the adaptive update rule:
+
+                                                                         (6.2.19)
+
+for the parameter estimate vector .
+    Before examining the type of stability for the tracking error system, we
+note that Craig modified the adaptation update rule in (6.2.19) to prevent a
+circular argument in the stability analysis [Craig 1985]. Specifically, the
+parameter estimates are forced to remain within some known region. That is,
+if parameter estimates drift out of a known region, they are reset to within a
+known region. By resetting the parameter estimates in “software,” we are
+guaranteed that the parameter estimates remain bounded.
+    We now detail the stability for the tracking error. Since      is negative
+semidefinite and V is lower bounded by zero, V remains upper bounded in the
+time interval [O, ∞); furthermore,
+
+                                                                         (6.2.20)
+
+where V∞ is a positive scalar constant. Since V is upper bounded, it is obvious
+from the definition of V given in (6.2.11) that e and are bounded, which
+also means that q, and are bounded. Note that we have already assumed
+that is bounded, and we will always assume that the desired trajectory and
+its first two derivatives are bounded.
+    Now, from the robot Equation (6.2.1), it is clear that
+
+                                                                         (6.2.21)
+
+therefore, is bounded since and τ depend only on the bounded quantities
+q, , and . If is bounded, (6.2.10) shows that is bounded. Since is
+bounded, we can state from (6.2.18) that is bounded. Therefore, since V is
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+338                                        Adaptive Control of Robotic Manipulators
+
+lower bounded by zero, is negative semidefinite, and             is bounded, then by
+Barbalat’s lemma (see Chapter 1),
+
+
+
+
+which means that by the Rayleigh-Ritz Theorem (see Chapter 1)
+
+
+                                                                            (6.2.22)
+
+
+
+                       Table 6.2.1: Adaptive Computed-Torque Controller
+
+
+
+
+   The information given in (6.2.22) informs us that the tracking error vector
+e is asymptotically stable. But what of the parameter error ? Does it also
+converge to zero? From our analysis, all we can say about the parameter
+error is that it remains bounded if -1(q) exists. Indeed, this places a restriction
+on the parameter update law given in (6.2.19). That is, we must use the
+parameter resetting method discussed earlier to ensure that poor parameter
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.2 Adaptive Control by a Computed-Torque Approach                                339
+
+
+
+
+        Figure 6.2.3: Block diagram of the adaptive computed-torque controller.
+
+
+
+estimates do not cause the inverse of      (q) to explode. In [Craig 1985] a
+possible method for ensuring that the parameter estimates and -1(q) remain
+bounded is outlined; furthermore, he shows how this method does not interfere
+with the stability result delineated by (6.2.22). We will not discuss this
+parameter estimate resetting method and the resulting stability proof since we
+will show later in this chapter how Slotine and Li used a more judicious
+choice of Lyapunov function to remove the need for resetting the parameter
+estimates, and at the same time remove the need for acceleration measurements
+in the regression matrix W (q, , )! The adaptive computed-torque controller
+is summarized in Table 6.2.1 and depicted in Figure 6.2.3.
+    We now present an example to illustrate how Table 6.2.1 can be used to
+generate adaptive controllers for robotic manipulators.
+
+EXAMPLE 6.2–2: Adaptive Computed-Torque Controller
+    It is desired to design and simulate the adaptive computed-torque
+    controller given in Table 6.2.1 for the two-link arm given in Figure 6.2.1.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+340                                       Adaptive Control of Robotic Manipulators
+
+Assuming that the friction is negligible and that the link lengths are exactly
+known, the adaptive computed-torque controller can be written in the same
+form as that given in Example 6.2.1, with the exception that we must find
+the update rules for 1 and 2. That is, we use Equations (1) and (2) in
+Example 6.2.1 for the joint torque control and then formulate the update rule
+for m1 and m2 according to Table 6.2.1.
+
+For simplicity, in this example we select the servo gains as
+
+                                                                               (1)
+
+where kv and kp are positive, scalar constants and for this case In is the
+2×2 identity matrix. We propose that the matrix P in Table 6.2.1 be
+selected as
+
+
+                                                                               (2)
+
+
+Note that P is symmetric, and that it is positive definite if kv is selected
+to be greater than 1 (see the Gerschgorin Theorem in Chapter 1). To
+see if our selection of P gives a positive-definite Q, perform the matrix
+operation
+
+                                                                               (3)
+
+
+
+                                                                               (4)
+
+
+Since we have already restricted kv>1, it can be verified that Q is a positive
+definite, symmetric matrix. We note here that the process of finding a positive
+definite, symmetric P and Q for the general Lyapunov approach is not always
+an easy task.
+
+Now that we have found an appropriate P, we can formulate the adaptive
+update rule given in Table 6.2.1. The associated parameter estimate vector is
+
+
+
+
+with update rules
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.3 Adaptive Control by an Inertia-Related Approach                          341
+
+
+
+                                                                              (5)
+
+
+and
+
+
+                                                                              (6)
+
+
+where
+
+
+
+
+the Pi’s are defined in (2), and the quantities forming the regression matrix
+Wii’s are found in Example 6.2.1.
+    For m1=0.8 kg and m2=2.3 kg, this adaptive computed-torque controller
+was simulated with kv=50, kp=125, γ1=500, γ2=500, 1 (0)=0.85, 2(0)=2.2,
+and with the same desired trajectory and initial joint conditions used in Example
+6.2.1. The tracking error and mass estimates are depicted in Figure 6.2.4. As
+illustrated by this figure, the tracking error goes to zero, and the parameter
+estimates remain bounded as predicted by the theory. Note that we did not
+take any special precautions in this simulation to ensure the existence of -
+1
+  (q). We could have developed some sort of procedure to guarantee that -
+1
+  (q) existed; however, this is not really needed since we show in the next
+section how to eliminate this restriction.
+                                                                               䊏
+
+
+6.3        Adaptive Control by an Inertia-Related
+           Approach
+
+In Section 6.2 we showed how adaptive control can be used to compensate
+for parametric uncertainties. This led Craig to develop the adaptive
+computed-torque controller. We also gave the two restrictions required for the
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+342                                       Adaptive Control of Robotic Manipulators
+
+
+
+
+           Figure 6.2.4: Simulation of the adaptive computed-torque controller.
+
+
+
+implementation of the adaptive computed-torque controller [i.e., the need for
+measuring and ensuring that -1(q) exists]. Both of these restrictions can be
+quite cumbersome. For example, most industrial robots have only position
+and velocity sensors, and since differentiation of velocity is not desirable in
+general, we must add additional costly sensors for measuring .
+Furthermore, if large, unknown payloads relative to the manipulator’s weight
+are being lifted by the manipulator, it may be extremely difficult to ensure
+that -1(q) exists.
+   After researchers reexamined the structure of the adaptive computedtorque
+controller, they began to wonder if all the available information about the
+robot manipulator was being used in designing adaptive control schemes.
+That is, are all the properties inherent to a mechanical manipulator being
+exploited? In [Arimoto and Miyazaki 1986] a proportionalderivative (PD)
+feedback controller with gravity compensation is proposed. It should be noted
+that this controller is not a product of the feedback linearization approach.
+Rather, this controller employs an inertia-related Lyapunov function in the
+stability analysis which utilizes physical properties inherent to a mechanical
+manipulator. After reexamining the adaptive computed-torque controller,
+one can see that the Lyapunov function used in the stability analysis is not
+inertia-related but is somewhat arbitrary.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.3 Adaptive Control by an Inertia-Related Approach                         343
+
+Examination of a PD Plus Gravity Controller
+One method [Slotine 1988] of motivating a PD plus gravity controller [Arimoto
+and Miyazaki 1986] is to write the manipulator dynamics in the conservation-
+of-energy form
+
+                                                                         (6.3.1)
+
+where the left-hand side of (6.3.1) is the derivative of the manipulator kinetic
+energy, and the right-hand side of (6.3.1) represents the power supplied from
+the actuators minus the power dissipated due to gravity and friction. Note
+that the Coriolis and centripetal terms are accounted for in (6.3.1) since
+these terms are related to the time derivative of the inertia matrix.
+   Suppose that we now want to design a constant set-point controller (i.e.,
+  d=0) for the system given in the conservation of energy form (6.3.1). To
+begin, we select the inertia-related Lyapunov function
+
+                                                                         (6.3.2)
+
+Since a Lyapunov function can be thought of heuristically as an energy function,
+this Lyapunov function seems quite reasonable. That is, the Lyapunov function
+is composed of the kinetic energy of the robotic manipulator system
+and an additional energy damping term                   . This energy damping
+term can be thought of as using physical springs so that the manipulator will
+be better behaved.
+    Differentiating (6.3.2) with respect to time yields
+
+                                                                        (6.3.3)
+
+Substituting (6.3.1) into (6.3.3), we have
+
+                                                                        (6.3.4)
+
+since we are solving the set-point control problem. Since it is desirable for
+to be at least negative semidefinite, the control
+
+                                                                         (6.3.5)
+
+is motivated by the form of (6.3.4). That is, substituting (6.3.5) into (6.3.4)
+yields
+
+                                                                        (6.3.6)
+
+  The analysis above illustrates that V is decreasing for all time except for
+equal to zero. We now use this information to illustrate that the desired set
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+344                                       Adaptive Control of Robotic Manipulators
+
+point qd is achieved. That is, if =0, then =0, and =0; hence therefore, for
+  = =0, we can utilize (6.2.1) and (6.3.5) to write the closed-loop system in
+the form Kpe=0, which implies that e=0. From Chapter 1, LaSalle’s Theorem
+can now be used to show that the tracking error e is asymptotically stable.
+
+Adaptive Inertia-Related Controller
+Although the controller given in (6.3.5) utilizes the conservation of energy
+property, it has two disadvantages. First, the controller merely ensures that
+the manipulator reaches a desired set point. In general, a robot control designer
+must ensure that the manipulator tracks a desired time-varying trajectory.
+Second, the controller requires exact knowledge of any parameters associated
+with the robot manipulator model since the gravity and friction terms are
+included in the control law (6.3.5).
+   In [Slotine and Li 1985 (a)] the conservation of energy formulation given
+in (6.3.1) is exploited to design an adaptive controller for the trajectory-
+following problem. This controller can be motivated in much the same way
+as our treatment of the PD plus gravity controller. In other words, we use the
+stability analysis to guide us in finding an adaptive controller. Since we are
+designing an adaptive trajectory-following controller, we should select a
+Lyapunov function that is a function of the tracking error and the parameter
+error. Slotine selected the inertia-related Lyapunov-like function
+
+                                                                           (6.3.7)
+
+where
+
+                                                                           (6.3.8)
+
+with Γ defined as in (6.2.11), Λ defined as positive-definite, diagonal matrix
+such that
+
+
+
+
+and defined as in (6.2.9). The auxiliary signal r(t) given in (6.3.8) may be
+considered as a filtered tracking error.
+  After differentiating (6.3.7) with respect to time, we have
+
+                                                                           (6.3.9)
+
+From (6.3.9) it is clear that we must substitute for the variable ; therefore,
+we must write the robot equation in terms of the variable r. Using (6.2.1), the
+robot dynamics can be rewritten as
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.3 Adaptive Control by an Inertia-Related Approach                           345
+
+                                                                          (6.3.10)
+
+where
+
+                                                                         (6.3.11)
+
+and Y(·) is an n×r matrix of known time functions. This is the same type of
+parametric separation that was used in the formulation of the adaptive
+computed-torque controller; however, note that Y(·) is not a function of joint
+acceleration !
+   Substituting (6.3.10) into (6.3.9) gives
+
+                                                                         (6.3.12)
+
+Applying the skew-symmetric property (see Chapter 2), we can write (6.3.12)
+as
+
+                                                                          (6.3.13)
+
+Again, the stability analysis has guided us to a choice of torque controller
+and adaptive update rule. That is, if we select the torque control to be
+
+                                                                          (6.3.14)
+
+(6.3.13) becomes
+
+                                                                          (6.3.15)
+
+By selecting the adaptive update rule as
+
+                                                                          (6.3.16)
+
+(6.3.15) becomes
+
+                                                                          (6.3.17)
+
+   We now detail the type of stability for the tracking error. First, since in
+(6.3.17) is negative semidefinite, we can state that V in (6.3.7) is upper bounded.
+Using the facts that V is upper bounded and that M(q) is a positive-definite
+matrix (see Chapter 2), we can state that r and are bounded. From the
+definition of r given in (6.3.8), we can use standard linear control arguments
+to state that e and (and hence q and ) are bounded. Since e, , r, and
+are bounded, we can use (6.3.10) and (6.3.14) to show that (and hence
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+346                                       Adaptive Control of Robotic Manipulators
+
+obtained by differentiating (6.3.17)) is bounded. Second, note that since M(q)
+is lower bounded, we can state that V given in (6.3.7) is lower bounded. Since
+   is lower bounded, V is negative semidefinite, and is bounded, we can use
+Barbalat’s lemma (see Chapter 1) to state that
+
+                                                                          (6.3.18)
+
+
+which means that by the Rayleigh-Ritz Theorem (see Chapter 1)
+
+                                                                          (6.3.19)
+
+
+Note that (6.3.8) is a stable first-order differential equation driven by the
+“input” r; therefore, by standard linear control arguments and (6.3.19), we
+can write
+
+                                                                          (6.3.20)
+
+   This result informs us that the tracking errors e and are asymptotically
+stable. Again, from the analysis above, all we can say about the parameter
+error is that it remains bounded. Later, we will show that the parameter
+error also converges to zero under certain conditions on the desired trajectory.
+The adaptive controller derived above is summarized in Table 6.3.1 and
+depicted in Figure 6.3.1.
+
+After glancing through Table 6.3.1, we can see that the restrictions with regard
+to the adaptive computed-torque controller have been removed. Specifically,
+for the adaptive inertia-related controller, we do not require measurements of
+acceleration or any ad hoc adjustment of the parameter estimates to ensure
+  -1
+     (q) that exists.
+   We now present an example to illustrate how Table 6.3.1 can be used to
+design adaptive controllers for robotic manipulators.
+
+EXAMPLE 6.3–1: Adaptive Inertia-Related Controller
+    We wish to design and simulate the adaptive inertia-related controller given
+    in Table 6.3.1 for the two-link arm given in Figure 6.2.1. Assuming that
+    the friction is negligible and the link lengths are exactly known, the adaptive
+    inertia-related torque controller can be written as
+
+                                                                                (1)
+
+and
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.3 Adaptive Control by an Inertia-Related Approach                                 347
+
+                          Table 6.3.1: Adaptive Inertia-Related Controller
+
+
+
+
+          Figure 6.3.1: Block diagram of the adaptive inertia-related controller.
+
+
+
+                                                                                    (2)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+348                                       Adaptive Control of Robotic Manipulators
+
+     In the expression for the control torques, the regression matrix Y(·) is given
+by
+
+
+                                                                                (3)
+
+
+where
+
+                                                                                (4)
+
+
+
+
+                                                                                (5)
+
+
+
+
+                                                                                (6)
+
+and
+
+
+                                                                                (7)
+
+
+  Formulating the adaptive update rule as given in Table 6.3.1, the associated
+parameter estimate vector is
+
+
+
+
+with the adaptive update rules
+
+                                                                               (8)
+
+and
+
+                                                                               (9)
+
+   For m1=0.8 kg and m2=2.3 kg, the adaptive inertia-related controller was
+simulated with kv1=kv2=10, λ1=λ2=2.5, λ1=λ2=20, 1(0)=0, 2(0)=0, and with
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.4 Adaptive Controllers Based on Passivity                                         349
+
+the same desired trajectory and initial joint conditions as given in Example
+6.2.1. The tracking error and mass estimates are depicted in Figure 6.3.2. As
+illustrated by the figure, the tracking error is asymptotically stable, and the
+parameter estimates remain bounded.
+                                                                                     䊏
+
+
+
+
+             Figure 6.3.2: Simulation of the adaptive inertia-related controller.
+
+
+
+
+6.4 Adaptive Controllers Based on Passivity
+
+In recent years, many authors have developed adaptive control schemes that
+are different with regard to the torque control law or the adaptive update
+rule. To unify some of the approaches, general adaptive control strategies
+have been developed based on the passivity approach (see [Ortega and Spong
+1988] and [Brogliato et al. 1990]). In this section we illustrate how the
+passivity approach can be used to develop a class of torque control laws and
+adaptive update rules for the control of robot manipulators.
+
+Passive Adaptive Controller
+First, we define an auxiliary filtered tracking error variable that is similar
+to that defined for the adaptive inertia-related controller. That is, we define
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+350                                       Adaptive Control of Robotic Manipulators
+
+our tracking variable to be
+
+                                                                           (6.4.1)
+
+where
+
+
+                                                                           (6.4.2)
+
+
+and s is the Laplace transform variable. In (6.4.2), the n×n gain matrix K(s) is
+chosen such that H(s) is a strictly proper, stable transfer function matrix. The
+reason for this restriction on H(s) will be clear after we analyze the stability
+of the adaptive controller that is presented later in this section.
+
+As in the preceding sections, our adaptive control strategies have been centered
+around the ability to separate the known time functions from the unknown
+constant parameters. Therefore, we use the expressions given in (6.4.1) and
+(6.4.2) to define
+
+
+
+                                                                           (6.4.3)
+
+
+
+where in this control formulation, Z(·) is a known n×r regression matrix.
+[Note the standard abuse of notation in (6.4.3), where K(s)e is used to
+represent the inverse Laplace transform of K(s) convolved with e(t).] It is
+important to note that K(s) can be selected so that Z(·) and r do not depend
+on measurement of . Indeed, if K(s) is selected such that H(s) has a relative
+degree of 1 [Kailath 1980], Z(·) and r will not depend on .
+   The adaptive control formulation given in this section is called the passivity
+approach because the mapping of -r → Z(.) is constructed to be a passive
+mapping. That is, we construct an adaptive update rule such that
+
+
+                                                                           (6.4.4)
+
+
+is satisfied for all time and for some positive scalar constant ß. This passivity
+concept is used in analyzing the stability of the error system, as we shall
+show. However, for now let us illustrate the use of (6.4.4) in generating an
+adaptive update rule.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.4 Adaptive Controllers Based on Passivity                                351
+
+EXAMPLE 6.4–1: Adaptive Update Rule by Passivity
+    Let us show that the adaptive update rule
+
+                                                                            (1)
+
+    satisfies the inequality given by (6.4.4). Note that G is defined as in
+    (6.2.11).
+       First rewrite (1) in the form
+
+                                                                            (2)
+
+    where we have used the fact that G is a diagonal matrix. Substituting (2)
+    into (6.4.4) gives
+
+
+                                                                            (3)
+
+
+    Since Γ is a constant matrix, we can use the product rule to rewrite (3) as
+
+
+                                                                            (4)
+
+
+    or
+
+                                                                            (5)
+
+    From (5) it is now obvious that if ß is selected as
+
+                                                                            (6)
+
+    then the passivity integral given in (6.4.4) is satisfied for the adaptive
+    update rule given in (1).
+                                                                             䊏
+
+Now that we have a feeling for how the passivity integral (6.4.4) can be used
+to generate adaptive update rules, we use the concept of passivity to analyze
+the stability of a class of adaptive controllers. For this class of adaptive
+controllers, the torque control is given by
+
+                                                                        (6.4.5)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+352                                       Adaptive Control of Robotic Manipulators
+
+   Note that many types of torque controllers can be generated from (6.4.5)
+by selecting different transfer function matrices for K(s) in the definition of r.
+That is, for different K(s), we have different types of feedback because the
+feedback term Kvr will change accordingly.
+   To form the error system, rewrite the robot dynamics (6.2.1) in terms of
+the tracking error variable r and the regression matrix Z(·) as
+
+                                                                           (6.4.6)
+
+Substituting (6.4.5) into (6.4.6) yields the tracking error system
+
+                                                                           (6.4.7)
+
+    For analyzing the stability of this system, we use the Lyapunov-like function
+
+                                                                           (6.4.8)
+
+[Ortega and Spong 1988]. Note that V is positive since the parameter estimate
+update rule is constructed to guarantee (6.4.4). That is, if (6.4.4) is satisfied,
+then
+
+                                                                           (6.4.9)
+
+
+therefore, V is a positive scalar function. Differentiating (6.4.8) with respect
+to time gives
+
+                                                                          (6.4.10)
+
+Substituting (6.4.7) into (6.4.10) yields
+
+                                                                          (6.4.11)
+
+Utilizing the skew-symmetric property (see Chapter 2) allows one to write
+
+                                                                          (6.4.12)
+
+   We now detail the type of stability for the tracking error. First note from
+(6.4.12) that we can place the new upper bound on :
+
+                                                                          (6.4.13)
+
+which can also be written as
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.4 Adaptive Controllers Based on Passivity                                    353
+
+
+                                                                           (6.4.14)
+
+
+Multiplying (6.4.14) by -1 and integrating the left-hand side of (6.4.14) yields
+
+                                                                           (6.4.15)
+
+
+Since is negative semidefinite as delineated by (6.4.12), we can state that V
+is a nonincreasing function that is upper bounded by V(0). By recalling that
+M(q) is lower bounded, as delineated by the positive-definite property of the
+inertia matrix (see Chapter 2), we can state that V given in (6.4.8) is lower
+bounded by zero. Since V is nonincreasing, upper bounded by V(0), and lower
+bounded by zero, we can write (6.4.15) as
+
+
+                                                                           (6.4.16)
+
+or
+
+                                                                           (6.4.17)
+
+
+The bound delineated by (6.4.17) informs us that                (see Chapter 1),
+which means that the filtered tracking r is bounded in the “special” way
+given by (6.4.17).
+   To establish a stability result for the position tracking error e, we establish
+the transfer function relationship between the position tracking error and
+the filtered tracking error r. From (6.4.1) we can state that
+
+                                                                           (6.4.18)
+
+where H(s) is as defined in (6.4.2). Since H(s) is a strictly proper, asymptotically
+stable transfer function matrix and              , we can use Theorem 1.4.7 in
+Chapter 1 to state that
+
+                                                                           (6.4.19)
+
+    The result above informs us that the position tracking error is
+asymptotically stable. In accordance with the theoretical development above,
+all we can say about the velocity tracking error is that it is bounded.
+    The passivity-based controller is summarized in Table 6.4.1. From this
+table we can see that the passivity approach gives a general class of torque
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+354                                       Adaptive Control of Robotic Manipulators
+
+control laws. We illustrate this concept with some examples that unify some
+of the research in adaptive control.
+
+
+EXAMPLE 6.4–2: Passivity of the Adaptive Inertia-Related
+Controller
+    In this example we show how the adaptive inertia-related controller can
+    be derived using passivity concepts. First, note that by defining
+
+                                                                               (1)
+
+    and
+
+                                                                               (2)
+
+
+    in Table 6.4.1, we obtain the torque control law
+
+                                                                               (3)
+
+    where
+
+                                                                               (4)
+
+
+    This corresponds to the definition given in (6.3.11); therefore, using (2),
+    we have obtained the adaptive inertia-related torque controller as given
+    in Table 6.3.1.
+       The last item to check is whether the adaptive inertia-related update
+    rule satisfies the passivity integral given in Table 6.4.1. From Table 6.3.1
+    the adaptive inertia-related update rule can be written as
+
+                                                                               (5)
+
+    for the choice of K(s) given in (1). After reexamining Example 6.4.1 it is
+    now obvious that we have derived the adaptive inertia-related controller
+    with the passivity approach.
+                                                                                䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.4 Adaptive Controllers Based on Passivity                                   355
+
+
+                         Table 6.4.1: Passive Class of Adaptive Controllers
+
+
+
+
+EXAMPLE 6.4-3: PID Torque Control Law
+In Example 6.4.2 the torque control law was shown to be
+
+                                                                               (1)
+
+   This torque controller is a proportional-derivative (PD) feedback controller
+since we are using e and in the feedback portion of the control. It is now
+desired to find the choice of K(s) in Table 6.4.1 to give a proportional-integral-
+derivative (PID) type of torque controller of the form
+
+                                                                               (2)
+
+
+Using Table 6.4.1, we can select
+
+                                                                               (3)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+356                                       Adaptive Control of Robotic Manipulators
+
+where
+
+
+
+
+␭i’s are positive scalar constants, ␺i’s are positive scalar constants, Kp= Kv⌳,
+and KI=Kv⌿. Now we must check to verify that H(s) is indeed a strictly proper,
+stable transfer function matrix. For this choice of K(s) in Table 6.4.1, we can
+write
+
+
+                                                                                (4)
+
+
+
+Note that since ⌳ and ⌿ have been selected to be diagonal positive-definite
+matrices, H(s) is a decoupled transfer function matrix. That is, the transfer
+function for the ith system is
+
+                                                                                (5)
+
+
+   Since the ␭i’s and ␺’s are positive, H(s) is a strictly proper, stable transfer
+function matrix.
+                                                                                䊏
+General Adaptive Update Rule
+As mentioned earlier, the adaptive control scheme outlined in Table 6.4.1
+allows one to formulate different adaptive update laws by ensuring that the
+proposed update satisfies the passivity integral given in (6.4.4). Landau
+proposed the general update rule (which satisfies the passivity integral)
+
+
+                                                                          (6.4.20)
+
+
+where Fp is an r×r positive definite, constant matrix, and FI(t) is an r×r positive
+definite matrix kernel whose Laplace transform is a positive real transfer
+function matrix with a pole at s=0 [Landau 1979].
+    By utilizing this general update law, many types of adaptation may be
+designed. All we need to keep in mind is that the conditions on FI(t) and Fp
+must be met. One possible adaptive scheme that comes directly from (6.4.20)
+is the proportional + integral (PI) adaptation scheme. The PI update law is the
+same as that given by (6.4.20), with
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.5 Persistency of Excitation                                                 357
+
+                                          FI(t)=K1,                       (6.4.21)
+
+where K1 is a diagonal, constant positive-definite matrix. It has been pointed
+out in [Landau 1979] that with regard to adaptive model following, PI
+adaptation has shown a significant improvement over integral adaptation.
+Therefore, this type of adaptation might be beneficial for the tracking control
+of robot manipulators.
+
+
+6.5 Persistency of Excitation
+
+For the adaptive controllers presented in the previous sections the tracking
+error has been shown to be asymptotically stable; however, all that could be
+said about the parameter error was that it was bounded. In general, parameter
+identification will occur in adaptive control systems only if certain conditions
+on the regression matrix can be established. Specifically, several researchers
+[Morgan and Narendra 1977], [Anderson 1977] have studied the asymptotic
+stability of adaptive control systems similar to the ones we have presented in
+this chapter. For example, parameter error convergence can be established
+for the adaptive inertia-related controller if the regression matrix Y(·) satisfies
+
+
+                                                                           (6.5.1)
+
+
+
+for all t0, where α, ß, and ρ are all positive scalars. Furthermore, since the
+tracking error is asymptotically stable, we can rewrite (6.5.1) as
+
+
+                                                                           (6.5.2)
+
+
+
+where the arguments q and q have been replaced by qd and d, respectively.
+    The condition given in (6.5.2) informs us that if Y(·) varies sufficiently
+over the interval given by ρ so that the entire r-dimensional parameter space
+is spanned, we know the parameter error converges to zero. This amounts to
+a condition on the desired trajectory such that all parameters will be identified
+after a sufficient learning interval. This condition can be helpful in formulating
+desired trajectories to ensure that parameters such as friction coefficients or
+payload masses are identified. We now illustrate the meaning of a persistently
+exciting trajectory with some examples.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+358                                             Adaptive Control of Robotic Manipulators
+
+EXAMPLE 6.5–1: Lack of Persistency of Excitation for a One-Link Robot
+Arm
+We wish to investigate the persistency of excitation conditions for the one-link
+robot arm given in Figure 6.5.1. The dynamics of this robot arm will be taken
+to be
+
+
+                                                                                     (1)
+
+
+
+
+                                   Figure 6.5.1: One-link revolute arm.
+
+
+
+where the term b is used to denote the positive scalar representing the dynamic
+coefficient of friction. We assume that this robot arm is in the plane not
+affected by the gravitational force and that m and b are unknown positive
+constants.
+
+
+a. Adaptive Controller
+By using Table 6.3.1, the adaptive inertia-related controller for the dynamics
+(1) can be shown to be given by
+
+
+                                                                                     (2)
+
+
+   In the expression above for the control torque, the regression matrix Y(·) is
+given by
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.5 Persistency of Excitation                                                 359
+
+                                                                                (3)
+
+where
+
+
+
+The corresponding parameter estimate vector is given by
+
+
+
+
+     We can formulate the adaptive update rule given in Table 6.3.1 as
+
+                                                                                (4)
+
+and
+
+                                                                                (5)
+
+
+
+b. Persistency of Excitation
+With this adaptive controller it is desired to show analytically that qd= 1-e-2t is
+not persistently exciting. From (6.5.2), the integrand of the persistently exciting
+condition for this example is given by
+
+
+
+
+or
+
+
+                                                                                (6)
+
+
+   Multiplying the first column of YT(·)Y(·) by and adding it to the second
+column of YT(·)Y(·) gives
+
+
+                                                                               (7)
+
+
+   Since the matrix RYY has the same range space as the matrix YT(·)Y(·), we
+can see from (7) that the range space of the matrix YT(·)Y(·) will always be
+one-dimensional; therefore, the persistent excitation condition does not hold
+for
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+360                                           Adaptive Control of Robotic Manipulators
+
+                                              qd=1-e-2t.
+
+                                                                                    䊏
+
+EXAMPLE 6.5–2: Persistency of Excitation for a One-Link Arm
+
+a. Desired Trajectory with Single Frequency
+With the adaptive controller in Example 6.5.1, we would like to show by
+simulation that qd=sin t is not persistently exciting. For m=1 kg and b=1 N-m-
+s, the adaptive inertia-related controller was simulated with
+
+
+
+
+                           Figure 6.5.2: Lack of persistency of excitation.
+
+
+
+                                                                                   (1)
+
+
+with initial conditions of
+
+                                                                                   (2)
+
+The tracking error and the parameter estimates are depicted in Figure 6.5.2.
+As anticipated, the tracking error is asymptotically stable, and the parameter
+estimates remain bounded. Note that and          do not go to zero since the
+desired trajectory is not persistently exciting.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.6 Composite Adaptive Controller                                           361
+
+
+
+
+                                 Figure 6.5.3: Persistency of excitation.
+
+
+
+
+b. Desired Trajectory with Multiple Frequencies
+With the adaptive controller in Example 6.5.1, we desire to show by simulation
+that qd=sin t+cos 3t is persistently exciting. The adaptive controller given in
+Example 6.5.1 should be simulated under the same conditions as those given
+in part (a) of this example except for the change in the desired trajectory. The
+tracking error and the parameter error are depicted in Figure 6.5.3. As
+illustrated by the figure, the tracking error is asymptotically stable, and the
+parameter estimates remain bounded. Note that and              converge to the
+exact values of b and m, respectively. This is because the desired trajectory is
+persistently exciting.
+
+
+                                                                             䊏
+
+6.6 Composite Adaptive Controller
+
+In both the adaptive computed-torque and the adaptive inertia-related control
+strategies, we have shown that the tracking error is asymptotically stable and
+the parameter error is bounded. It was then illustrated that if a persistency of
+excitation condition holds, the parameter error converges to zero. In some
+robotic applications it may not be practical to utilize a persistently exciting
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+362                                       Adaptive Control of Robotic Manipulators
+
+trajectory; therefore, we are motivated to redesign the adaptive control strategy
+to achieve parameter identification.
+   In this section we show how the adaptive controller given in Section 6.3
+can be modified to ensure asymptotic convergence of both the tracking error
+and the parameter error [Slotine and Li 1985(b)]. The asymptotic convergence
+of the parameter error is shown to hold if a condition on the filtered regression
+matrix holds. This condition, often called the infinite integral condition, is
+less restrictive than the persistency of excitation condition.
+   The procedure for designing the new adaptive controller can be out-lined
+as follows. First, a filtered regression matrix is formed from torque
+measurements. Second, it is shown how this filtered regression matrix can be
+used to formulate a least-squares estimator for estimating the unknown
+parameters. Finally, the adaptive update rule in Table 6.3.1 is modified to
+include an additional least-squares estimator term.
+
+Torque Filtering
+We now show how the regression matrix that is formed from a torque
+measurement can be filtered to eliminate the need for acceleration
+measurements. From Section 6.2 we can write the robot Equation (6.2.1) in
+the following form:
+
+
+                                                                           (6.6.1)
+
+
+The middle expression in (6.6.1) is written in the form
+
+                                                                           (6.6.2)
+
+where
+
+                                                                           (6.6.3)
+
+and
+
+                                                                           (6.6.4)
+
+The reason for writing the robot equation in the form given by (6.6.2) is that
+this equation has now been separated in a way that allows to be filtered out
+or removed. That is, by filtering (6.6.2), we have
+
+
+                                                                           (6.6.5)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.6 Composite Adaptive Controller                                                363
+
+where f is the impulse response of a linear stable, strictly proper filter, and the
+* is used to denote the convolution operation. For example, we could use the
+first-order filter given by
+                                                                             (6.6.6)
+
+
+where a is a positive scalar constant. By using the property of convolution
+
+                                                                             (6.6.7)
+
+    we can rewrite (6.6.5) as
+
+                                                                             (6.6.8)
+
+  After substituting the expressions for h and g, note that has been filtered
+out. That is, the explicit expression for if is given by
+
+
+                                                                             (6.6.9)
+
+
+where         is the impulse response of a proper, stable filter; for example,
+
+                                                                            (6.6.10)
+
+By linearity, the unknown parameters can still be separated out with regard
+to (6.6.9). That is, (6.6.9) can be rewritten as
+
+                                                                            (6.6.11)
+
+where Wf(·) is an n×r filtered regression matrix, and ϕ is an r×1 vector of
+unknown parameters. We now use an example to show how torque filtering
+can be used to eliminate the need for acceleration measurements.
+
+EXAMPLE 6.6–1: Torque Filtering of a One-Link Robot Arm
+Using the dynamics of the one-link robot arm given in Example 6.5.1, it is
+desired to find the filter regression matrix Wf(q, ) given in (6.6.11), where
+the linear filter is given by
+
+                                                                                 (1)
+
+or, in the time domain,
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+364                                       Adaptive Control of Robotic Manipulators
+
+                                          f(t)=e-t.                            (2)
+
+     Using (6.6.9), the filtered torque expression for the one-link arm is given
+by
+
+                                                                               (3)
+
+where
+
+                                                                               (4)
+
+The expression in (3) is used to separate the known functions from the unknown
+constants into the form
+
+                                                                               (5)
+
+where the filtered regression matrix and parameter vector are given by
+
+                                                                               (6)
+
+and
+
+                                                                               (7)
+                                                                                䊏
+
+   The important concept to realize in the regression matrix formulation given
+by (6.6.11) is that the quantities τf and Wf(q, )are known or assumed to be
+measurable; however, ϕ is unknown. To estimate ϕ, we define the estimate of
+the filtered torque based on the estimate of the unknown parameters, that is,
+
+                                                                          (6.6.12)
+
+We can now define the measurable quantity
+
+                                                                          (6.6.13)
+
+
+where
+
+                                                                          (6.6.14)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.6 Composite Adaptive Controller                                           365
+
+   The use of f is crucial in the development of the least-squares estimator
+that is developed in the next section. We can easily see how f is measurable
+by writing (6.6.14) in the form
+
+                                                                       (6.6.15)
+
+
+As explained earlier, f and Wf(·) are assumed to be known or measurable;
+therefore, all we need is the parameter estimate term [i.e., in (6.6.15)] for if
+to be known. Later, we generate an adaptive update rule that will give us the
+parameter estimate term in (6.6.15). So for now we will assume that f is
+known.
+
+Least-Squares Estimation
+Least-squares estimation methods have been used in many types of parameter
+identification schemes [Astrom and Wittenmark 1989]. It turns out that this
+type of estimation method extracts the maximum amount of parametric
+information even when the desired trajectory is not persistently exciting. This
+is an important fact to realize when designating adaptive control systems for
+robot manipulators because in many robot applications, the persistency of
+excitation condition will not be valid. Therefore, least-squares estimation
+offers an attractive solution to the design of adaptive controllers for robot
+manipulators.
+    We now show how the least-squares estimation method can be used to
+generate an adaptive update rule. First, define the least-squares update rule
+
+                                                                       (6.6.16)
+
+where
+
+                                                                       (6.6.17)
+
+and P is an r×r time-varying symmetric matrix.
+  With this least-squares estimation method, if an “infinite integral” condition
+holds, the parameter error converges to zero. Specifically, if
+
+
+                                                                       (6.6.18)
+
+holds, then
+
+                                                                       (6.6.19)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+366                                       Adaptive Control of Robotic Manipulators
+
+   As pointed out in [Slotine and Li 1985(b)], this infinite integral condition is
+a weaker condition than the persistency of excitation condition. That is, in
+practical robot applications, (6.6.18) can often be validated.
+
+EXAMPLE 6.6–2: Least-Squares Estimator for a One-Link Robot Arm
+Using the dynamics of the one-link robot arm given in Example 6.5.1, it is
+desired to find the least-squares estimator given by (6.6.16) and (6.6.17).
+Since the number of unknown parameters is two, define the matrix P to be
+
+
+                                                                               (1)
+
+
+    Utilizing the filtered regression matrix from Example 6.6.1, we have
+
+                                                                               (2)
+
+
+where
+
+
+
+
+Using (6.6.17), it is easy to see that the matrix P should be updated in the
+following manner:
+
+                                                                               (3)
+
+
+
+                                                                               (4)
+
+
+and
+
+                                                                               (5)
+
+
+Now using (6.6.16), the parameter update rules are
+
+                                                                               (6)
+
+and
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.6 Composite Adaptive Controller                                               367
+
+                                                                                   (7)
+
+    where, from (6.6.16), ␶f is given by
+
+                                                                                   (8)
+
+                                                                               䊏
+   For insight into how the least-squares estimation method extracts parameter
+information, we now show how (6.6.18) is obtained. Utilizing (6.6.13) and
+the fact that the parameters are constant, we write (6.6.16) as
+
+                                                                            (6.6.20)
+
+                                          –1
+Using the matrix identity =–P                  P we can write (6.6.17) as
+
+                                                                            (6.6.21)
+
+Substituting (6.6.21) into (6.6.20) yields the differential equation
+
+                                                                            (6.6.22)
+
+We claim that
+
+                                                                            (6.6.23)
+
+is the solution to (6.6.22). This fact can be verified by substituting (6.6.23)
+into the right-hand and left-hand sides of (6.6.22). That is, we obtain
+
+                                                                            (6.6.24)
+
+therefore, (6.6.23) is the solution. Now from (6.6.21) it is easy to see that the
+solution for P is given by
+
+
+                                                                            (6.6.25)
+
+  After examining (6.6.25), we can intuitively see that if the infinite integral
+condition is satisfied, then
+
+                                                                            (6.6.26)
+and
+                                                                            (6.6.27)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+368                                              Adaptive Control of Robotic Manipulators
+
+  Now if (6.6.26) holds, we can see from (6.6.23) that the parameter error
+converges to zero. This proof is detailed in [Li and Slotine 1987].
+
+Composite Adaptive Controller
+The composite adaptive controller is the same as the controller given in Table
+6.3.1, with the exception of a modification to the adaptive update rule. This
+modification is given by
+
+                                                                                             (6.6.28)
+
+   To prove that the tracking error and the parameter error both converge to
+zero, start with the Lyapunov-like function,
+
+                                                                                             (6.6.29)
+
+Differentiating (6.6.29) with respect to time yields
+
+                                                                                             (6.6.30)
+
+From the control law given in Table 6.3.1 and the development in Section
+6.3, we can form the tracking error system
+
+                                                                                             (6.6.31)
+
+Substituting (6.6.31) into (6.6.30) yields
+
+                                                                                             (6.6.32)
+
+                                                –1
+After substituting               in (6.6.28),        in (6.6.21), and   f   in (6.6.13) into (6.6.32),
+we have
+
+                                                                                             (6.6.33)
+
+   We now detail the type of stability for the tracking error and the parameter
+error. First, since in (6.6.33) is at least negative semidefinite in the form
+
+                                                                                             (6.6.34)
+
+we can state that V in (6.6.29) is bounded. Since V is bounded, M(q) is a
+positive-definite matrix, and P-1 satisfies the condition given by (6.6.27), we
+can state that r and are bounded. Furthermore, from the definition of r
+given in (6.3.8), we can use standard linear control arguments to state that e
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.6 Composite Adaptive Controller                                             369
+
+and e (and hence q and ) are bounded. We can now use the same arguments
+presented in Section 6.4 to show that             . Given that           , we can
+determine a stability result for the position tracking error by establishing the
+transfer function relationship between the position tracking error and the filtered
+tracking error r. From (6.3.8), we can state that
+
+                                                                          (6.6.35)
+
+where s is the Laplace transform variable,
+
+                                                                          (6.6.36)
+
+I is the n×n identity matrix, and ⌳ is an n×n positive-definite matrix. Since
+G(s) is a strictly proper, asymptotically stable transfer function and
+we can use Theorem 1.4.7 in Chapter 1 to state that
+
+                                                                          (6.6.37)
+
+Second, since is at least negative semidefinite, we know that V must be
+nonincreasing, and hence is upper bounded by V(0). Furthermore, by the
+infinite integral assumption, we have concluded in (6.6.27) that
+
+                                                                          (6.6.38)
+
+Since the term
+
+                                                                          (6.6.39)
+
+   in V given in (6.6.29) is upper bounded by V(0), we can see that for (6.6.38)
+to hold, we must have
+
+
+
+
+Therefore, from the argument above, the position tracking error and the
+parameter error are asymptotically stable for the composite adaptive controller
+outlined in Table 6.6.1. In accordance with the theoretical development above,
+all we can say about the velocity tracking error is that it is bounded; however,
+Barbalat’s lemma can be invoked to illustrate that the velocity tracking error
+is also asymptotically stable (see Problem 6.6–3). We now use an example to
+illustrate how the composite adaptive controller is formulated.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+370                                          Adaptive Control of Robotic Manipulators
+
+
+                             Table 6.6.1: Composite Adaptive Controller
+
+
+
+
+EXAMPLE 6.6–3: Composite Adaptive Controller for a One-Link Robot Arm
+It is desired to formulate the composite adaptive controller for the one-link
+robot arm given in Figure 6.5.1. The torque control law is the same as that
+given by Equation (2) in Example 6.5.1; therefore, all that need be done is the
+formulation of the composite adaptive update rule. From Table 6.6.1, the
+composite parameter update rules are
+
+                                                                                  (1)
+
+and
+                                                                                  (2)
+where r is defined in (6.3.8), Y11, Y12 are defined in Example 6.5.1, and P1, P2,
+P3, Wf11, Wf12, f are defined in Example 6.6.2.
+                                                                               䊏
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.7 Robustness of Adaptive Controllers                                        371
+
+
+6.7 Robustness of Adaptive Controllers
+
+All of the adaptive control schemes discussed ensure asymptotic tracking of a
+desired reference trajectory for the robot manipulator dynamics; however, in
+reality we know that there will always be disturbances in any electromechanical
+system. A simplistic way to take into account some sort of disturbance effect
+is to add a bounded disturbance term to the manipulator dynamic equation.
+With this additive disturbance term the robot equation becomes
+
+                                                                          (6.7.1)
+
+where Td is an n×1 vector that represents an additive disturbance.
+   Applying the adaptive inertia-related control strategy and ignoring the
+term Td in (6.7.1) gives the adaptive control scheme of Table 6.3.1. However,
+if we reexamine the stability analysis given in Section 6.3 for the adaptive
+inertia-related controller, we can see that a bounded disturbance term gives
+us a different type of stability result for the tracking error. Specifically, with
+the addition of the bounded disturbance term in (6.7.1), the derivative of the
+Lyapunov function in (6.3.7) becomes
+
+                                                                          (6.7.2)
+
+   From (6.7.2) it is obvious that can no longer be taken to be negative
+semidefinite. From our previous experience with Lyapunov stability theory, it
+was desired to have be “negative”; therefore, it stands to reason that it
+would be advantageous to find the region where is negative in (6.7.2). By
+the use of the Rayleigh-Ritz Theorem (see Chapter 1), we can write (6.7.2) as
+
+                                                                          (6.7.3)
+
+  From (6.7.3), a sufficient condition on the negativity of     can be obtained.
+That is, will be negative if
+
+
+                                                                          (6.7.4)
+
+
+If (6.7.4) is satisfied, is negative and V will decrease. If V decreases, then by
+our definition of the Lyapunov function given in (6.3.7), r must eventually
+decrease. However, if r decreases such that
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+372                                       Adaptive Control of Robotic Manipulators
+
+
+                                                                           (6.7.5)
+
+then may become positive, which means that V will start to increase. If V
+starts to increase, we gain insight into the problem by examining two
+possibilities. One, the increase in V causes r to increase such that (6.7.4) is
+satisfied. This means that V will start to decrease and hence r will eventually
+decrease. If r increased and decreased in this fashion continually, then r and
+  both remain bounded. The other possibility is that the increase in V causes
+  to increase while r stays small enough such that (6.7.5) is satisfied. For
+this case, V remains positive; therefore, could continue to increase. If V
+continues to increase in this fashion, r is bounded; however, and hence
+both become unbounded.
+   The argument above reveals that the parameter estimate in the adaptive
+inertia-related control law may go unstable in the presence of a bounded
+disturbance. That is, the parameter estimate may diverge under the
+assumption that the robot model is given by (6.7.1). If the parameter estimate
+becomes too large, we can see from Table 6.3.1 that the input torque will
+start to grow and possibly saturate the joint motors; therefore, it would be
+desirable to modify the adaptive controller to eliminate the possibility of
+torque saturation.
+
+EXAMPLE 6.7–1: Effects of Disturbance on Adaptive Control
+In this example we simulate the same adaptive controller given in Example
+6.3.1 with the same control parameters, initial conditions, and desired
+trajectory; however, we have added the disturbance term
+
+
+                                                                               (1)
+
+
+to the two-link manipulator dynamics. The tracking error and parameter
+estimates are illustrated in Figure 6.7.1. From the figure, note that for the
+disturbance given by (1), the parameter estimates do not become unbounded;
+however, the tracking error is no longer asymptotically stable.
+                                                                           䊏
+
+Torque-Based Disturbance Rejection Method
+To reject an additive disturbance term in the robot model, we illustrate
+how the parameter estimates remain bounded if the torque control is
+modified to be
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.7 Robustness of Adaptive Controllers                                             373
+
+
+
+
+Figure 6.7.1: Simulation of adaptive controller in the pressence of disturbance.
+
+
+
+
+                                                                              (6.7.6)
+
+where ␶d is the torque control given in Table 6.3.1,
+
+                                                                              (6.7.7)
+
+sgn(·) is used to denote the signum function, and kd is a scalar constant that
+satisfies
+
+                                                                              (6.7.8)
+
+with Tdi; representing the ith component of the n×1 vector Td [Slotine and Li
+1985(c)].
+   Applying the disturbance rejection controller given in (6.7.6), the derivative
+of the Lyapunov function in (6.3.7) becomes
+
+                                                                              (6.7.9)
+
+By noting that
+
+                                                                            (6.7.10)
+
+(6.7.9) can be written as
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+374                                       Adaptive Control of Robotic Manipulators
+
+
+
+                                                                          (6.7.11)
+
+
+By utilizing (6.7.8), we can write (6.7.11) as
+
+                                                                          (6.7.12)
+
+The same arguments as in Section 6.6 can be used to show that the position
+tracking error is asymptotically stable while the velocity tracking error and
+the parameter estimate are bounded.
+
+EXAMPLE 6.7–2: Disturbance Rejection for a Two-Link Robot Arm
+In this example we simulate the modified adaptive controller given in (6.7.6)
+with the same control parameters, initial conditions, and desired trajectory as
+in Example 6.3.1 and also with the disturbance given in Example 6.7.1. The
+modified torque controller is given by
+
+                                                                               (1)
+
+and
+
+                                                                               (2)
+
+where ␶a1 , and ␶a2 are the same adaptive torque controllers given in
+Example 6.3.1, ␭1, and ␭2 are the same scalar constants defined in Example
+6.3.1, and
+
+                                                                               (3)
+
+   Note that kd has been chosen to satisfy the condition given in (6.7.8) and
+that the update laws are the same as those given in Example 6.3.1. The
+tracking error and parameter estimates are illustrated in Figure 6.7.2. From
+the figure we note that the parameter estimates remain bounded; furthermore,
+the tracking error is now asymptotically stable even in the presence of a
+disturbance. It is important to note that for the theoretical development given
+for the torque-based disturbance rejection method above, we only guaranteed
+the velocity tracking error to be bounded.
+                                                                           䊏
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.7 Robustness of Adaptive Controllers                                            375
+
+Estimator-Based Disturbance Rejection Method
+In [Reed and Ioannou 1988] a modified version of the ␴-modification [Ioannou
+and Tsakalis 1985] to the adaptive inertia-related control algorithm [Slotine
+and Li 1985(a)] was introduced to compensate for unmodeled dynamics and
+bounded disturbances in the robot model. In this method the torque control is
+the same as that given by Table 6.3.1; however, the adaptive update rule is
+modified to be
+
+                                                                              (6.7.13)
+
+
+
+
+Figure 6.7.2: Simulation of adaptive controller with disturbance rejection,
+
+
+where
+
+
+                                                                              (6.7.14)
+
+
+and
+                                                                              (6.7.15)
+With the update rule (6.7.13), Reed showed that the tracking error could be
+confined to a residual set and that all closed-loop signals are bounded.
+   As we have shown, a bounded disturbance can cause the parameter estimates
+to go unstable. The update rule given by (6.7.13) is intended to remedy this
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+376                                            Adaptive Control of Robotic Manipulators
+
+problem by regulating on-line the size of the parameter estimates. This is
+done by the scalar design constant ␸0. That is, by checking the size of the
+parameter estimates against ␸ 0, the parameter estimates are forced to remain
+bounded by using this new update rule. One can see clearly that if 储 储<␸ 0, the
+update rule is the same as that given by Table 6.3.1. In other words, if the
+parameter estimates do not get too large, the controller is the same as the
+adaptive inertia-related controller. On the other hand, if parameter estimates
+get too large, the adaptive update rule is modified to ensure that the parameter
+estimates remain bounded. How this σ-modification accomplishes this task is
+now discussed.
+    To motivate how the update rule given in (6.7.13) was formulated, examine
+the case when 储 储>␸ 0. This is the stabilizing part of the update rule. That is,
+if the parameter estimates become too large, the update rule switches to
+
+                                                                               (6.7.16)
+
+or in terms of the parameter error,
+
+                                                                               (6.7.17)
+
+   We now reexamine the stability analysis given in Section 6.3 for the adaptive
+inertia-related controller with the parameter update rule given by (6.7.16).
+Specifically, with the addition of the bounded disturbance term in (6.7.1), the
+derivative of the Lyapunov function in (6.3.7) becomes
+
+                                                                               (6.7.18)
+
+or
+
+                                                                               (6.7.19)
+
+where
+
+
+                                                                               (6.7.20)
+
+
+   By the use of the Rayleigh-Ritz Theorem (see Chapter 1), we can write
+(6.7.19) as
+
+                                                                               (6.7.21)
+
+     From (6.7.21),              will be negative if
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+6.8 Summary                                                                   377
+
+
+
+                                                                          (6.7.22)
+
+   It is important to note that the right-hand side of (6.7.22) is a constant;
+therefore, if (6.7.22) is satisfied, is negative, which causes V to decrease. If
+V decreases, then by our definition of the Lyapunov function given in (6.3.7),
+x must eventually decrease. However, if x decreases such that
+
+
+                                                                          (6.7.23)
+
+then may be positive, which means that V will start to increase. The increase
+in V causes x to increase such that (6.7.22) is satisfied. This means that V now
+starts to decrease again and hence x eventually decreases. This argument
+illustrates how x is bounded. If x is bounded, then from (6.7.20), r and are
+bounded. Since r is bounded, standard linear control arguments can be used
+to show that e and e are bounded.
+    One last point is now discussed regarding the region ␸ 0ⱕ储 储ⱕ2␸ 0. for the
+adaptive update rule given in (6.7.13). This part of the adaptive update rule
+is used to ensure that there is a smooth transition between the adaptive
+inertia-related update rule and the stabilizing portion of the update rule
+given by (6.7.16). That is, this ensures that we do not obtain any
+discontinuities in the parameter estimates, which could cause a large
+discontinuity in the input torque. A large discontinuity is undesirable in the
+input torque signal since this type of signal could cause the robot manipulator
+to jerk violently.
+
+
+6.8        Summary
+
+In this chapter an account of several of the most recent adaptive control
+results for rigid robots has been given. The intent has been to lend some
+perspective to the growing list of adaptive control results for robot manipulators.
+Some research areas, such as transient behavior, digital implementation, and
+robustness to unmodeled dynamics, will no doubt be addressed in the future.
+An issue that remains to be investigated is the comparison of the advantages
+and disadvantages of the different servo and adaptive laws.
+   Some excellent adaptive control work with regard to robot manipulators
+by other researchers is outlined in [Ortega and Spong 1988]. Since this is such
+a well-studied field and there is limited space available in this chapter, we
+apologize to anyone who has been left out.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+
+[Anderson 1977] Anderson, B., “Exponential stability of linear equations
+   arising in adaptive identification,” IEEE Trans. Autom. Control, Feb.
+   1977, pp. 83–88.g
+[Arimoto and Miyazaki 1986] Arimoto, S., and F.Miyazaki, “Stability and
+    robustness of PD feedback control with gravity compensation for robot
+    manipulators,” Robot. Theory Pract., DSC Vol. 3, pp. 67–72, ASME
+    Winter Annual Meeting, Dec. 1986.
+[Åström and Wittenmark 1989] K.Åström and B.Wittenmark, Adaptive
+    Control. Reading, MA: Addison-Wesley, 1989.
+[Brogliato et al. 1990] Brogliato, B., I.Landau, and R.Lozano-Leal, “Adaptive
+    motion control of robot manipulators: a unified approach based on
+    passitivity,” Proc. IEEE Am. Controls Conf, pp. 2259–2264, San Diego,
+    CA, May 1990.
+[Craig 1985] Craig, J., Adaptive Control of Mechanical Manipulators. Reading,
+    MA.: Addison Wesley, 1985.
+[Ioannou and Tsakalis 1985] Ioannou, P., and K.Tsakalis, “A robust direct
+    adaptive controller,” IEEE Trans. Autom. Control, vol. AC-31, no. 11,
+    pp. 1033–1043, 1985.
+[Kailath 1980] Kailath, T, Linear Systems. Englewood Cliffs, NJ: Prentice
+    Hall, 1980.
+[Landau 1979] Landau, Y., Adaptive Control: The Model Reference Approach.
+    New York: Marcel Dekker, 1979.
+[Li and Slotine 1987] Li, W., and J.Slotine, “Parameter estimation strategies
+     for robotic applications,” ASME Winter Annual Meeting, Boston, 1987.
+[Morgan and Narendra 1977] Morgan, A., and K.Narendra, “On the uniform
+   asymptotic stability of certain linear nonautonomous differential
+   equations,” SIAM J. Control Optim., 1977, p. 15.
+
+                                                                         379
+Copyright © 2004 by Marcel Dekker, Inc.
+380                                                             REFERENCES
+
+[Ortega and Spong 1988] Ortega, R., and M.Spong, “Adaptive motion control
+    of rigid robots: a tutorial,” Proc. IEEE Conf Decision Control, Austin,
+    TX, 1988.
+[Reed and Ioannou 1988] Reed, J., and P.Ioannou, “Instability analysis and
+    robust adaptive control of robotic manipulators,” Proc. IEEE Conf
+    Decision Control, Austin, TX, 1988.
+[Slotine 1988] Slotine, J., (1988), “Putting physics in control: the example of
+    robotics,” Control Syst. Mag., Dec. 1988, Vol. 8, pp 12–15.
+[Slotine and Li 1985(a)] Slotine, J., and W.Li, “Theoretical issues in adaptive
+    control,” 5th Yale Workshop on Applications of Adaptive Systems Theory,
+    Yale University, New Haven, CT, 1985(a).
+[Slotine and Li 1985(b)] Slotine, J., and W.Li, “Adaptive robot control: a new
+    perspective,” Proc. IEEE Conf Decision Control, Los Angeles, 1985(b).
+[Slotine and Li 1985(c)] Slotine, J., and W.Li, “Adaptive strategies in
+    constrained manipulation,” Proc. IEEE Int. Conf Robot. Autom., Raleigh,
+    NC, Mar. 1985(c), pp. 595–601.
+[Vidyasagar 1978] Vidyasagar, M., Nonlinear Systems Analysis. Englewood
+    Cliffs, NJ: Prentice Hall, 1978.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                    381
+
+
+PROBLEMS
+
+Section 6.2
+6.2–1        Design and simulate the adaptive computed-torque controller given
+             in Table 6.2.1 for the two-link polar robot arm given in Chapter 2.
+
+6.2–2        Find different positive-definite, symmetric matrices, P and Q from
+             that given in Example 6.2.2 that satisfy
+
+
+
+             where
+
+
+
+             Kp, Kv are diagonal positive-definite matrices, and On, In represent
+             the n×n zero matrix and n×n identity matrix, respectively.
+
+6.2–3: With the P and Q found in Problem 6.2–3, redo Problem 6.2–1 and
+       report the differences in the tracking error performance.
+
+Section 6.3
+6.3–1        Design and simulate the adaptive inertia-related controller given in
+             Table 6.3.1 for the two-link polar robot arm given in Chapter 2.
+
+6.3–2        For the simulation given in Problem 6.3–1, run several simulations
+             with different values of the control parameters (ie., ⌳, Kv, ⌫), and
+             report the effects on tracking error performance.
+
+6.3–3        Enumerate the the advantages of the adaptive controller given in
+             Table 6.3.1 over the adaptive controller given in Table 6.2.1.
+
+6.3–4        As given in (6.3.8), the filtered tracking error is defined by
+
+
+
+             where ⌳ is a positive-definite diagonal matrix. Show that if
+
+
+
+
+Section 6.4
+6.4–1        Design and simulate an adaptive controller for the two-link re volute
+             arm given in Example 6.3.1 with the PID servo law given in Example
+             6.4.3 and the adaptation law given in Example 6.4.1. Report any
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+382                                                                      REFERENCES
+
+             differences from that given in Example 6.3.1.
+
+6.4–2        Redo Problem 6.4–1 with the proportional+integral adaptation law
+             given by Equations (6.4.20) and (6.4.21).
+
+Section 6.5
+6.5–1        Show analytically that qd=sin t in Example 6.5.2 is not persistently
+             exciting.
+
+Section 6.6
+6.6–1        Show that
+
+
+
+6.6–2        Simulate the composite adaptive controller given in Example 6.6.3
+             and report the effects on the tracking error of using different values
+             for P(0) and a (i.e., the pole of the filter used for the filtered regression
+             matrix).
+
+6.6–3        Show how Barbalat’s lemma given in Chapter 1 can be used in the
+             proof of the composite adaptive controller to yield
+
+
+
+Section 6.7
+6.7–1        Redo Problem 6.3–1 with the additive bounded disturbance
+
+
+
+
+             added to two-link polar robot arm dynamics given in Chapter 2.
+
+6.7–2        Redo Problem 6.3–1 with the additive bounded disturbance given in
+             Problem 6.7–1 and with the term
+
+
+
+             added to the adaptive controller. Run several simulations with different
+             values of kd, and report the effects on tracking error performance.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.

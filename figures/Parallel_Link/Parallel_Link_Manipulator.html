@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>并联连杆操作器 (Stewart Platform)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f0f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 350px;
+            pointer-events: none;
+        }
+        h1 { margin: 0 0 10px 0; font-size: 18px; color: #333; }
+        p { margin: 5px 0; font-size: 14px; color: #666; line-height: 1.5; }
+        .highlight { color: #0066cc; font-weight: bold; }
+    </style>
+    <!-- 引入 Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- 引入 OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- 引入 dat.gui -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+</head>
+<body>
+    <div id="info">
+        <h1>并联连杆操作器 (六自由度)</h1>
+        <p>并联机器人（如Stewart平台）通常由一个固定基座、一个移动平台和六个可伸缩的并联连杆组成。</p>
+        <p>特点：<span class="highlight">高刚度、高精度、大负载能力</span>。相比串联机器人，其定位误差不会随连杆累积。</p>
+        <p>应用：飞行模拟器（Link训练器）、精密加工、航空航天部件装配。</p>
+        <p style="font-size: 12px; color: #999; margin-top: 10px;">拖动右侧控制面板调整平台的六个自由度 (X, Y, Z, Roll, Pitch, Yaw)。</p>
+    </div>
+    <div id="canvas-container"></div>
+
+    <script>
+        // 场景初始化
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xe0e0e0);
+
+        // 相机初始化
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(15, 15, 20);
+
+        // 渲染器初始化
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // 控制器
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 5, 0);
+
+        // 光照
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        dirLight.shadow.camera.top = 20;
+        dirLight.shadow.camera.bottom = -20;
+        dirLight.shadow.camera.left = -20;
+        dirLight.shadow.camera.right = 20;
+        scene.add(dirLight);
+
+        // 网格地面
+        const gridHelper = new THREE.GridHelper(30, 30, 0x888888, 0xcccccc);
+        scene.add(gridHelper);
+
+        // 材质
+        const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x555555, flatShading: true });
+        const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x0066cc, flatShading: true });
+        const linkCylinderMaterial = new THREE.MeshPhongMaterial({ color: 0xaaaaaa });
+        const linkPistonMaterial = new THREE.MeshPhongMaterial({ color: 0xdddddd });
+        const jointMaterial = new THREE.MeshPhongMaterial({ color: 0xff3300 });
+
+        // 平台参数
+        const baseRadius = 6;
+        const platformRadius = 4;
+        const baseAngleOffset = Math.PI / 12; // 15度
+        const platformAngleOffset = Math.PI / 6; // 30度
+
+        // 计算连接点坐标
+        const basePoints = [];
+        const platformPoints = [];
+
+        for (let i = 0; i < 3; i++) {
+            const angle = i * 2 * Math.PI / 3;
+            
+            // 基座点
+            basePoints.push(new THREE.Vector3(
+                baseRadius * Math.cos(angle - baseAngleOffset),
+                0.5,
+                baseRadius * Math.sin(angle - baseAngleOffset)
+            ));
+            basePoints.push(new THREE.Vector3(
+                baseRadius * Math.cos(angle + baseAngleOffset),
+                0.5,
+                baseRadius * Math.sin(angle + baseAngleOffset)
+            ));
+
+            // 平台点
+            platformPoints.push(new THREE.Vector3(
+                platformRadius * Math.cos(angle - platformAngleOffset),
+                0,
+                platformRadius * Math.sin(angle - platformAngleOffset)
+            ));
+            platformPoints.push(new THREE.Vector3(
+                platformRadius * Math.cos(angle + platformAngleOffset),
+                0,
+                platformRadius * Math.sin(angle + platformAngleOffset)
+            ));
+        }
+
+        // 创建基座
+        const baseShape = new THREE.Shape();
+        basePoints.forEach((p, index) => {
+            if (index === 0) baseShape.moveTo(p.x, p.z);
+            else baseShape.lineTo(p.x, p.z);
+        });
+        baseShape.lineTo(basePoints[0].x, basePoints[0].z);
+
+        const extrudeSettings = { depth: 1, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.1, bevelThickness: 0.1 };
+        const baseGeometry = new THREE.ExtrudeGeometry(baseShape, extrudeSettings);
+        baseGeometry.rotateX(Math.PI / 2);
+        baseGeometry.translate(0, 1, 0);
+        const baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
+        baseMesh.castShadow = true;
+        baseMesh.receiveShadow = true;
+        scene.add(baseMesh);
+
+        // 创建移动平台
+        const platformShape = new THREE.Shape();
+        platformPoints.forEach((p, index) => {
+            if (index === 0) platformShape.moveTo(p.x, p.z);
+            else platformShape.lineTo(p.x, p.z);
+        });
+        platformShape.lineTo(platformPoints[0].x, platformPoints[0].z);
+
+        const platformGeometry = new THREE.ExtrudeGeometry(platformShape, extrudeSettings);
+        platformGeometry.rotateX(Math.PI / 2);
+        platformGeometry.translate(0, 0.5, 0);
+        
+        const platformGroup = new THREE.Group();
+        const platformMesh = new THREE.Mesh(platformGeometry, platformMaterial);
+        platformMesh.castShadow = true;
+        platformMesh.receiveShadow = true;
+        platformGroup.add(platformMesh);
+        scene.add(platformGroup);
+
+        // 创建连杆
+        const links = [];
+        for (let i = 0; i < 6; i++) {
+            const linkGroup = new THREE.Group();
+            
+            // 下半部分（套筒）
+            const cylinderGeo = new THREE.CylinderGeometry(0.3, 0.3, 1, 16);
+            cylinderGeo.translate(0, 0.5, 0);
+            const cylinder = new THREE.Mesh(cylinderGeo, linkCylinderMaterial);
+            cylinder.castShadow = true;
+            
+            // 上半部分（活塞杆）
+            const pistonGeo = new THREE.CylinderGeometry(0.15, 0.15, 1, 16);
+            pistonGeo.translate(0, 0.5, 0);
+            const piston = new THREE.Mesh(pistonGeo, linkPistonMaterial);
+            piston.castShadow = true;
+            
+            // 关节球
+            const jointGeo = new THREE.SphereGeometry(0.4, 16, 16);
+            const baseJoint = new THREE.Mesh(jointGeo, jointMaterial);
+            const platformJoint = new THREE.Mesh(jointGeo, jointMaterial);
+            
+            linkGroup.add(cylinder);
+            linkGroup.add(piston);
+            
+            scene.add(linkGroup);
+            scene.add(baseJoint);
+            scene.add(platformJoint);
+            
+            links.push({
+                group: linkGroup,
+                cylinder: cylinder,
+                piston: piston,
+                baseJoint: baseJoint,
+                platformJoint: platformJoint,
+                baseIndex: i,
+                platformIndex: (i + 1) % 6 // 交叉连接
+            });
+        }
+
+        // GUI 控制参数
+        const params = {
+            x: 0,
+            y: 8, // 初始高度
+            z: 0,
+            roll: 0,   // 绕X轴旋转
+            pitch: 0,  // 绕Z轴旋转
+            yaw: 0,    // 绕Y轴旋转
+            reset: function() {
+                this.x = 0;
+                this.y = 8;
+                this.z = 0;
+                this.roll = 0;
+                this.pitch = 0;
+                this.yaw = 0;
+                gui.updateDisplay();
+            }
+        };
+
+        const gui = new dat.GUI();
+        const posFolder = gui.addFolder('位置 (Position)');
+        posFolder.add(params, 'x', -5, 5).name('X 轴平移');
+        posFolder.add(params, 'y', 5, 12).name('Y 轴平移 (高度)');
+        posFolder.add(params, 'z', -5, 5).name('Z 轴平移');
+        posFolder.open();
+
+        const rotFolder = gui.addFolder('姿态 (Orientation)');
+        rotFolder.add(params, 'roll', -30, 30).name('Roll (绕X轴)');
+        rotFolder.add(params, 'pitch', -30, 30).name('Pitch (绕Z轴)');
+        rotFolder.add(params, 'yaw', -45, 45).name('Yaw (绕Y轴)');
+        rotFolder.open();
+
+        gui.add(params, 'reset').name('重置 (Reset)');
+
+        // 更新连杆位置和姿态
+        function updateKinematics() {
+            // 更新平台位置和旋转
+            platformGroup.position.set(params.x, params.y, params.z);
+            platformGroup.rotation.set(
+                THREE.MathUtils.degToRad(params.roll),
+                THREE.MathUtils.degToRad(params.yaw),
+                THREE.MathUtils.degToRad(params.pitch)
+            );
+
+            platformGroup.updateMatrixWorld();
+
+            // 更新每个连杆
+            for (let i = 0; i < 6; i++) {
+                const link = links[i];
+                
+                // 获取基座连接点世界坐标
+                const bPoint = basePoints[link.baseIndex].clone();
+                
+                // 获取平台连接点世界坐标
+                const pPointLocal = platformPoints[link.platformIndex].clone();
+                const pPoint = pPointLocal.applyMatrix4(platformGroup.matrixWorld);
+                
+                // 更新关节球位置
+                link.baseJoint.position.copy(bPoint);
+                link.platformJoint.position.copy(pPoint);
+                
+                // 计算连杆向量和长度
+                const direction = new THREE.Vector3().subVectors(pPoint, bPoint);
+                const length = direction.length();
+                
+                // 设置连杆组位置在基座点
+                link.group.position.copy(bPoint);
+                
+                // 使连杆指向平台点
+                // 创建一个虚拟对象来使用 lookAt
+                const targetObj = new THREE.Object3D();
+                targetObj.position.copy(bPoint);
+                targetObj.lookAt(pPoint);
+                targetObj.rotateX(Math.PI / 2); // 调整圆柱体默认朝向
+                link.group.quaternion.copy(targetObj.quaternion);
+                
+                // 调整套筒和活塞杆的长度
+                // 假设套筒长度固定为 L/2，活塞伸出剩余部分
+                const halfLength = length / 2;
+                link.cylinder.scale.set(1, halfLength, 1);
+                
+                link.piston.position.y = halfLength;
+                link.piston.scale.set(1, halfLength, 1);
+            }
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            updateKinematics();
+            renderer.render(scene, camera);
+        }
+
+        // 窗口大小调整
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

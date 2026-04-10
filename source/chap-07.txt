@@ -1,0 +1,1947 @@
+Chapter 7
+
+Advanced Control
+Techniques
+In this chapter some advanced control techniques for the tracking control of
+robot manipulators are discussed. The controllers that are developed in this
+chapter address computational issues and the effects of actuator dynamics.
+The analytical concepts and the control developments presented in this chapter
+are in general more complex than those presented in the previous chapters;
+therefore, it is highly recommended that the previous chapters be studied
+before examining this new material.
+
+
+7.1        Introduction
+
+As research in robot control has progressed over the last couple of years,
+many robot control researchers have begun to focus on implementational
+issues. That is, implementational concerns, such as the reduction of on-line
+computation and the effects of actuator dynamics, are causing researchers to
+rethink the previous theoretical development of robot controllers so that these
+concerns are addressed. This constant retooling of the previous control
+development to coincide with the implementational restrictions is how previous
+progress in robot control research has proceeded. Utilizing this concept of
+forcing the theoretical development to satisfy implementational restrictions,
+we illustrate how some researchers have begun to address problems such as
+reducing on-line computation and compensating for the effects of actuator
+dynamics.
+
+
+                                                                           383
+Copyright © 2004 by Marcel Dekker, Inc.
+384                                                Advanced Control Techniques
+
+
+7.2        Robot Controllers with Reduced On-Line
+           Computation
+
+In this section we examine the robot controllers designed by Sadegh and
+coworkers [Sadegh and Horowitz 1990], [Sadegh et al. 1990]. We separate
+these controllers from related work since this work addresses the extremely
+relevant implementation issue of on-line controller computation. Specifically,
+this adaptive controller reduces on-line computation as opposed to other
+control techniques, such as the adaptive controllers presented in Chapter 6.
+Following the development of the adaptive controller research, a “repetitive”
+controller is also presented. This repetitive controller also reduces online
+computation.
+
+Desired Compensation Adaptation Law
+One of the disadvantages of the adaptive controllers in Chapter 6 is that the
+regression matrix (e.g., the matrix Y(·) in the adaptive inertia-related controller)
+used as feedforward compensation must be calculated on-line. The regression
+matrix must be calculated on-line since it depends on the measurements of the
+joint position and velocity (i.e., q and q). For the simple two-link robot
+controller given in Example 6.3.1, it is evident that online calculation of Y(·)
+is computationally intensive. As one can imagine, on-line computation of the
+regression matrix can be very computationally intensive if one desires to
+control a robot manipulator with many degrees of freedom.
+    To eliminate the need for on-line computation of the regression matrix, we
+will now examine the desired compensation adaptation law (DCAL) [Sadegh
+and Horowitz 1990]. The DCAL eliminates the need for on-line computation
+of the regression matrix by replacing q and q with the desired joint position
+and velocity (i.e., qd and qd). That is, the DCAL regression matrix only depends
+on desired trajectory information; therefore, the DCAL regression matrix can
+be calculated a priori off-line. Of course, this modification of the regression
+matrix forces us to reexamine the adaptive control design and the corresponding
+stability analysis.
+    For purposes of control design in this section, we assume that the robotic
+manipulator is a revolute manipulator with dynamics given by
+
+                                                                            (7.2.1)
+
+where F d is a n×n positive-definite, diagonal matrix that is used to
+represent the dynamic coefficients of friction, and all other quantities
+are as defined in Chapter 3. As in other chapters, we define the joint
+tracking error to be
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.2 Robot Controllers with Reduced On-Line Computation                       385
+
+                                          e=qd-q.                         (7.2.2)
+
+
+As explained in Chapter 6, adaptive control of robot manipulators involves
+separating the known time functions from the unknown constant parameters.
+For example, recall that this separation of parameters from time functions for
+the adaptive inertia-related controller is given by
+
+                                                                          (7.2.3)
+
+where Y(·) is an n×r regression matrix that depends only on known time
+functions of the actual and desired trajectory, and ␸ is an r×1 vector of unknown
+constant parameters. (Note that ⌳ defined Table 6.3.1 is taken to be the
+identity matrix.)
+   In the DCAL, this separation of parameters from time functions is given by
+
+                                                                          (7.2.4)
+
+where Yd(·) is an n×r regression matrix that depends only on known functions
+of the desired trajectory. Note that if we substitute qd and qd for q and q
+respectively, into (7.2.3), the regression matrix formulation given by (7.2.3)
+is equivalent to that given by (7.2.4).
+    Utilizing the regression matrix formulation given in (7.2.4), the DCAL is
+formulated as
+
+                                                                          (7.2.5)
+
+where kv, kp, ka are scalar, constant, control gains, is the r×1 vector of
+parameter estimates, and the filtered tracking error is defined as
+
+                                          r=e+ .                          (7.2.6)
+
+The corresponding DCAL parameter adaptive update law is
+
+                                                                          (7.2.7)
+
+where Γ is an r×r positive definite, diagonal, constant, adaptive gain matrix,
+and the parameter error is defined by
+
+                                                                          (7.2.8)
+
+Note that the DCAL given by (7.2.5) is quite similar to adaptive controllers
+discussed in Chapter 6 with the exception of the term ka||e||2r in (7.2.5). It
+turns out that this additional term is used to compensate for the
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+386                                               Advanced Control Techniques
+
+difference between Y(·)␸ and Yd(·)␸ given in (7.2.3) and (7.2.4), respectively.
+As shown in [Sadegh and Horowitz 1990], this difference between the actual
+regression matrix and the desired regression matrix formulations can be
+quantified as
+
+
+                                                                          (7.2.9)
+
+where
+
+                                                                         (7.2.10)
+
+
+and ␨1, ␨2, ␨3, and ␨4 are positive bounding constants that depend on the
+desired trajectory and the physical properties of the specific robot configuration
+(i.e., link mass, link length, friction coefficients, etc.).
+    To analyze the stability of the controller given by (7.2.5), we must form
+the corresponding error system. First, we rewrite (7.2.1) in terms of Y(·)␸ and
+r defined in (7.2.3) and (7.2.6), respectively. That is, we have
+
+                                                                         (7.2.11)
+
+Adding and subtracting the term Yd(·)␸ on the right-hand side of (7.2.11)
+yields
+
+                                                                         (7.2.12)
+
+where is defined in (7.2.10). Substituting the control given by (7.2.5) into
+(7.2.12) yields the error system
+
+                                                                         (7.2.13)
+
+where is defined in (7.2.8).
+  We now analyze the stability of the error system given by (7.2.13) with the
+Lyapunov-like function
+
+                                                                         (7.2.14)
+
+Differentiating (7.2.14) with respect to time yields
+
+                                                                         (7.2.15)
+
+since scalar quantities can be transposed. Substituting (7.2.13) into (7.2.15)
+fields
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.2 Robot Controllers with Reduced On-Line Computation                                     387
+
+
+
+
+                                                                                      (7.2.16)
+
+By utilizing the skew-symmetric property (see Chapter 3) and the update
+law in (7.2.7), it is easy to see that the second line in (7.2.16) is equal to
+zero, therefore, by invoking the definition of r given in (7.2.6), (7.2.16)
+simplifies to
+
+                                                                                      (7.2.17)
+
+    From (7.2.17), we can place an upper bound on V in the following manner:
+
+                                                                                      (7.2.18)
+
+
+A new upper bound on                      can be obtained by substituting (7.2.9) into (7.2.18)
+to yield
+
+
+
+                                                                                      (7.2.19)
+
+By rearranging the second line of (7.2.19), it can be written as
+
+
+
+
+                                                                                      (7.2.20)
+
+
+After collecting common terms in (7.2.20), it can be rewritten as
+
+
+
+
+                                                                                      (7.2.21)
+
+
+    By noting that if the control gain ka is adjusted in accordance with
+
+                                                                                      (7.2.22)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+388                                            Advanced Control Techniques
+
+we can see that the terms on the second line of (7.2.21) will all be negative;
+therefore, we can obtain the new upper bound on .
+
+                                                                      (7.2.23)
+
+By rewriting (7.2.23) in the matrix form
+
+                                                                      (7.2.24)
+
+where
+
+
+
+
+we can establish sufficient conditions on kp and kv such that the matrix in
+(7.2.24) is positive definite. Specifically, by using the Gerschgorin theorem
+(see Chapter 2), we can see that if
+
+                                                                      (7.2.25)
+
+and
+
+                                                                      (7.2.26)
+
+
+the matrix defined in (7.2.24) will be positive definite; therefore, will be
+negative semidefinite.
+   We now detail the type of stability for the tracking error. First, since
+is negative semidefinite, we can state that V is upper bounded. Using the
+fact that V is upper bounded, we can state that e, , r, and are bounded.
+Since e, , r, and are bounded, we can use (7.2.13) to show that
+and hence in (7.2.17) are bounded. Second, note that since M(q) is
+lower bounded as delineated by the positive-definite property of the inertia
+matrix (see Chapter 3), we can state that V given in (7.2.14) is lower
+bounded. Since V is lower bounded, V is negative semidefinite, and is
+bounded, we can use Barbalat’s lemma (see Chapter 2) to state that
+
+
+
+Therefore, from the argument above and (7.2.24), we know that
+
+                                                                      (7.2.27)
+
+From (7.2.27), we can also determine the stability result for the velocity
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.2 Robot Controllers with Reduced On-Line Computation                         389
+
+tracking error. Specifically, from (7.2.6), note that r is defined to be a stable
+first-order differential equation in terms of the variable e; therefore, by standard
+linear control arguments, we can write
+
+                                                                           (7.2.28)
+
+This result informs us that if the controller gains are selected according to
+(7.2.22), (7.2.25), and (7.2.26), the tracking errors e and are asymptotically
+stable. From the analysis above, all we can say about the parameter error is
+that it remains bounded. The adaptive controller just derived is summarized
+in Table 7.2.1 and depicted in Figure 7.2.1.
+
+                                          Table 7.2.1: DCAL Controller
+
+
+
+
+   After glancing through Table 7.2.1, we can see that as opposed to the
+adaptive inertia-related controller, the DCAL has the obvious advantage of
+reduced on-line calculations. Specifically, the regression matrix Yd(·) depends
+only on the desired trajectory; therefore, the regression matrix can be calculated
+off-line. We now present an example to illustrate how Table 7.2.1 can be used
+to design adaptive controllers for robotic manipulators.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+390                                                       Advanced Control Techniques
+
+
+
+
+                          Figure 7.2.1: Block diagram of DCAL controller.
+
+
+
+
+  EXAMPLE 7.2–1: DCAL for the Two-Link Arm
+     We wish to design and simulate the DCAL given in Table 7.2.1 for the
+     two-link arm given in Figure 6.2.1. (The dynamics for this robot arm are
+     given in Chapter 3.) Assuming that the friction is negligible and the link
+     lengths are exactly known to be of length 1 m each, the DCAL can be
+     written as
+
+                                                                                  (1)
+
+     and
+
+                                                                                  (2)
+
+
+
+        In the expression for the control torques, the regression matrix Yd(·) is
+     given by
+
+
+                                                                                  (3)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.2 Robot Controllers with Reduced On-Line Computation                     391
+
+where
+
+
+
+
+Formulating the adaptive update rule as given in Table 7.2.1, the
+associated parameter estimate vector is
+
+
+
+with the adaptive update rules
+
+
+                                                                            (8)
+
+and
+
+                                                                            (9)
+
+For m1=0.8 kg and m2=2.3 kg, the DCAL was simulated with
+
+
+
+
+and
+
+
+
+
+The tracking error and mass estimates are depicted in Figure 7.2.2. As
+illustrated by the figure, the tracking error is asymptotically stable, and the
+parameter estimates remain bounded.
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+392                                                        Advanced Control Techniques
+
+Repetitive Control Law
+In many industrial applications, robot manipulators are used to perform the
+same task repeatedly. For example, a robot may be required to paint the same
+assembly-line part over and over again. As one can imagine, the desired
+trajectory for this painting operation would be a periodic function. That is,
+after the desired trajectory has been generated for painting the first part (i.e.,
+the first “trial”), the same desired trajectory should be followed in a repetitive
+fashion for painting the next part (i.e., the next “trial”).
+   If a control strategy does not take into account the nature of a repetitive
+operation, mistakes made along the first trajectory will be repeated from trial
+to trial. Therefore, one is motivated to design a controller that utilizes the
+tracking error measurements in the present trial to improve the tracking
+performance in the next trial. These types of controllers are often referred to
+as “learning” or repetitive controllers. The term “learning controller” is used
+to emphasize the fact that the controller attempts to learn the repeat able part
+of the manipulator dynamics.
+
+
+
+
+                            Figure 7.2.2: Simulation of DCAL controller.
+
+
+To motivate the design of the repetitive control law (RCL) [Sadegh et al.
+1990], we note that the dynamics given by
+
+                                                                              (7.2.29)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.2 Robot Controllers with Reduced On-Line Computation                       393
+
+are repeatable if the desired trajectory is periodic. That is, even though there
+may be unknown constant parametric quantities in (7.2.29), the signal
+represented by the n×1 vector ud(t) will be periodic or repeatable. Therefore,
+in the subsequent discussion, we assume that the desired trajectory is periodic
+with period T. This periodic assumption on the desired trajectory allows us to
+write
+
+                                          ud(t)=ud(t-T)                 (7.2.30)
+
+since the dynamics represented by ud(t) depend only on periodic quantities.
+   Utilizing the repeatability of the dynamics given by (7.2.29), the RCL is
+formulated as
+
+                                                                        (7.2.31)
+
+where the n×1 vector ûd(t) is a learning term that is used to compensate for the
+repeatable dynamics ud(t), and all other quantities are the same as those defined
+for the DCAL. The learning term ûd(t) is updated from trial to trial by the
+learning update rule
+
+                                                                        (7.2.32)
+
+where kL is a positive scalar control gain.
+   As done similarly in the adaptive control development, we will write the
+learning update rule given in (7.2.32) in terms of the learning error, which is
+defined as
+
+                                                                        (7.2.33)
+
+Specifically, multiplying (7.2.32) by -1 and then adding ud(t) to both sides of
+(7.2.32) yields
+
+                                                                        (7.2.34)
+
+By utilizing the periodic assumption given by (7.2.30), we can write (7.2.34)
+as
+
+                                                                        (7.2.35)
+
+which gives the learning error update rule
+
+                                                                        (7.2.36)
+
+where              is defined in terms of (7.2.33).
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+394                                               Advanced Control Techniques
+
+   Before we analyze the stability of the controller given in (7.2.31), we will
+form the corresponding error system. First, we rewrite (7.2.1) in terms of r
+defined in (7.2.6). That is, we have
+
+                                                                         (7.2.37)
+
+where the n×1 vector ua(t) is used to represent the “actual manipulator
+dynamics” given by
+
+                                                                         (7.2.38)
+
+Adding and subtracting the term ud(t) on the right-hand side of (7.2.37) yields
+
+                                                                         (7.2.39)
+
+where         is defined as
+
+                                                                         (7.2.40)
+
+As shown similarly in [Sadegh and Horowitz 1990], this difference between
+the actual manipulator dynamics (i.e., ua(t)) and the repeatable manipulator
+dynamics (i.e., ud(t)) can be quantified as
+
+                                                                         (7.2.41)
+
+
+where ␨1, ␨2, ␨3, and ␨4 are positive bounding constants that depend on the
+desired trajectory and the physical properties of the specific robot configuration
+(i.e., link mass, link length, friction coefficients, etc.).
+    The last step in forming the error system is to substitute the control given
+by (7.2.31) into (7.2.39) to yield
+
+                                                                         (7.2.42)
+
+We now analyze the stability of the error system given by (7.2.42) with the
+Lyapunov-like function
+
+
+                                                                         (7.2.43)
+
+
+Differentiating (7.2.43) with respect to time yields
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.2 Robot Controllers with Reduced On-Line Computation                        395
+
+
+
+
+                                                                          (7.2.44)
+
+
+Substituting the error system given by (7.2.42) into (7.2.44) yields
+
+
+
+
+                                                                          (7.2.45)
+
+
+By utilizing the skew-symmetric property and the learning error update law
+in (7.2.36), it is easy to show that the second line in (7.2.45) is equal to
+
+
+
+Therefore, by invoking the definition of r given in (7.2.6), (7.2.45) simplifies
+to
+
+                                                                          (7.2.46)
+
+From (7.2.46) we can place an upper bound on in the following manner:
+
+
+                                                                          (7.2.47)
+
+
+The rest of the stability argument is a modification of the stability argument
+presented in the preceding section for the DCAL. Specifically, we first note
+that (7.2.18) and (7.2.47) are almost identical since in (7.2.18) and in
+(7.2.47) are bounded by the same scalar function. After one retraces the steps
+of the DCAL stability argument, we can see that the controller gains ka and kp
+should still be adjusted according to (7.2.22) and (7.2.25), respectively.
+However, the controller gain kv, is adjusted in conjunction with the controller
+gain kL to satisfy
+
+                                                                          (7.2.48)
+
+where ␨1, ␨2, ␨3, and ␨4 are defined (7.2.41). If the controller gains are adjusted
+according to (7.2.22), (7.2.25), and (7.2.48), then from the analytical
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+396                                              Advanced Control Techniques
+
+development given for the DCAL (i.e., (7.2.18) to (7.2.24)) and (7.2.47), we
+can place the new upper bound on :
+
+                                                                       (7.2.49)
+
+where λ3 is a positive scalar constant given by λmin{Q0},
+
+
+
+
+   We now detail the type of stability for the tracking error. First note that
+from (7.2.49), we can place the new upper bound on :
+
+                                                                       (7.2.50)
+which implies that
+
+                                                                       (7.2.51)
+
+
+
+Multiplying (7.2.51) by -1 and integratisg the left-hand side of (7.2.51) yields
+
+
+                                                                       (7.2.52)
+
+
+Since is negative semidefinite as delineated by (7.2.49), we can state that V
+is a nonincreasing function and therefore is upper bounded by V(0). By recalling
+that M(q) is lower bounded as delineated by the positive-definite property of
+the inertia matrix, we can state that V given in (7.2.43) is lower bounded by
+zero. Since V is nonincreasing, upper bounded by V(0), and lower bounded by
+zero, we can write (7.2.52) as
+
+                                                                       (7.2.53)
+
+or
+
+
+                                                                       (7.2.54)
+
+The bound delineated by (7.2.54) informs us that              (see Chapter 2),
+which means that the filtered tracking error r is bounded in the “special” way
+given by (7.2.54).
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.2 Robot Controllers with Reduced On-Line Computation                         397
+
+    To establish a stability result for the position tracking error e, we establish
+the transfer function relationship between the position tracking error and the
+filtered tracking error r. From (7.2.6), we can state that
+
+                                          e(s)=G(s)r(s),                   (7.2.55)
+
+where s is the Laplace transform variable,
+
+                                          G (s)=(sI+I)-1,                  (7.2.56)
+
+and I is the n×n identity matrix. Since G(s) is a strictly proper, asymptotically
+stable transfer function and        , we can use Theorem 2.4.7 in Chapter 2 to
+state that
+
+                                                                           (7.2.57)
+
+    Therefore, if the controller gains are selected according to (7.2.22), (7.2.25),
+and (7.2.48), the position tracking error e is asymptotically stable. In accordance
+with the theoretical development presented in this section, all we can say
+about the velocity tracking error e is that it is bounded. It should be noted that
+if the learning estimate ûd(t) in (7.2.32) is “artificially” kept from growing,
+we can conclude that the velocity tracking error is asymptotically stable [Sadegh
+et al. 1990]. The stability proof for this modification is a straightforward
+application of the adaptive control proofs presented in Chapter 6.
+
+The repetitive controller examined in this section is summarized in Table
+7.2.2 and depicted in Figure 7.2.3. After glancing through Table 7.2.2, we
+can see that the RCL requires very little information about the robot being
+controlled as opposed to adaptive controllers that required the formulation of
+regression-type matrices. Another obvious advantage of the RCL is that it
+requires very little on-line computation. We now present an example to illustrate
+how Table 7.2.2 can be used to design repetitive controllers for robot
+manipulators.
+
+EXAMPLE 7.2–2: RCL for the Two-Link Arm
+We wish to design and simulate the RCL given in Table 7.2.2 for the two-link
+arm given in Figure 6.2.1. (The dynamics for this robot arm are given in
+Chapter 3.) From Table 7.2.2, the RCL can be written as
+
+                                                                                 (1)
+
+and
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+398                                                             Advanced Control Techniques
+
+                                          Table 7.2.2: RCL Controller
+
+
+
+
+                                                                                        (2)
+
+
+Formulating the learning update rule as given in Table 7.2.2 yields
+
+                                                                                        (3)
+
+and
+
+                                                                                        (4)
+
+For m1=0.8 kg, m2=2.3 kg, and nk lengths of 1 m, the RCL was simulated
+with
+
+                                           ka=kv=kp=kL=50, T=2p,
+
+
+
+
+and
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.3 Adaptive Robust Control                                                 399
+
+
+
+
+The position and velocity tracking error is depicted in Figure 7.2.4. As
+illustrated by the figure, the position and velocity tracking error are both
+asymptotically stable; however, in accordance with the theoretical development
+in this subsection, we are only guaranteed that the position tracking error will
+be asymptotically stable.
+
+
+
+
+                                   Figure 7.2.3: Block diagram of RCL.
+
+
+
+
+7.3 Adaptive Robust Control
+
+In Chapter 6 we discussed the use of adaptive controllers for the tracking
+control of robot manipulators. One of the attractive features of the adaptive
+controllers is that the control implementation does not require a priori
+knowledge of unknown constant parameters such as payload masses or friction
+coefficients. Two disadvantages of the adaptive controllers are that large
+amounts of on-line calculation are required, and the lack of robustness to
+additive bounded disturbances.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+400                                                           Advanced Control Techniques
+
+
+
+
+                                     Figure 7.2.4: Simulation of RCL.
+
+
+
+   In Chapter 5 we discussed the use of robust controllers for the control of
+robot manipulators. Two of the attractive features of the robust controllers
+are that on-line computation is kept to a minimum and their inherent robustness
+to additive bounded disturbances. One of the disadvantages of the robust
+control approach is that these controllers require a priori known bounds on
+the uncertainty. In general, calculations of the bounds on the uncertainty can
+be quite a tedious process since this calculation involves finding the maximum
+values for the mass and friction related constants for each link of the robot
+manipulator. Another disadvantage of the robust control approach is that
+even in the absence of additive bounded disturbances, we cannot guarantee
+asymptotic stability of the tracking error. In general, it would be desirable to
+obtain at least a “theoretical” asymptotic stability result for the tracking
+error.
+   In this section an adaptive robust controller is developed for the tracking
+control of robot manipulators. The adaptive robust controller can be thought
+of as combining the best qualities of the adaptive controller and the robust
+controller. This control approach has the advantages of reduced online
+calculations (compared to the adaptive control method), robustness to additive
+bounded disturbances, no a priori knowledge of system uncertainty, and
+asymptotic tracking error performance.
+   For purposes of control design in this section, we assume that the robotic
+manipulator is a revolute manipulator with dynamics given by
+
+                                                                                   (7.3.1)
+
+where Fd is a n×n positive definite, diagonal matrix that is used to represent
+the dynamic coefficients of friction,                  vector containing the
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.3 Adaptive Robust Control                                                   401
+
+static friction terms, Td is a n×1 vector representing an unknown bounded
+disturbance, and all other quantities are as defined in Chapter 3.
+   The adaptive robust controller is very similar to the robust control strategies
+discussed in Chapter 5 in that an auxiliary controller is used to “bound” the
+uncertainty. Recall from Chapter 5 that the robust controllers bounded the
+uncertainty by using a scalar function that was composed of tracking error
+norms and positive bounding constants. For example, suppose that the dynamics
+given by
+
+                                                                          (7.3.2)
+
+represent the uncertainty for a given robot controller. That is, the dynamics
+given by (7.3.2) are uncertain in that payload masses, coefficients of friction,
+and disturbances are not known exactly. It is assumed; however, that a positive
+scalar function ρ can be used to bound the uncertainty as follows:
+
+                                                                          (7.3.3)
+
+As delineated in [Dawson et al. 1990], the physical properties of the robot
+manipulator can be used to show that the dynamics given by (7.3.2) can be
+bounded as
+
+                                                                          (7.3.4)
+
+where
+
+                                                                           (7.3.5)
+
+
+and δ0, δ1, and δ2 are positive bounding constants that are based on the largest
+possible payload mass, link mass, friction coefficients, disturbances, and so on.
+   In general, the robust controllers presented in Chapter 5 required that the
+bounding constants defined in (7.3.4) be formulated a priori. The adaptive
+robust controller that will be developed in this section “learns” these bounding
+constants on-line as the manipulator moves. That is, in the control
+implementation, we do not require knowledge of the bounding constants;
+rather, we only require the existence of the bounding constants defined in
+(7.3.4).
+   Similar to the general development presented in [Corless and Leitmann
+1983], the adaptive robust controller has the form
+
+                                                                          (7.3.6)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+402                                               Advanced Control Techniques
+
+where Kv is a n×n diagonal, positive-definite matrix, r (the filtered tracking
+error) is defined as in (7.2.6), and vR is a n×1 vector representing an auxiliary
+controller. The auxiliary controller vR in (7.3.6) is defined by
+
+                                                                           (7.3.7)
+
+where
+
+                                                                            (7.3.8)
+
+kε is a positive scalar control constant,    is a scalar function defined as
+                                                                           (7.3.9)
+
+and                 are the dynamic estimates of the corresponding bounding
+constants δ0, δ1, and δ2 defined in (7.3.4). The bounding estimates denoted by
+“ˆ” are changed on-line based on an adaptive update rule. Before giving the
+update rule, we write (7.3.9) in the more convenient form
+
+                                                                          (7.3.10)
+
+where
+
+
+
+The actual bounding function ρ given in (7.3.3) can also be written in the
+matrix form
+                                                                  (7.3.11)
+
+
+where
+
+
+Note the similarity between the regression matrix formulation in the adaptive
+approach (see Chapter 6) and the formulation given by (7.3.10). Specifically,
+the 1×3 matrix S resembles a “regression matrix,” and the 3×1 vector
+resembles a “parameter estimate vector.”
+   The bounding estimates defined in (7.3.10) are updated on-line by the
+relation
+                                                                          (7.3.12)
+
+where r is defined in (7.2.6), S is defined in (7.3.10), and γ is a positive scalar
+control constant. For convenience, we also note that since δ0, δ1, and δ2 defined
+in (7.3.4) are constants, (7.3.12) can be written as
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.3 Adaptive Robust Control                                                 403
+
+                                                                       (7.3.13)
+
+since we will define the difference between ␪ and      as
+
+                                                                       (7.3.14)
+
+   We now turn our attention to analyzing the stability of the corresponding
+error system for the controller given in (7.3.6). Substituting the controller
+(7.3.6) into the robot Equation (7.3.1) gives the error system
+
+                                                                       (7.3.15)
+
+where w is defined in (7.3.2).
+  We now analyze the stability of the error system given by (7.3.15) with the
+Lyapunov-like function
+
+                                                                       (7.3.16)
+
+Differentiating (7.3.16) with respect to time yields
+
+                                                                       (7.3.17)
+
+
+since scalar quantities can be transposed. Substituting (7.3.13) and (7.3.15)
+into (7.3.17) yields
+
+
+                                                                       (7.3.18)
+
+
+By utilizing the skew-symmetric property, it is easy to see that the second line
+in (7.3.18) is equal to zero. From (7.3.18), we can use (7.3.3) and (7.3.11) to
+place an upper bound on V in the following manner:
+
+                                                                       (7.3.19)
+
+Substituting (7.3.7), (7.3.8), (7.3.10) and (7.3.14) into (7.3.19), we obtain
+
+
+                                                                       (7.3.20)
+
+
+which can be written as
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+404                                              Advanced Control Techniques
+
+
+
+                                                                        (7.3.21)
+
+
+Obtaining a common denominator for the last two terms in (7.3.21) enables
+us to write (7.3.21) as
+
+
+                                                                        (7.3.22)
+
+
+Since the sum of the last two terms in (7.3.22) is always less than zero, we can
+place the new upper bound on :
+
+                                                                        (7.3.23)
+
+We now detail the type of stability for the tracking error. First, note from
+(7.3.23) that we can place the new upper bound on :
+
+                                                                        (7.3.24)
+
+As illustrated for the RCL in the preceding section, we can use (7.3.24) to
+show that all signals are bounded and that           (see Chapter 2). Following
+the RCL stability analysis, we can use (7.2.6) to show that the position tracking
+error (e) is related to the filtered tracking error r by the transfer function
+relationship
+
+                                                                        (7.3.25)
+
+where s is the Laplace transform variable and G(s) is a strictly proper,
+asymptotically stable transfer function. Therefore, we can use Theorem 2.4.7
+in Chapter 2 to state that
+
+                                                                        (7.3.26)
+
+The result above informs us that the position tracking error e is asymptotically
+stable. In accordance with the theoretical development presented in this section,
+we can only state that the velocity tracking error e and the bounding estimates
+   are bounded. It should be noted that in [Corless and Leitmann 1983], a
+more complex theoretical development is presented that proves the velocity
+tracking error is asymptotically stable. However, in the interest of brevity
+this additional information is left for the reader to pursue.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.3 Adaptive Robust Control                                               405
+
+                               Table 7.3.1: Adaptive Robust Controller
+
+
+
+
+    The adaptive robust controller derived in this section is summarized in
+Table 7.3.1 and depicted in Figure 7.3.1. We now present an example to
+illustrate how Table 7.3.1 can be used to design adaptive robust controllers
+for robot manipulators.
+
+EXAMPLE 7.3–1: Adaptive Robust Controller for the Two-Link Arm
+We wish to design and simulate the adaptive robust controller given in Table
+7.3.1 for the two-link arm given in Figure 6.2.1. (The dynamics for this robot
+arm are given in Chapter 3.) To model friction and disturbances, the dynamics
+
+                                                                           (1)
+
+and
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+406                                                  Advanced Control Techniques
+
+                                                                                (2)
+
+were added to          respectively, in the two-link robot model.
+We can now use Table 7.3.1 to formulate the adaptive robust controller as
+
+
+
+                                                                                (3)
+
+
+and
+
+                                                                                (4)
+
+
+
+
+   In the expression above for the control torques, the bounding function        is
+given by
+
+                                                                                (5)
+
+where                                     From Table 7.3.1, the associated bounding
+estimates are updated in the fashion
+
+                                                                                (6)
+
+
+   For m1=0.8 kg, m2=2.3 kg, and link lengths of 1 m each, the adaptive
+robust controller was simulated with the control parameters, initial conditions,
+and desired trajectory given by
+
+
+
+
+and
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                          407
+
+    The tracking error and mass estimates are depicted in Figure 7.3.2. As
+illustrated by the figure, the position and the velocity tracking error are both
+asymptotically stable, and the bounding estimates remain bounded. It should
+be noted that from the theoretical development given in this section, we are
+only guaranteed that the position tracking error is asymptotically stable while
+all other signals remain bounded.
+
+
+
+
+                   Figure 7.3.1: Block diagram of adaptive robust controller.
+
+
+
+7.4 Compensation for Actuator Dynamics
+
+Throughout this book we have discussed controllers that are designed at the
+“torque input level.” That is, any dynamics associated with the actuators
+have been neglected. The reason for bringing up this point is not to denigrate
+the control development discussed previously, since this research has been
+involved with solving a very difficult problem, namely, the global tracking
+control of a highly nonlinear system in the presence of uncertainty. We
+mention this deficiency in previous approaches to highlight the fact that
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+408                                                       Advanced Control Techniques
+
+
+
+
+                     Figure 7.3.2: Simulation of adaptive robust controller.
+
+
+in many robot control researchers’ opinions, it is now time to begin to include
+the effects of actuator dynamics in the control synthesis. Recently, several
+researchers have postulated that the detrimental effects of actuators are
+preventing high-speed motion/force control of robot manipulators [Eppinger
+and Seering 1987].
+    In this section we illustrate how a systematic approach can be used to
+compensate for actuator dynamics in the form of electrical effects and joint
+flexibilities. Using this approach and the assumption of exact model knowledge,
+controllers are developed that yield a global asymptotic stability result for
+the link tracking error. Although we assume exact knowledge of the model, it
+is important to realize that in some cases, it may be possible to formulate
+adaptive and robust nonlinear tracking controllers to compensate for
+“uncertainty.” The compensation of uncertain systems in the presence of
+actuator dynamics is currently being researched [Ghorbel and Spong 1990].
+
+Electrical Dynamics
+In this subsection, we illustrate how a “corrective” controller [Kokotovic et
+al. 1986] can be synthesized that ensures asymptotic link tracking despite the
+electrical dynamics that a motor will add to the overall system dynamics.
+The terminology corrective controller is used to emphasize the fact that the
+controller corrects for the electrical dynamics. The class of robots studied in
+this subsection will be referred to as rigid-link electrically driven (RLED)
+robots. For simplicity, we assume that the ac-tuator is a direct-current (dc)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                        409
+
+motor; however, the following analysis, with some modifications, can be
+used for more complicated motors such as the switched-reluctance motor
+[Taylor 1989].
+   The model [Tarn et al. 1991] for the RLED robot is taken to be
+
+                                                                           (7.4.1)
+
+
+                                                                           (7.4.2)
+
+where
+                                                                           (7.4.3)
+
+M(q) is a n×n link inertia matrix,               is a n×I vector containing the
+centripetal, Coriolis, gravity, damping, and friction terms, J is a n×n constant,
+diagonal, positive-definite matrix used to represent the actuator inertia, I(t) is
+an n×1 vector used to denote the current in each actuator, KT is a constant
+diagonal n×n matrix used to represent the conversion between torque and
+current, La is a n×n constant positive-definite diagonal matrix used to represent
+the electrical inductance,         is a n×1 vector used to represent the electrical
+resistance and the motor back-electromotive force, and uE(t) is an n×1 control
+vector used to represent the input motor voltage.
+   Throughout the book, a good deal of emphasis has been placed on the
+utilization of physical properties of robot manipulators to aid us in the stability
+analysis. In this tradition we note that the composite inertia matrix M(q)
+defined in (7.4.3) is symmetric, positive definite, and is uniformly bounded as
+a function of q; therefore, we can state for any n×1 vector x that
+
+                                                                           (7.4.4)
+
+   where m1 is a positive scalar constant that depends on the mass properties
+of the specific robot (see Chapter 3). From (7.4.4), it can also be established
+that
+
+
+
+                                                                           (7.4.5)
+
+where ||·||i2 is used to denote the induced 2-norm (see Chapter 2).
+    As discussed many times before, we are interested in the performance of
+the link tracking error. To avoid confusion, we restate that the tracking error
+is defined to be
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+410                                               Advanced Control Techniques
+
+                                                                          (7.4.6)
+
+where qd represents the desired link trajectory. We will assume that qd and its
+first, second, and third derivatives are all bounded as functions of time. We
+also assume that the first derivative of the link dynamics on the left-hand side
+of (7.4.1) exists. These assumptions on the “smoothness” of the desired trajectory
+and the link dynamics ensure that the controller, which will be developed
+later, remains bounded.
+    The control objective will be to obtain asymptotic link tracking despite the
+electrical dynamics. To accomplish this objective, we first rewrite (7.4.1) in
+terms of the tracking error given by (7.4.6) to yield
+
+                                                                          (7.4.7)
+
+The error system given by (7.4.7) can also be written in the state-space form
+
+                                                                          (7.4.8)
+
+where
+
+
+
+
+On×n is the n×n zero matrix, and In×n is the n×n identity matrix.
+   As one can plainly see, there is no control input in (7.4.8); therefore, we
+will add and subtract the term BM-1(q)uL on the right-hand side of (7.4.8) to
+yield
+
+
+                                                                          (7.4.9)
+
+
+where uL is an n×1 vector representing a “fictitious” n×1 control input. As it
+turns out, the controller uL is the computed-torque controller that ensures
+asymptotic link tracking error if the electrical dynamics were not present. As
+we will see later, the fictitious controller uL is actually embedded inside the
+overall control strategy, which is designed at the voltage control input uE.
+   Continuing with the error system development, we define uL for RLED
+robots to be the computed-torque controller
+
+                                                                         (7.4.10)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+                                          (7.4.11)
+
+
+7.4 Compensation for Actuator Dynamics                                         411
+
+where KLv and KLp are defined to be n×n positive-definite diagonal matrices.
+Substituting (7.4.10) for only the first uL term in (7.4.9) yields the link tracking
+error system
+
+                                                                           (7.4.11)
+
+where
+
+
+
+
+   With regard to the link tracking error system given by (7.4.11), if ηE could
+be guaranteed to be zero for all time, we could easily show that the tracking
+error would be asymptotically stable since AL defined in (7.4.12) has stable
+eigenvalues. Therefore, one can view the control objective as forcing the
+“perturbation” η E to go to zero.
+   To design a control law for ηE, we must first establish its dynamic
+characteristics. From (7.4.12), the derivative of ηE with respect to time is
+given by
+
+                                                                           (7.4.13)
+
+To obtain the the dynamic characteristics of ηE, we substitute for in (7.4.13)
+from (7.4.2) to yield
+
+                                                                           (7.4.14)
+
+   We can now use (7.4.14) to design a control law at the input uE to force ηE
+to go to zero. The fact that ηE should go to zero motivates the corrective
+control law
+                                                                           (7.4.15)
+
+where KEp is defined to be a n×n positive-definite diagonal matrix. Substituting
+(7.4.15) into (7.4.14) yields
+                                                                           (7.4.16)
+
+The dynamic equations given by (7.4.11) and (7.4.16) can be thought of as
+two interconnected systems representing the overall closed-loop dynamics. As
+one would expect, it would be desirable to determine the type of stability of
+the overall closed-loop system. To determine the type of stability of (7.4.11)
+and (7.4.16), we will utilize the Lyapunov function
+
+                                                                           (7.4.17)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+412                                              Advanced Control Techniques
+
+where
+
+
+
+
+If the sufficient condition given by
+
+                                                                        (7.4.18)
+
+is satisfied, then by the Gerschgorin theorem (see Chapter 2), it is obvious that
+PL is a positive-definite matrix, and hence V is a Lyapunov function. The
+condition given by (7.4.18) simply means that the smallest velocity controller
+gain should be larger than 1.
+    Differentiating (7.4.17) with respect to time yields
+
+                                                                        (7.4.19)
+Substituting (7.4.11) and (7.4.16) into (7.4.19) yields
+
+
+
+where
+
+
+
+
+Note that if the sufficient condition given by (7.4.18) holds, it is obvious that
+the matrix QL is positive definite. Using the fact that QL is positive definite
+allows us to place an upper bound on given in (7.4.20). This upper bound
+is given by
+
+                                                                        (7.4.22)
+
+where
+
+
+
+
+where ml is defined in (7.4.5).
+   To determine the sufficient conditions on the controller gains for asymptotic
+stability, we rewrite (7.4.22) in the matrix form
+                                                                        (7.4.23)
+where
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                         413
+
+
+
+
+By the Gerschgorin Theorem, the matrix Q defined in (7.4.23) will be positive
+                                        0
+definite if the sufficient condition
+
+                                                                           (7.4.24)
+
+holds. Therefore, if the controller gains satisfy the conditions given by (7.4.18)
+and (7.4.24), we can use standard Lyapunov stability arguments (see Chapter
+2) to state that the vector x0 defined in (7.4.23) and hence ||e||, e, and e are all
+asymptotically stable. It is easy to show that if the sufficient condition
+
+                                                                           (7.4.25)
+
+holds, the conditions given by (7.4.18) and (7.4.24) are always satisfied.
+   It should be noted that the control given by (7.4.15) depends on the
+measurement of uL,      and I. At first one might be tempted to state that this
+controller requires measurements of             and I; however, since we have
+assumed exact knowledge of the dynamic model given by (7.4.1) and (7.4.2),
+we can use this information to eliminate the need for measuring q That is, by
+differentiating (7.4.10) with respect to time, uL can be written as
+
+                                                                           (7.4.26)
+
+
+
+
+where         is found from (7.4.1) to be
+
+
+
+
+After substituting for in (7.4.26), uL will depend only on the measurement of
+q, and I. The actual control that would be implemented at the control input
+uE can be found by making the appropriate substitution into (7.4.15). That is,
+the corrective control given by (7.4.15) can be written as
+
+
+                                                                           (7.4.27)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+414                                                Advanced Control Techniques
+
+where       would be given by (7.4.26).
+    After examining the functional dependence of             given in (7.4.26), it is
+now obvious why we have assumed that the desired trajectory and the link
+dynamics be sufficiently smooth. Specifically, we can see from (7.4.26) that
+the corrective controller requires that the first, second, and third time derivatives
+of the desired trajectory to be bounded while requiring the existence of the
+first derivative of the link dynamics. These assumptions on the desired trajectory
+and the link dynamics ensure that the control input will remain bounded.
+    The corrective controller derived above is summarized in Table 7.4.1 and
+depicted in Figure 7.4.1. We now present an example to illustrate how Table
+7.4.1 can be used to design corrective controllers for RLED robots.
+
+EXAMPLE 7.4–1: Corrective Controller for the One-Link RLED Arm
+We wish to design and simulate a corrective controller using Table 7.4.1 for
+the one-link motor-driven robot arm given in Figure 7.4.2. The dynamics for
+the system are taken to be
+
+                                                                                  (1)
+
+and
+
+                                                                                 (2)
+
+
+where m=1kg, KT=2 N/A, kb=0.3 V-S, fd=3 kg-m/s, L=1 m, La=0.1 H, R=5
+Ω, g is the gravitational coefficient, J=0.2 kg-m2, I is the motor current, and uE
+is the motor input voltage.
+    Assuming that the model given by (1) and (2) is known exactly, we can use
+Table 7.4.1 to formulate the corrective controller
+
+
+
+                                                                                  (3)
+
+
+where
+
+
+
+                                                                                  (4)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                   415
+
+                               Table 7.4.1: RLED Corrective Controller
+
+
+
+
+where         is found from (1) to be
+
+                                                                         (5)
+
+The corrective controller was simulated with the control parameters, initial
+conditions, and desired trajectory given by
+
+
+
+
+and
+
+
+
+
+The tracking error and the control voltage are depicted in Figure 7.4.3. As
+illustrated by the figure, the tracking error is asymptotically stable.
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+416                                                         Advanced Control Techniques
+
+
+
+
+               Figure 7.4.1: Block diagram of RLED corrective controller.
+
+
+
+
+                                   Figure 7.4.2: One-link RLED robot.
+
+
+
+
+Joint Flexibilities
+In this subsection we illustrate how a “corrective” controller can be
+synthesized that ensures asymptotic link tracking despite the joint flexibilities
+that a drive or gearing will add to the overall system dynamics. The
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                             417
+
+
+
+
+                     Figure 7.4.3: Simulation of RLED corrective controller.
+
+
+terminology corrective controller is used to emphasize the fact that the controller
+corrects for the dynamics that are used to represent the effects of joint
+flexibilities. The class of robots studied in this subsection will be referred to as
+rigid-link flexible-joint (RLFJ) robots.
+   The model [Spong 1987] for the RLFJ robot is taken to be
+
+                                                                               (7.4.28)
+
+
+
+
+                                                                               (7.4.29)
+where
+
+
+                                                                               (7.4.30)
+
+qm(t) is a n×1 vector representing the motor displacement, K is a constant,
+diagonal, positive-definite n×n joint flexibility matrix,             is an
+n×1 vector that represents the motor damping and flexibility effects, uF(t)
+is an n×1 control vector used to represent the input torque, and all other
+quantities are defined as in the preceding subsection. With regard to the
+rigid link model given in (7.4.28), we note from Chapter 3 that for any
+n×1 vector x
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+418                                               Advanced Control Techniques
+
+
+
+
+                                                                          (7.4.31)
+
+where m1 is a positive scalar constant.
+   As in the preceding subsection, we are interested in the performance of the
+link tracking error defined in (7.4.6). For the control of RLFJ robots, we will
+assume that qd and its first, second, third, and fourth derivatives are all bounded
+as functions of time. We also assume that the first and second derivatives of
+the link dynamics on the left-hand side of (7.4.28) exist. These assumptions
+on the “smoothness” of the desired trajectory and the link dynamics ensure
+that the controller, developed later, remains bounded.
+   Following the same analytical development given in the previous sections,
+we write (7.4.28) in terms of the tracking error given by (7.4.6) to yield the
+state-space form
+
+                                                                          (7.4.32)
+
+where A0, e, and B are defined as in (7.4.8). Again, since there is no control
+input in (7.4.32); we add and subtract the term BM-1(q)uL on the right-hand
+side of (7.4.32) to yield
+
+
+                                                                          (7.4.33)
+
+
+where uL is again used to represent a fictitious n×1 control input. As before,
+the fictitious controller uL will be embedded inside the overall control strategy,
+which is designed at the control input uF.
+   Continuing with the error system development, we define uL for RLFJ robots
+to be the computed-torque controller
+
+                                                                          (7.4.34)
+
+where KLv and KLp are defined as in (7.4.10). Substituting (7.4.34) into (7.4.33)
+yields the link tracking error system
+
+                                                                          (7.4.35)
+
+where AL is defined as in (7.4.12),
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                        419
+
+
+                                                                         (7.4.36)
+
+
+   The reason for defining η F in terms of (uL-Kqm) and its derivative is that the
+dynamics given by (7.4.29) are second-order dynamics. That is, since the
+                                                                            .
+actuator dynamics are second order, we force ηF and its derivative (i.e.ηF, ) to
+zero to ensure that the link tracking error (e) goes to zero.
+   To design a control law for ηF, we must first establish its dynamic
+characteristics. From (7.4.36), the derivative of ηF is given by
+
+
+                                                                         (7.4.37)
+
+
+To obtain the the dynamic characteristics of ηF, we substitute for qm in (7.4.37)
+from (7.4.29) to yield
+
+                                                                         (7.4.38)
+
+   We can now use (7.4.38) to design a control law at the input uF to force η F
+to go to zero. The fact that ηF should go to zero motivates the control law
+                                                                         (7.4.39)
+
+where KFv and KFp are defined to be n×n positive-definite diagonal matrices.
+Substituting (7.4.39) into (7.4.38) yields
+
+                                                                         (7.4.40)
+where
+
+
+
+
+The dynamic equations given by (7.4.35) and (7.4.40) can be thought of as
+two interconnected systems representing the overall closed-loop dynamics.
+To determine the type of stability for the closed-loop dynamics, we will utilize
+the Lyapunov function
+
+                                                                         (7.4.41)
+
+where PL is defined in (7.4.17) and
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+420                                              Advanced Control Techniques
+
+
+
+
+If the sufficient condition given by
+
+                                                                       (7.4.42)
+
+is satisfied, then by the Gerschgorin theorem it is obvious that the matrices PL
+and PF given in (7.4.41) are positive-definite matrices, and hence V is a
+Lyapunov function.
+    Differentiating (7.4.41) with respect to time yields
+
+                                                                       (7.4.43)
+
+Substituting (7.4.35) and (7.4.40) into (7.4.43) yields
+
+                                                                       (7.4.44)
+
+where QL is defined in (7.4.21) and
+
+
+                                                                       (7.4.45)
+
+
+   Note that if the sufficient condition given by (7.4.42) holds, it is obvious
+that the matrices QL and QF defined in (7.4.44) are positive-definite matrices.
+Using the fact, that QL and QF are positive definite allows us to place an
+upper bound on given in (7.4.44). This upper bound is given by
+                                                                       (7.4.46)
+
+where
+
+
+
+
+where m1 is defined in (7.4.31).
+   To determine the sufficient conditions on the controller gains for asymptotic
+stability, we rewrite (7.4.46) in the matrix form
+
+                                                                       (7.4.47)
+
+where
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                         421
+
+
+
+
+By the Gerschgorin theorem, the matrix Q defined in (7.4.47) will be positive
+                                        1
+definite if the sufficient condition
+                                                                           (7.4.48)
+
+holds. Therefore, if the controller gains satisfy the conditions given by (7.4.42)
+and (7.4.48), we can use standard Lyapunov stability arguments to state that
+the vector x1 defined in (7.4.47), and hence ||e||, e, and e, are all asymptotically
+stable. It is easy to show that if the sufficient condition
+
+
+
+                                                                           (7.4.49)
+holds, the conditions given by (7.4.42) and (7.4.48) are always satisfied.
+   It should be noted that the corrective controller given by (7.4.39) depends
+on the measurement of                                Again, it seems that this
+control would require measurements of and its derivative; however, since
+we have assumed exact knowledge of the dynamic model, we can use this
+information to eliminate the need for measuring and its derivative. That is,
+   can be written as
+
+
+
+                                                                           (7.4.50)
+
+
+where         is found from (7.4.28) to be
+
+                                                                           (7.4.51)
+
+   Substituting (7.4.51) into (7.4.50), we see that uL can be written as a function
+of          , and time (i.e., t) since the desired trajectory can be explicitly
+written as a function of time. We can delineate this functional dependence by
+use of the equation
+
+                                                                           (7.4.52)
+
+where              is an n×1 vector given by the right-hand side of (7.4.50).
+We can obtain the functional dependence for üL by differentiating (7.4.52)
+with respect to time to yield
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+422                                               Advanced Control Techniques
+
+                                                                         (7.4.53)
+
+where                       is an n×1 vector. Note that (7.4.51) can be used
+again to eliminate the need for measurement of therefore, the expressions
+given for    and üL in (7.4.50) and (7.4.53), respectively, depend only on the
+measurements of                         and The actual control that would be
+implemented at the control input uF can be found by making the appropriate
+substitution into (7.4.39). That is, the corrective control given by (7.4.39) can
+be written as
+
+
+
+
+                                                                         (7.4.54)
+
+
+where      and üL would be given by (7.4.50) and (7.4.53), respectively.
+    After closely examining the functional dependence of          and üL given in
+(7.4.50) and (7.4.53), respectively, it is obvious why we have assumed that
+the desired trajectory and link dynamics be sufficiently smooth. Specifically,
+we can see from (7.4.50) and (7.4.53) that the corrective controller given in
+(7.4.39) will require that the first, second, third, and fourth time derivative of
+the desired trajectory be bounded while also requiring the existence of the
+first and second derivatives of the link dynamics. These assumptions on the
+desired trajectory and the link dynamics ensure that the control input will
+remain bounded.
+
+The corrective controller derived above is summarized in Table 7.4.2 and
+depicted in Figure 7.4.4. We now present an example to illustrate how Table
+7.4.2 can be used to design corrective controllers for RLFJ robots.
+
+EXAMPLE 7.4–2: Corrective Controller for the One-Link RLFJ Arm
+We wish to design and simulate a corrective controller using Table 7.4.2 for
+the one-link flexible joint robot arm given in Figure 7.4.5. The dynamics for
+the system are taken to be
+
+
+
+
+                                                                               (1)
+
+and
+                                                                               (2)
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                   423
+
+                               Table 7.4.2: RLED Corrective Controller
+
+
+
+
+where m=1 kg, K=10 N, B=5 kg-m/s, fd=3 kg-m/s, L=1 m, g is the gravitational
+coefficient, J=0.2 kg-m2, qm is the motor displacement measured in radians,
+and uF is the input torque.
+  Assuming that the model given by (1) and (1) is exactly known, we can use
+Table 7.4.2 to formulate the corrective controller
+
+
+
+
+                                                                         (3)
+
+
+where
+
+
+                                                                         (4)
+
+
+and is found from (1) to be
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+424                                                      Advanced Control Techniques
+
+
+
+
+                   Figure 7.4.4: Block diagram of RLFJ corrective controller.
+
+
+and       is found from (1) to be
+
+                                                                                 (5)
+
+To obtain an expression for üL given in (3), we substitute (5) into (4) to yield
+
+
+
+
+                                                                                 (6)
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+7.4 Compensation for Actuator Dynamics                                    425
+
+
+
+
+                                     Figure 7.4.5: One-link RLFJ robot.
+
+Differentiating (6) with respect to time yields
+
+
+
+
+                                                                           (7)
+where is found from (5).
+  The corrective controller was simulated with the control parameters, initial
+conditions, and desired trajectory given by
+
+
+
+
+and
+
+
+
+
+The tracking error and the control torque are depicted in Figure 7.4.6. As
+illustrated by the figure, the tracking error is asymptotically stable.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+426                                                        Advanced Control Techniques
+
+
+
+
+                      Figure 7.4.6: Simulation of RLFJ corrective controller.
+
+
+
+
+7.5 Summary
+
+In this chapter an account of several of the more advanced control techniques
+for the control of robot manipulators has been given. The intent of this chapter
+has been to study controllers that reduce online computation and controllers
+that compensate for actuator dynamics. Some current research issues involve
+the integration of force controllers with advanced motion controllers and the
+corresponding digital implementation.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES
+[Corless and Leitmann 1983] Corless, M., and G.Leitmann, “Adaptive control of
+    systems containing uncertain functions and unknown functions with uncertain
+    bounds,” J. Optim. Theory Appl., Jan. 1983.
+
+[Dawson et al. 1990] Dawson, D.M., Z.Qu, F.L.Lewis, and J.F.Dorsey, “Robust control
+    for the tracking of robot motion,” Int. J. Control, vol. 52, pp. 581–595, 1990.
+
+[Eppinger and Seering 1987] Eppinger, S., and W.Seering, “Introduction to Dynamic
+    models for robot force control,” IEEE Control Syst. Mag., vol. 7, no. 2, pp. 48–
+    52, Apr. 1987.
+
+[Ghorbel and Spong 1990] Ghorbel, F:, and M.Spong, “Stability analysis of adaptively
+    controlled flexible joint robots,” Proc. IEEE Conf. Decision Control, Honolulu,
+    pp 2538–2544, 1990.
+
+[Kokotovic et al. 1986] Kokotovic, P.V., H.Khalil, and J.O’Reilly, Singular Perturbation
+    Methods in Control Analysis and Design. New York: Academic Press, 1986.
+
+[Sadegh and Horowitz 1990] Sadegh, N., and R.Horowitz, “Stability and robustness
+    analysis of a class of adaptive controllers for robotic manipulators,” Int. J.
+    Robot. Res., vol. 9, no. 3, pp. 74–92, June 1990.
+
+[Sadegh et al. 1990] Sadegh, N., R.Horowitz, W.Kao, and M.Tomizuka, “A unified
+    approach to the design of adaptive and repetitive controllers for robotic
+    manipulators,” Trans. ASME, vol. 112, pp. 618–629, Dec. 1990.
+
+
+[Spong 1987] Spong, M., “Modeling and control of elastic joint robots,” J. Dyn.
+    Syst., Meas. Control, vol. 109, pp. 310–319, Dec. 1987.
+
+
+[Tarn et al. 1991] Tarn, T., A.Bejczy, X.Yun, and Z.Li, “Effect of motor dynamics on
+    nonlinear feedback robot arm control,” IEEE Trans. Robot. Autom., vol. 7, pp.
+    114–122, Feb. 1991.
+                                                                                   427
+Copyright © 2004 by Marcel Dekker, Inc.
+428                                                              REFERENCES
+
+[Taylor 1989] Taylor, D., “Composite control of direct-drive robots,” Proc. IEEE
+    Conf. Decision Control, pp. 1670–1675, Dec. 1989.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+REFERENCES                                                                  429
+
+
+PROBLEMS
+
+Section 7.2
+
+7.2–1 Illustrate how the DCAL stability analysis can be modified if the filter
+      tracking error is defined as
+
+
+
+            where Λ is a positive-definite diagonal matrix.
+
+7.2–2 Design and simulate the DCAL controller given in Table 7.2.1 for the
+      two-link polar robot arm given in Chapter 3. (Ignore the fact that this
+      robot has a prismatic link.)
+
+7.2–3 Can the DCAL stability analysis (and consequently, the controller
+      itself) be modified to account for the prismatic link robot given in
+      Problem 7.2–2? If so, explain how.
+
+7.2–4 Illustrate how the RCL stability analysis can be modified to show that
+      the velocity tracking error is asymptotically stable if the learning
+      term ûd(t) is forced to remain within the a priori bounds
+
+
+                                          ûdmin≤ûdi(t)≤ûdmax,
+
+
+            where the subscript i is used to denote the ith component of the n×1
+            vector ûd(t), and ûdmin, ûdmax are scalar constants.
+
+7.2–5 Design and simulate the RCL controller given in Table 7.2.2 for the
+      two-link polar robot arm given in Chapter 3. (Ignore the fact that this
+      robot has a prismatic link.)
+
+7.2–6 Can the RCL stability analysis (and consequently, the controller itself)
+      be modified to account for the prismatic link robot given in Problem
+      7.2–5? If so, explain how.
+
+Section 7.3
+
+7.3–1 Design and simulate the adaptive robust controller given in Table
+      7.3.1 for the two-link polar robot arm given in Chapter 3. (Ignore the
+      fact that this robot has a prismatic link.)
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
+430                                                            REFERENCES
+
+7.3–2 Can the adaptive robust controller stability analysis (and consequently,
+      the controller itself) be modified to account for the prismatic link
+      given in Problem 7.3–1? If so, explain how.
+
+7.3–3 Show how Barbalat’s lemma (see Chapter 2) can be used to modify
+      the stability analysis for the adaptive robust controller to guarantee
+      that the velocity tracking error is also asymptotically stable.
+
+Section 7.4
+
+7.4–1 For a constant, symmetric, positive-definite, n×n matrix A, show that
+
+
+            (a)
+
+
+
+            (b)
+
+
+
+
+Section 7.4
+
+7.4–2 Design and simulate the RLED corrective controller given in Table
+      7.4.1 for the two-link revolute robot arm given in Chapter 3. Assume
+      that both motors can be modeled as the motor given in Example
+      7.4–1.
+7.4–3 For a constant, symmetric, positive-definite, n×n matrix A show that
+
+
+
+
+            where On×n is the n×n zero matrix.
+
+7.4–4 Design and simulate the RLFJ corrective controller given in Table
+      7.4.2 for the two-link revolute robot arm given in Chapter 3. Assume
+      that both joints can be modeled similar to the joint given in Example
+      7.4–2.
+
+
+
+
+Copyright © 2004 by Marcel Dekker, Inc.
