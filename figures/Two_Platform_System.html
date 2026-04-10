@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>双平台系统 - 弹簧质量阻尼系统演示</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #a0c4ff;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        .canvas-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+        }
+        canvas {
+            width: 100%;
+            height: 500px;
+            background: #0a0a15;
+            border-radius: 10px;
+        }
+        .control-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .param-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .param-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .slider-group {
+            margin-bottom: 12px;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        .slider-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .data-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .data-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .data-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .data-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        .info-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .info-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .info-box p {
+            margin: 5px 0;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .equation {
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>双平台系统 - 弹簧质量阻尼系统</h1>
+        <p class="subtitle">Two-Platform System (Spring-Mass-Damper) - MIMO机械系统演示</p>
+
+        <div class="main-grid">
+            <div class="canvas-container">
+                <canvas id="simulationCanvas" width="800" height="500"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff6b6b;"></div>
+                        <span>平台 m₁ (上层)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4ecdc4;"></div>
+                        <span>平台 m₂ (下层)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffe66d;"></div>
+                        <span>弹簧 k₁, k₂</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #95a5a6;"></div>
+                        <span>阻尼器 c₁, c₂</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="panel-title">参数调节</div>
+                
+                <div class="param-group">
+                    <div class="param-title">质量参数</div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>m₁ (上层质量)</span>
+                            <span class="slider-value" id="m1Value">1.0 kg</span>
+                        </div>
+                        <input type="range" id="m1" min="0.5" max="5" value="1" step="0.1">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>m₂ (下层质量)</span>
+                            <span class="slider-value" id="m2Value">1.0 kg</span>
+                        </div>
+                        <input type="range" id="m2" min="0.5" max="5" value="1" step="0.1">
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <div class="param-title">弹簧刚度</div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>k₁ (上层弹簧)</span>
+                            <span class="slider-value" id="k1Value">10 N/m</span>
+                        </div>
+                        <input type="range" id="k1" min="1" max="50" value="10" step="1">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>k₂ (下层弹簧)</span>
+                            <span class="slider-value" id="k2Value">10 N/m</span>
+                        </div>
+                        <input type="range" id="k2" min="1" max="50" value="10" step="1">
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <div class="param-title">阻尼系数</div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>c₁ (上层阻尼)</span>
+                            <span class="slider-value" id="c1Value">0.5 N·s/m</span>
+                        </div>
+                        <input type="range" id="c1" min="0" max="5" value="0.5" step="0.1">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>c₂ (下层阻尼)</span>
+                            <span class="slider-value" id="c2Value">0.5 N·s/m</span>
+                        </div>
+                        <input type="range" id="c2" min="0" max="5" value="0.5" step="0.1">
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <div class="param-title">外部激励</div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>u₁ (上层输入力)</span>
+                            <span class="slider-value" id="u1Value">0 N</span>
+                        </div>
+                        <input type="range" id="u1" min="-10" max="10" value="0" step="0.5">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>u₂ (下层输入力)</span>
+                            <span class="slider-value" id="u2Value">0 N</span>
+                        </div>
+                        <input type="range" id="u2" min="-10" max="10" value="0" step="0.5">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="applyImpulse()">脉冲激励</button>
+                    <button class="btn-secondary" onclick="toggleAnimation()">暂停/继续</button>
+                </div>
+                <button class="btn-secondary" onclick="resetSimulation()" style="width: 100%; margin-top: 10px;">重置系统</button>
+
+                <div class="data-display">
+                    <div class="data-item">
+                        <div class="data-label">y₁ (上层位移)</div>
+                        <div class="data-value" id="y1">0.00 m</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">y₂ (下层位移)</div>
+                        <div class="data-value" id="y2">0.00 m</div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h3>系统动力学方程</h3>
+                    <div class="equation">
+                        m₁ÿ₁ + c₁(ẏ₁-ẏ₂) + k₁(y₁-y₂) = u₁
+                    </div>
+                    <div class="equation">
+                        m₂ÿ₂ + c₁(ẏ₂-ẏ₁) + c₂ẏ₂ + k₁(y₂-y₁) + k₂y₂ = u₂
+                    </div>
+                    <p>这是一个典型的MIMO（多输入多输出）机械系统，用于实验隔振平台。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取画布
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 系统参数
+        let params = {
+            m1: 1.0, m2: 1.0,
+            k1: 10, k2: 10,
+            c1: 0.5, c2: 0.5,
+            u1: 0, u2: 0
+        };
+
+        // 状态变量 [y1, v1, y2, v2] (位移和速度)
+        let state = [0, 0, 0, 0];
+        let isRunning = true;
+        let time = 0;
+
+        // 滑块事件监听
+        function setupSliders() {
+            const sliders = ['m1', 'm2', 'k1', 'k2', 'c1', 'c2', 'u1', 'u2'];
+            sliders.forEach(id => {
+                const slider = document.getElementById(id);
+                const valueDisplay = document.getElementById(id + 'Value');
+                
+                slider.addEventListener('input', (e) => {
+                    const val = parseFloat(e.target.value);
+                    params[id] = val;
+                    
+                    // 更新显示
+                    let unit = '';
+                    if (id.startsWith('m')) unit = ' kg';
+                    else if (id.startsWith('k')) unit = ' N/m';
+                    else if (id.startsWith('c')) unit = ' N·s/m';
+                    else if (id.startsWith('u')) unit = ' N';
+                    
+                    valueDisplay.textContent = val + unit;
+                });
+            });
+        }
+
+        // 动力学计算（4阶龙格-库塔）
+        function dynamics(state, t) {
+            const [y1, v1, y2, v2] = state;
+            const { m1, m2, k1, k2, c1, c2, u1, u2 } = params;
+            
+            // 相对位移和速度
+            const dy = y1 - y2;
+            const dv = v1 - v2;
+            
+            // 加速度计算
+            const a1 = (u1 - c1 * dv - k1 * dy) / m1;
+            const a2 = (u2 + c1 * dv + k1 * dy - c2 * v2 - k2 * y2) / m2;
+            
+            return [v1, a1, v2, a2];
+        }
+
+        function rk4Step(dt) {
+            const k1 = dynamics(state, time);
+            const k2 = dynamics(state.map((s, i) => s + 0.5 * dt * k1[i]), time + 0.5 * dt);
+            const k3 = dynamics(state.map((s, i) => s + 0.5 * dt * k2[i]), time + 0.5 * dt);
+            const k4 = dynamics(state.map((s, i) => s + dt * k3[i]), time + dt);
+            
+            for (let i = 0; i < 4; i++) {
+                state[i] += (dt / 6) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+            }
+            time += dt;
+        }
+
+        // 绘制函数
+        function draw() {
+            ctx.fillStyle = '#0a0a15';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const groundY = canvas.height - 50;
+            const scale = 50; // 像素/米
+
+            const [y1, v1, y2, v2] = state;
+
+            // 计算平台位置
+            const platform2Y = groundY - 100 - y2 * scale;
+            const platform1Y = platform2Y - 100 - (y1 - y2) * scale;
+
+            // 绘制地面
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX - 150, groundY);
+            ctx.lineTo(centerX + 150, groundY);
+            for (let i = -140; i <= 140; i += 20) {
+                ctx.moveTo(centerX + i, groundY);
+                ctx.lineTo(centerX + i - 10, groundY + 10);
+            }
+            ctx.stroke();
+
+            // 绘制下层弹簧 k2
+            ctx.strokeStyle = '#ffe66d';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            const spring2Top = platform2Y + 40;
+            const spring2Bottom = groundY;
+            const coils2 = 8;
+            const spring2Length = spring2Bottom - spring2Top;
+            ctx.moveTo(centerX, spring2Top);
+            for (let i = 0; i <= coils2; i++) {
+                const x = centerX + (i % 2 === 0 ? -15 : 15) * Math.sin(Math.PI * i / coils2);
+                const y = spring2Top + (spring2Length * i / coils2);
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(centerX, spring2Bottom);
+            ctx.stroke();
+
+            // 绘制下层阻尼器 c2
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX + 40, spring2Top);
+            ctx.lineTo(centerX + 40, spring2Top + spring2Length * 0.3);
+            ctx.moveTo(centerX + 25, spring2Top + spring2Length * 0.3);
+            ctx.lineTo(centerX + 55, spring2Top + spring2Length * 0.3);
+            ctx.lineTo(centerX + 55, spring2Bottom - spring2Length * 0.3);
+            ctx.lineTo(centerX + 25, spring2Bottom - spring2Length * 0.3);
+            ctx.lineTo(centerX + 25, spring2Top + spring2Length * 0.3);
+            ctx.moveTo(centerX + 40, spring2Bottom - spring2Length * 0.3);
+            ctx.lineTo(centerX + 40, spring2Bottom);
+            ctx.stroke();
+
+            // 绘制平台 m2
+            ctx.fillStyle = '#4ecdc4';
+            ctx.fillRect(centerX - 60, platform2Y - 40, 120, 80);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(centerX - 60, platform2Y - 40, 120, 80);
+            
+            // m2标签
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('m₂', centerX, platform2Y + 5);
+            
+            // y2输出箭头
+            ctx.strokeStyle = '#4ecdc4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX + 80, platform2Y);
+            ctx.lineTo(centerX + 80, platform2Y - 30);
+            ctx.lineTo(centerX + 75, platform2Y - 25);
+            ctx.moveTo(centerX + 80, platform2Y - 30);
+            ctx.lineTo(centerX + 85, platform2Y - 25);
+            ctx.stroke();
+            ctx.fillStyle = '#4ecdc4';
+            ctx.font = '14px Arial';
+            ctx.fillText('y₂', centerX + 95, platform2Y - 20);
+
+            // u2输入箭头
+            if (params.u2 !== 0) {
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                const u2Dir = params.u2 > 0 ? -1 : 1;
+                ctx.moveTo(centerX + 100, platform2Y + 50);
+                ctx.lineTo(centerX + 100, platform2Y + 50 + 30 * u2Dir);
+                ctx.lineTo(centerX + 95, platform2Y + 50 + 25 * u2Dir);
+                ctx.moveTo(centerX + 100, platform2Y + 50 + 30 * u2Dir);
+                ctx.lineTo(centerX + 105, platform2Y + 50 + 25 * u2Dir);
+                ctx.stroke();
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillText('u₂', centerX + 115, platform2Y + 55);
+            }
+
+            // 绘制上层弹簧 k1
+            ctx.strokeStyle = '#ffe66d';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            const spring1Top = platform1Y + 40;
+            const spring1Bottom = platform2Y - 40;
+            const coils1 = 6;
+            const spring1Length = spring1Bottom - spring1Top;
+            ctx.moveTo(centerX, spring1Top);
+            for (let i = 0; i <= coils1; i++) {
+                const x = centerX + (i % 2 === 0 ? -15 : 15) * Math.sin(Math.PI * i / coils1);
+                const y = spring1Top + (spring1Length * i / coils1);
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(centerX, spring1Bottom);
+            ctx.stroke();
+
+            // 绘制上层阻尼器 c1
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX + 40, spring1Top);
+            ctx.lineTo(centerX + 40, spring1Top + spring1Length * 0.3);
+            ctx.moveTo(centerX + 25, spring1Top + spring1Length * 0.3);
+            ctx.lineTo(centerX + 55, spring1Top + spring1Length * 0.3);
+            ctx.lineTo(centerX + 55, spring1Bottom - spring1Length * 0.3);
+            ctx.lineTo(centerX + 25, spring1Bottom - spring1Length * 0.3);
+            ctx.lineTo(centerX + 25, spring1Top + spring1Length * 0.3);
+            ctx.moveTo(centerX + 40, spring1Bottom - spring1Length * 0.3);
+            ctx.lineTo(centerX + 40, spring1Bottom);
+            ctx.stroke();
+
+            // 绘制平台 m1
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fillRect(centerX - 60, platform1Y - 40, 120, 80);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(centerX - 60, platform1Y - 40, 120, 80);
+            
+            // m1标签
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('m₁', centerX, platform1Y + 5);
+
+            // y1输出箭头
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX + 80, platform1Y);
+            ctx.lineTo(centerX + 80, platform1Y - 30);
+            ctx.lineTo(centerX + 75, platform1Y - 25);
+            ctx.moveTo(centerX + 80, platform1Y - 30);
+            ctx.lineTo(centerX + 85, platform1Y - 25);
+            ctx.stroke();
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = '14px Arial';
+            ctx.fillText('y₁', centerX + 95, platform1Y - 20);
+
+            // u1输入箭头
+            if (params.u1 !== 0) {
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                const u1Dir = params.u1 > 0 ? -1 : 1;
+                ctx.moveTo(centerX + 100, platform1Y + 50);
+                ctx.lineTo(centerX + 100, platform1Y + 50 + 30 * u1Dir);
+                ctx.lineTo(centerX + 95, platform1Y + 50 + 25 * u1Dir);
+                ctx.moveTo(centerX + 100, platform1Y + 50 + 30 * u1Dir);
+                ctx.lineTo(centerX + 105, platform1Y + 50 + 25 * u1Dir);
+                ctx.stroke();
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillText('u₁', centerX + 115, platform1Y + 55);
+            }
+
+            // 绘制参数标注
+            ctx.fillStyle = '#ffe66d';
+            ctx.font = '12px Arial';
+            ctx.fillText('k₁', centerX - 50, spring1Top + spring1Length / 2);
+            ctx.fillText('c₁', centerX + 65, spring1Top + spring1Length / 2);
+            ctx.fillText('k₂', centerX - 50, spring2Top + spring2Length / 2);
+            ctx.fillText('c₂', centerX + 65, spring2Top + spring2Length / 2);
+        }
+
+        // 动画循环
+        function animate() {
+            if (isRunning) {
+                // 多步积分保证稳定性
+                for (let i = 0; i < 10; i++) {
+                    rk4Step(0.001);
+                }
+                
+                // 更新数据显示
+                document.getElementById('y1').textContent = state[0].toFixed(2) + ' m';
+                document.getElementById('y2').textContent = state[2].toFixed(2) + ' m';
+            }
+            
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // 控制函数
+        function applyImpulse() {
+            state[1] += 2; // 给上层一个初速度冲击
+            state[3] += 1; // 给下层一个较小的初速度
+        }
+
+        function toggleAnimation() {
+            isRunning = !isRunning;
+        }
+
+        function resetSimulation() {
+            state = [0, 0, 0, 0];
+            time = 0;
+            params.u1 = 0;
+            params.u2 = 0;
+            document.getElementById('u1').value = 0;
+            document.getElementById('u2').value = 0;
+            document.getElementById('u1Value').textContent = '0 N';
+            document.getElementById('u2Value').textContent = '0 N';
+        }
+
+        // 初始化
+        setupSliders();
+        animate();
+    </script>
+</body>
+</html>
