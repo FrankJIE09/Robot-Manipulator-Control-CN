@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>机器人驱动方式对比：齿轮传动 vs 直接驱动</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            max-width: 400px;
+            pointer-events: none;
+        }
+        h1 { margin: 0 0 15px 0; font-size: 20px; color: #1a1a2e; }
+        p { margin: 8px 0; font-size: 14px; color: #333; line-height: 1.6; }
+        .highlight { color: #e74c3c; font-weight: bold; }
+        .good { color: #27ae60; font-weight: bold; }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-traditional {
+            background: #3498db;
+            color: white;
+        }
+        .btn-traditional:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+        .btn-direct {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-direct:hover {
+            background: #219a52;
+            transform: scale(1.05);
+        }
+        .btn-toggle {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-toggle:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+        .status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #333;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .bar {
+            width: 100px;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-left: 10px;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div id="info">
+        <h1>机器人驱动方式对比</h1>
+        <p><strong>左侧（蓝色）：传统齿轮传动</strong></p>
+        <p>• 电机 → 减速器 → 关节</p>
+        <p>• <span class="highlight">间隙问题</span>：齿轮啮合存在微小空隙</p>
+        <p>• <span class="highlight">惯性问题</span>：减速器增加系统重量</p>
+        <p><strong>右侧（绿色）：直接驱动</strong></p>
+        <p>• 电机 → 关节（无减速器）</p>
+        <p>• <span class="good">零间隙</span>：电机直接连接负载</p>
+        <p>• <span class="good">低惯性</span>：无额外传动部件</p>
+        <p style="margin-top: 15px; font-size: 12px; color: #666;">
+            点击"切换方向"观察间隙的影响。传统传动在换向时有明显的"空转"延迟。
+        </p>
+    </div>
+
+    <div class="status">
+        <h3 style="margin: 0 0 10px 0; font-size: 14px;">性能对比</h3>
+        <div class="metric">
+            <span>间隙</span>
+            <div class="bar"><div id="backlash-bar" class="bar-fill" style="width: 80%; background: #e74c3c;"></div></div>
+        </div>
+        <div class="metric">
+            <span>惯性</span>
+            <div class="bar"><div id="inertia-bar" class="bar-fill" style="width: 70%; background: #f39c12;"></div></div>
+        </div>
+        <div class="metric">
+            <span>精度</span>
+            <div class="bar"><div id="precision-bar" class="bar-fill" style="width: 60%; background: #3498db;"></div></div>
+        </div>
+        <div class="metric">
+            <span>响应速度</span>
+            <div class="bar"><div id="response-bar" class="bar-fill" style="width: 50%; background: #9b59b6;"></div></div>
+        </div>
+        <div style="margin-top: 10px; font-size: 11px; color: #666;">
+            蓝色 = 传统传动 | 绿色 = 直接驱动
+        </div>
+    </div>
+
+    <div id="controls">
+        <button class="btn-traditional" onclick="showTraditional()">传统齿轮传动</button>
+        <button class="btn-direct" onclick="showDirect()">直接驱动</button>
+        <button class="btn-toggle" onclick="toggleDirection()">切换方向</button>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script>
+        // 场景设置
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e);
+        scene.fog = new THREE.Fog(0x1a1a2e, 20, 100);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 15, 40);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // 灯光
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 0.5);
+        pointLight.position.set(-10, 10, -10);
+        scene.add(pointLight);
+
+        // 创建地板
+        const floorGeometry = new THREE.PlaneGeometry(100, 60);
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x16213e,
+            roughness: 0.8,
+            metalness: 0.2
+        });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -5;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // 传统齿轮传动组
+        const traditionalGroup = new THREE.Group();
+        traditionalGroup.position.x = -15;
+        scene.add(traditionalGroup);
+
+        // 直接驱动组
+        const directGroup = new THREE.Group();
+        directGroup.position.x = 15;
+        scene.add(directGroup);
+
+        // 创建电机
+        function createMotor(color) {
+            const motorGroup = new THREE.Group();
+            
+            // 电机主体
+            const bodyGeom = new THREE.CylinderGeometry(2, 2, 4, 32);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.6, roughness: 0.4 });
+            const body = new THREE.Mesh(bodyGeom, bodyMat);
+            body.rotation.z = Math.PI / 2;
+            body.castShadow = true;
+            motorGroup.add(body);
+            
+            // 电机轴
+            const shaftGeom = new THREE.CylinderGeometry(0.5, 0.5, 5, 16);
+            const shaftMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8, roughness: 0.2 });
+            const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+            shaft.rotation.z = Math.PI / 2;
+            shaft.position.x = 3.5;
+            motorGroup.add(shaft);
+            
+            // 标签
+            const labelGeom = new THREE.PlaneGeometry(3, 0.8);
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0, 0, 256, 64);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('电机', 128, 40);
+            const labelTex = new THREE.CanvasTexture(canvas);
+            const labelMat = new THREE.MeshBasicMaterial({ map: labelTex, transparent: true });
+            const label = new THREE.Mesh(labelGeom, labelMat);
+            label.position.set(0, 3, 0);
+            label.rotation.x = -Math.PI / 6;
+            motorGroup.add(label);
+            
+            return motorGroup;
+        }
+
+        // 创建齿轮
+        function createGear(radius, teeth, color, name) {
+            const gearGroup = new THREE.Group();
+            
+            // 齿轮主体
+            const bodyGeom = new THREE.CylinderGeometry(radius, radius, 1.5, 32);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.3 });
+            const body = new THREE.Mesh(bodyGeom, bodyMat);
+            body.rotation.x = Math.PI / 2;
+            body.castShadow = true;
+            gearGroup.add(body);
+            
+            // 齿
+            for (let i = 0; i < teeth; i++) {
+                const angle = (i / teeth) * Math.PI * 2;
+                const toothGeom = new THREE.BoxGeometry(0.6, 1.8, 0.8);
+                const tooth = new THREE.Mesh(toothGeom, bodyMat);
+                tooth.position.x = Math.cos(angle) * (radius + 0.4);
+                tooth.position.z = Math.sin(angle) * (radius + 0.4);
+                tooth.rotation.y = -angle;
+                gearGroup.add(tooth);
+            }
+            
+            // 中心孔
+            const holeGeom = new THREE.CylinderGeometry(radius * 0.3, radius * 0.3, 2, 16);
+            const holeMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const hole = new THREE.Mesh(holeGeom, holeMat);
+            hole.rotation.x = Math.PI / 2;
+            gearGroup.add(hole);
+            
+            // 标签
+            if (name) {
+                const labelGeom = new THREE.PlaneGeometry(2, 0.6);
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 48;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, 128, 48);
+                ctx.fillStyle = 'white';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(name, 64, 30);
+                const labelTex = new THREE.CanvasTexture(canvas);
+                const labelMat = new THREE.MeshBasicMaterial({ map: labelTex, transparent: true });
+                const label = new THREE.Mesh(labelGeom, labelMat);
+                label.position.set(0, radius + 1.5, 0);
+                label.rotation.x = -Math.PI / 6;
+                gearGroup.add(label);
+            }
+            
+            return gearGroup;
+        }
+
+        // 创建减速器外壳
+        function createGearbox() {
+            const boxGeom = new THREE.BoxGeometry(8, 6, 4);
+            const boxMat = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50, 
+                metalness: 0.5, 
+                roughness: 0.5,
+                transparent: true,
+                opacity: 0.3
+            });
+            const box = new THREE.Mesh(boxGeom, boxMat);
+            box.position.set(4, 0, 0);
+            
+            // 添加边框
+            const edges = new THREE.EdgesGeometry(boxGeom);
+            const lineMat = new THREE.LineBasicMaterial({ color: 0x3498db, linewidth: 2 });
+            const wireframe = new THREE.LineSegments(edges, lineMat);
+            wireframe.position.copy(box.position);
+            
+            const group = new THREE.Group();
+            group.add(box);
+            group.add(wireframe);
+            
+            // 标签
+            const labelGeom = new THREE.PlaneGeometry(4, 0.8);
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.9)';
+            ctx.fillRect(0, 0, 256, 64);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('减速器 (齿轮箱)', 128, 40);
+            const labelTex = new THREE.CanvasTexture(canvas);
+            const labelMat = new THREE.MeshBasicMaterial({ map: labelTex });
+            const label = new THREE.Mesh(labelGeom, labelMat);
+            label.position.set(4, 4, 0);
+            label.rotation.x = -Math.PI / 6;
+            group.add(label);
+            
+            return group;
+        }
+
+        // 创建关节负载
+        function createLoad(color, name) {
+            const loadGroup = new THREE.Group();
+            
+            // 关节臂
+            const armGeom = new THREE.BoxGeometry(8, 1, 2);
+            const armMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.4, roughness: 0.6 });
+            const arm = new THREE.Mesh(armGeom, armMat);
+            arm.position.x = 4;
+            arm.castShadow = true;
+            loadGroup.add(arm);
+            
+            // 关节轴
+            const jointGeom = new THREE.CylinderGeometry(1.5, 1.5, 3, 32);
+            const jointMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8, roughness: 0.2 });
+            const joint = new THREE.Mesh(jointGeom, jointMat);
+            joint.rotation.x = Math.PI / 2;
+            loadGroup.add(joint);
+            
+            // 标签
+            const labelGeom = new THREE.PlaneGeometry(3, 0.8);
+            const canvas = document.createElement('canvas');
+            canvas.width = 192;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0, 0, 192, 64);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(name, 96, 40);
+            const labelTex = new THREE.CanvasTexture(canvas);
+            const labelMat = new THREE.MeshBasicMaterial({ map: labelTex, transparent: true });
+            const label = new THREE.Mesh(labelGeom, labelMat);
+            label.position.set(4, 3, 0);
+            label.rotation.x = -Math.PI / 6;
+            loadGroup.add(label);
+            
+            return loadGroup;
+        }
+
+        // 创建间隙可视化
+        function createBacklashVisualization() {
+            const group = new THREE.Group();
+            
+            // 间隙指示器
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            
+            function drawBacklash(active) {
+                ctx.clearRect(0, 0, 256, 128);
+                ctx.fillStyle = active ? 'rgba(231, 76, 60, 0.9)' : 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0, 0, 256, 128);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(active ? '⚠️ 间隙影响中' : '✓ 正常运转', 128, 50);
+                ctx.font = '16px Arial';
+                ctx.fillText(active ? '电机空转，关节未动' : '传动正常', 128, 90);
+                
+                if (active) {
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([10, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(50, 110);
+                    ctx.lineTo(206, 110);
+                    ctx.stroke();
+                }
+            }
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+            const mesh = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), mat);
+            mesh.position.set(4, 7, 0);
+            mesh.rotation.x = -Math.PI / 6;
+            
+            group.add(mesh);
+            group.userData = { canvas, ctx, texture: tex, drawBacklash };
+            
+            return group;
+        }
+
+        // 构建传统传动系统
+        const motor1 = createMotor(0x3498db);
+        motor1.position.x = -6;
+        traditionalGroup.add(motor1);
+
+        const gearbox = createGearbox();
+        traditionalGroup.add(gearbox);
+
+        // 输入齿轮（小）
+        const inputGear = createGear(1.5, 12, 0x95a5a6, '输入齿轮');
+        inputGear.position.set(2, 0, 0);
+        traditionalGroup.add(inputGear);
+
+        // 输出齿轮（大）
+        const outputGear = createGear(3, 24, 0x7f8c8d, '输出齿轮');
+        outputGear.position.set(6, 0, 0);
+        traditionalGroup.add(outputGear);
+
+        // 关节负载
+        const load1 = createLoad(0x3498db, '机器人关节');
+        load1.position.set(10, 0, 0);
+        traditionalGroup.add(load1);
+
+        // 间隙可视化
+        const backlashVis = createBacklashVisualization();
+        traditionalGroup.add(backlashVis);
+
+        // 标题
+        const titleCanvas1 = document.createElement('canvas');
+        titleCanvas1.width = 400;
+        titleCanvas1.height = 80;
+        const ctx1 = titleCanvas1.getContext('2d');
+        ctx1.fillStyle = 'rgba(52, 152, 219, 0.9)';
+        ctx1.fillRect(0, 0, 400, 80);
+        ctx1.fillStyle = 'white';
+        ctx1.font = 'bold 28px Arial';
+        ctx1.textAlign = 'center';
+        ctx1.fillText('传统齿轮传动', 200, 50);
+        const titleTex1 = new THREE.CanvasTexture(titleCanvas1);
+        const titleMat1 = new THREE.MeshBasicMaterial({ map: titleTex1 });
+        const titleMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 2), titleMat1);
+        titleMesh1.position.set(4, 9, 0);
+        titleMesh1.rotation.x = -Math.PI / 6;
+        traditionalGroup.add(titleMesh1);
+
+        // 构建直接驱动系统
+        const motor2 = createMotor(0x27ae60);
+        motor2.position.x = -4;
+        directGroup.add(motor2);
+
+        // 直接连接，无减速器
+        const directShaftGeom = new THREE.CylinderGeometry(0.5, 0.5, 6, 16);
+        const directShaftMat = new THREE.MeshStandardMaterial({ color: 0x27ae60, metalness: 0.8, roughness: 0.2 });
+        const directShaft = new THREE.Mesh(directShaftGeom, directShaftMat);
+        directShaft.rotation.z = Math.PI / 2;
+        directShaft.position.x = 3;
+        directGroup.add(directShaft);
+
+        // 关节负载
+        const load2 = createLoad(0x27ae60, '机器人关节');
+        load2.position.set(6, 0, 0);
+        directGroup.add(load2);
+
+        // 直接驱动标签
+        const directLabelCanvas = document.createElement('canvas');
+        directLabelCanvas.width = 300;
+        directLabelCanvas.height = 100;
+        const ctx2 = directLabelCanvas.getContext('2d');
+        ctx2.fillStyle = 'rgba(39, 174, 96, 0.9)';
+        ctx2.fillRect(0, 0, 300, 100);
+        ctx2.fillStyle = 'white';
+        ctx2.font = 'bold 24px Arial';
+        ctx2.textAlign = 'center';
+        ctx2.fillText('✓ 直接驱动', 150, 40);
+        ctx2.font = '18px Arial';
+        ctx2.fillText('无减速器 · 零间隙', 150, 75);
+        const directLabelTex = new THREE.CanvasTexture(directLabelCanvas);
+        const directLabelMat = new THREE.MeshBasicMaterial({ map: directLabelTex });
+        const directLabelMesh = new THREE.Mesh(new THREE.PlaneGeometry(7, 2.3), directLabelMat);
+        directLabelMesh.position.set(1, 7, 0);
+        directLabelMesh.rotation.x = -Math.PI / 6;
+        directGroup.add(directLabelMesh);
+
+        // 标题
+        const titleCanvas2 = document.createElement('canvas');
+        titleCanvas2.width = 400;
+        titleCanvas2.height = 80;
+        const ctx3 = titleCanvas2.getContext('2d');
+        ctx3.fillStyle = 'rgba(39, 174, 96, 0.9)';
+        ctx3.fillRect(0, 0, 400, 80);
+        ctx3.fillStyle = 'white';
+        ctx3.font = 'bold 28px Arial';
+        ctx3.textAlign = 'center';
+        ctx3.fillText('直接驱动', 200, 50);
+        const titleTex2 = new THREE.CanvasTexture(titleCanvas2);
+        const titleMat2 = new THREE.MeshBasicMaterial({ map: titleTex2 });
+        const titleMesh2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 2), titleMat2);
+        titleMesh2.position.set(1, 9, 0);
+        titleMesh2.rotation.x = -Math.PI / 6;
+        directGroup.add(titleMesh2);
+
+        // 动画变量
+        let motorAngle = 0;
+        let jointAngle1 = 0;
+        let jointAngle2 = 0;
+        let direction = 1;
+        let isTraditional = true;
+        let backlashActive = false;
+        let backlashAngle = 0;
+
+        // 间隙大小（齿轮啮合间隙）
+        const BACKLASH_SIZE = 0.15; // 弧度
+
+        function toggleDirection() {
+            direction *= -1;
+            if (isTraditional) {
+                backlashActive = true;
+                backlashAngle = 0;
+            }
+        }
+
+        function showTraditional() {
+            isTraditional = true;
+            traditionalGroup.visible = true;
+            directGroup.visible = false;
+            updateBars(true);
+        }
+
+        function showDirect() {
+            isTraditional = false;
+            traditionalGroup.visible = true;
+            directGroup.visible = true;
+            updateBars(false);
+        }
+
+        function updateBars(isTraditional) {
+            const backlashBar = document.getElementById('backlash-bar');
+            const inertiaBar = document.getElementById('inertia-bar');
+            const precisionBar = document.getElementById('precision-bar');
+            const responseBar = document.getElementById('response-bar');
+
+            if (isTraditional) {
+                backlashBar.style.width = '80%';
+                backlashBar.style.background = '#e74c3c';
+                inertiaBar.style.width = '70%';
+                inertiaBar.style.background = '#f39c12';
+                precisionBar.style.width = '60%';
+                precisionBar.style.background = '#3498db';
+                responseBar.style.width = '50%';
+                responseBar.style.background = '#9b59b6';
+            } else {
+                backlashBar.style.width = '5%';
+                backlashBar.style.background = '#27ae60';
+                inertiaBar.style.width = '20%';
+                inertiaBar.style.background = '#27ae60';
+                precisionBar.style.width = '95%';
+                precisionBar.style.background = '#27ae60';
+                responseBar.style.width = '95%';
+                responseBar.style.background = '#27ae60';
+            }
+        }
+
+        // 初始显示对比
+        showDirect();
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const speed = 0.02 * direction;
+
+            // 电机旋转
+            motorAngle += speed;
+            motor1.rotation.x = motorAngle;
+
+            // 直接驱动的电机
+            if (motor2.children[1]) {
+                motor2.children[1].rotation.x = motorAngle;
+            }
+
+            // 传统传动：输入齿轮与电机同步
+            inputGear.rotation.y = motorAngle;
+
+            // 传统传动：输出齿轮（考虑间隙）
+            if (backlashActive) {
+                backlashAngle += Math.abs(speed);
+                if (backlashAngle >= BACKLASH_SIZE) {
+                    backlashActive = false;
+                }
+                // 间隙期间输出齿轮不动
+                jointAngle1 += 0;
+            } else {
+                // 正常传动（减速比 2:1）
+                jointAngle1 += speed / 2;
+            }
+
+            outputGear.rotation.y = jointAngle1;
+            load1.rotation.z = jointAngle1;
+
+            // 直接驱动：关节与电机完全同步（无间隙）
+            jointAngle2 = motorAngle;
+            load2.rotation.z = jointAngle2;
+
+            // 更新间隙可视化
+            if (backlashVis.userData.drawBacklash) {
+                backlashVis.userData.drawBacklash(backlashActive);
+                backlashVis.userData.texture.needsUpdate = true;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // 响应窗口调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
