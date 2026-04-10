@@ -62,7 +62,7 @@
 如需从源码编译 PDF，请确保已安装 XeLaTeX 和 ctex 宏包：
 
 ```bash
-xelatex main.tex
+xelatex 机器人操作器控制-理论与实践.tex
 ```
 
 ---
@@ -82,8 +82,8 @@ xelatex main.tex
 │   └── Parallel_Link/
 │       └── Parallel_Link_Manipulator.html
 ├── source/             # 原文本提取文件
-├── main.tex            # 主文档入口
-├── main.pdf            # 编译后的 PDF
+├── 机器人操作器控制-理论与实践.tex  # 主文档入口
+├── 机器人操作器控制-理论与实践.pdf  # 编译后的 PDF
 ├── 机器人操作器控制-理论与实践.pdf  # 中文 PDF 文件名
 └── README.md           # 本文件
 ```
