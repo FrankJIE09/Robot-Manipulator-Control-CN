@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机器人运动学：正解 vs 逆解</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background: #1a1a2e;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            max-width: 380px;
+            pointer-events: none;
+        }
+        h1 {
+            margin: 0 0 15px 0;
+            font-size: 22px;
+            color: #1a1a2e;
+        }
+        .mode-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .mode-forward {
+            background: #3498db;
+            color: white;
+        }
+        .mode-inverse {
+            background: #e74c3c;
+            color: white;
+        }
+        p {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .formula {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+        }
+        .value-box {
+            background: #e8f4f8;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border-left: 4px solid #3498db;
+        }
+        .value-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .value-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 400px;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .control-label {
+            font-weight: 600;
+            min-width: 80px;
+            color: #333;
+        }
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        .angle-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-forward {
+            background: #3498db;
+            color: white;
+        }
+        .btn-forward:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .btn-inverse {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-inverse:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        .btn-preset {
+            background: #95a5a6;
+            color: white;
+            padding: 8px 15px;
+            font-size: 12px;
+        }
+        .btn-preset:hover {
+            background: #7f8c8d;
+        }
+        #workspace-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #333;
+        }
+        .workspace-metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .highlight-red {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .highlight-green {
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div id="info">
+        <h1>机器人运动学可视化</h1>
+        <div id="mode-display" class="mode-indicator mode-forward">正运动学模式</div>
+        
+        <div id="forward-info">
+            <p><strong>正运动学（Forward Kinematics）</strong></p>
+            <p>已知：关节角度 θ₁, θ₂</p>
+            <p>求解：末端位置 (x, y)</p>
+            <div class="formula">
+                x = l₁·cos(θ₁) + l₂·cos(θ₁+θ₂)<br>
+                y = l₁·sin(θ₁) + l₂·sin(θ₁+θ₂)
+            </div>
+            <p style="font-size: 12px; color: #666;">
+                调节下方滑块改变关节角度，观察末端位置变化
+            </p>
+        </div>
+
+        <div id="inverse-info" style="display: none;">
+            <p><strong>逆运动学（Inverse Kinematics）</strong></p>
+            <p>已知：末端位置 (x, y)</p>
+            <p>求解：关节角度 θ₁, θ₂</p>
+            <div class="formula">
+                θ₂ = ±arccos((x²+y²-l₁²-l₂²)/(2·l₁·l₂))<br>
+                θ₁ = atan2(y,x) - atan2(l₂·sin(θ₂), l₁+l₂·cos(θ₂))
+            </div>
+            <p style="font-size: 12px; color: #666;">
+                拖动红色末端执行器，观察关节角度自动计算<br>
+                <span class="highlight-red">注意：存在多解（ elbow-up 和 elbow-down 两种构型）</span>
+            </p>
+        </div>
+
+        <div class="value-box">
+            <span class="value-label">末端位置：</span><br>
+            <span class="value-number" id="end-effector-pos">x: 2.00, y: 0.00</span>
+        </div>
+
+        <div class="value-box" style="border-left-color: #e74c3c;">
+            <span class="value-label">关节角度：</span><br>
+            <span class="value-number" id="joint-angles">θ₁: 0°, θ₂: 0°</span>
+        </div>
+    </div>
+
+    <div id="workspace-info">
+        <h3 style="margin: 0 0 10px 0;">工作空间分析</h3>
+        <div class="workspace-metric">
+            <span>可达范围</span>
+            <span class="highlight-green">l₁+l₂ = 3.0m</span>
+        </div>
+        <div class="workspace-metric">
+            <span>最小范围</span>
+            <span class="highlight-red">|l₁-l₂| = 1.0m</span>
+        </div>
+        <div class="workspace-metric">
+            <span>当前构型</span>
+            <span id="config-type">elbow-up</span>
+        </div>
+        <div class="workspace-metric" style="border-bottom: none;">
+            <span>多解性</span>
+            <span id="solution-count">1个解</span>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div class="btn-group">
+            <button class="btn-forward" onclick="setMode('forward')">正运动学模式</button>
+            <button class="btn-inverse" onclick="setMode('inverse')">逆运动学模式</button>
+        </div>
+
+        <div id="forward-controls">
+            <div class="control-row">
+                <span class="control-label">关节1 θ₁</span>
+                <input type="range" id="theta1" min="-180" max="180" value="0" step="1">
+                <span class="angle-value" id="theta1-val">0°</span>
+            </div>
+            <div class="control-row">
+                <span class="control-label">关节2 θ₂</span>
+                <input type="range" id="theta2" min="-180" max="180" value="0" step="1">
+                <span class="angle-value" id="theta2-val">0°</span>
+            </div>
+        </div>
+
+        <div id="inverse-controls" style="display: none;">
+            <p style="text-align: center; color: #666; font-size: 14px; margin: 0;">
+                🖱️ 拖动场景中红色球体移动末端执行器
+            </p>
+            <div class="btn-group" style="margin-top: 10px;">
+                <button class="btn-preset" onclick="switchSolution()">切换解（上/下臂）</button>
+                <button class="btn-preset" onclick="resetPosition()">重置位置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 场景设置
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e);
+        scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 12);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(1.5, 1, 0);
+
+        // 灯光
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // 机器人参数
+        const l1 = 2.0;  // 连杆1长度
+        const l2 = 1.0;  // 连杆2长度
+        let theta1 = 0;  // 关节1角度（度）
+        let theta2 = 0;  // 关节2角度（度）
+        let currentSolution = 1;  // 1 = elbow-up, -1 = elbow-down
+
+        // 模式
+        let mode = 'forward';  // 'forward' 或 'inverse'
+        let isDragging = false;
+
+        // 创建地板网格
+        const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+        scene.add(gridHelper);
+
+        // 创建工作空间可视化（圆环）
+        const workspaceGeometry = new THREE.RingGeometry(Math.abs(l1-l2), l1+l2, 64);
+        const workspaceMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x3498db, 
+            transparent: true, 
+            opacity: 0.1,
+            side: THREE.DoubleSide
+        });
+        const workspace = new THREE.Mesh(workspaceGeometry, workspaceMaterial);
+        workspace.rotation.x = -Math.PI / 2;
+        workspace.position.y = 0.01;
+        scene.add(workspace);
+
+        // 创建机器人连杆
+        function createLink(length, color, name) {
+            const group = new THREE.Group();
+            
+            // 连杆几何体
+            const geometry = new THREE.BoxGeometry(length, 0.15, 0.1);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: color,
+                metalness: 0.6,
+                roughness: 0.4
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = length / 2;
+            mesh.castShadow = true;
+            group.add(mesh);
+            
+            // 关节球
+            const jointGeo = new THREE.SphereGeometry(0.12, 32, 32);
+            const jointMat = new THREE.MeshStandardMaterial({ 
+                color: 0x333333,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            const joint = new THREE.Mesh(jointGeo, jointMat);
+            group.add(joint);
+            
+            return group;
+        }
+
+        // 创建坐标轴指示器
+        function createAxisArrow(direction, color, label) {
+            const group = new THREE.Group();
+            
+            // 箭头杆
+            const shaftGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.5, 16);
+            const shaftMat = new THREE.MeshBasicMaterial({ color: color });
+            const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+            shaft.rotation.z = direction === 'x' ? -Math.PI/2 : (direction === 'y' ? 0 : 0);
+            shaft.rotation.x = direction === 'z' ? Math.PI/2 : 0;
+            shaft.position.set(
+                direction === 'x' ? 0.25 : 0,
+                direction === 'y' ? 0.25 : 0,
+                direction === 'z' ? 0.25 : 0
+            );
+            group.add(shaft);
+            
+            // 箭头头部
+            const headGeo = new THREE.ConeGeometry(0.08, 0.2, 16);
+            const headMat = new THREE.MeshBasicMaterial({ color: color });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.rotation.z = direction === 'x' ? -Math.PI/2 : (direction === 'y' ? 0 : 0);
+            head.rotation.x = direction === 'z' ? Math.PI/2 : 0;
+            head.position.set(
+                direction === 'x' ? 0.6 : 0,
+                direction === 'y' ? 0.6 : 0,
+                direction === 'z' ? 0.6 : 0
+            );
+            group.add(head);
+            
+            return group;
+        }
+
+        // 基座坐标系
+        const baseAxes = new THREE.Group();
+        baseAxes.add(createAxisArrow('x', 0xe74c3c));  // 红色 X
+        baseAxes.add(createAxisArrow('y', 0x27ae60));  // 绿色 Y
+        scene.add(baseAxes);
+
+        // 连杆1（蓝色）
+        const link1 = createLink(l1, 0x3498db, 'link1');
+        scene.add(link1);
+
+        // 连杆2（紫色）
+        const link2 = createLink(l2, 0x9b59b6, 'link2');
+        link1.add(link2);  // 连杆2连接到连杆1末端
+
+        // 末端执行器（红色可拖动球体）
+        const endEffectorGeo = new THREE.SphereGeometry(0.15, 32, 32);
+        const endEffectorMat = new THREE.MeshStandardMaterial({ 
+            color: 0xe74c3c,
+            emissive: 0xe74c3c,
+            emissiveIntensity: 0.3
+        });
+        const endEffector = new THREE.Mesh(endEffectorGeo, endEffectorMat);
+        endEffector.castShadow = true;
+        scene.add(endEffector);
+
+        // 轨迹线
+        const trailGeometry = new THREE.BufferGeometry();
+        const trailMaterial = new THREE.LineBasicMaterial({ 
+            color: 0xe74c3c, 
+            transparent: true, 
+            opacity: 0.5 
+        });
+        const trailLine = new THREE.Line(trailGeometry, trailMaterial);
+        scene.add(trailLine);
+
+        let trailPoints = [];
+
+        // 正运动学计算
+        function forwardKinematics(t1, t2) {
+            const rad1 = t1 * Math.PI / 180;
+            const rad2 = t2 * Math.PI / 180;
+            
+            const x = l1 * Math.cos(rad1) + l2 * Math.cos(rad1 + rad2);
+            const y = l1 * Math.sin(rad1) + l2 * Math.sin(rad1 + rad2);
+            
+            return { x, y };
+        }
+
+        // 逆运动学计算
+        function inverseKinematics(x, y) {
+            const cosTheta2 = (x*x + y*y - l1*l1 - l2*l2) / (2 * l1 * l2);
+            
+            // 检查可达性
+            if (cosTheta2 < -1 || cosTheta2 > 1) {
+                return null;  // 不可达
+            }
+            
+            const theta2Rad = currentSolution * Math.acos(cosTheta2);
+            
+            const k1 = l1 + l2 * Math.cos(theta2Rad);
+            const k2 = l2 * Math.sin(theta2Rad);
+            
+            const theta1Rad = Math.atan2(y, x) - Math.atan2(k2, k1);
+            
+            return {
+                theta1: theta1Rad * 180 / Math.PI,
+                theta2: theta2Rad * 180 / Math.PI
+            };
+        }
+
+        // 更新机器人可视化
+        function updateRobot() {
+            const rad1 = theta1 * Math.PI / 180;
+            const rad2 = theta2 * Math.PI / 180;
+            
+            // 连杆1旋转
+            link1.rotation.z = rad1;
+            
+            // 连杆2位置和旋转（相对于连杆1末端）
+            link2.position.set(l1, 0, 0);
+            link2.rotation.z = rad2;
+            
+            // 计算末端位置
+            const endPos = forwardKinematics(theta1, theta2);
+            endEffector.position.set(endPos.x, endPos.y, 0);
+            
+            // 更新轨迹
+            trailPoints.push(new THREE.Vector3(endPos.x, endPos.y, 0));
+            if (trailPoints.length > 100) trailPoints.shift();
+            trailLine.geometry.setFromPoints(trailPoints);
+            
+            // 更新显示
+            document.getElementById('end-effector-pos').textContent = 
+                `x: ${endPos.x.toFixed(2)}, y: ${endPos.y.toFixed(2)}`;
+            document.getElementById('joint-angles').textContent = 
+                `θ₁: ${theta1.toFixed(1)}°, θ₂: ${theta2.toFixed(1)}°`;
+            document.getElementById('config-type').textContent = 
+                currentSolution === 1 ? 'elbow-up' : 'elbow-down';
+            
+            // 检查多解性
+            const cosTheta2 = (endPos.x*endPos.x + endPos.y*endPos.y - l1*l1 - l2*l2) / (2 * l1 * l2);
+            const hasMultipleSolutions = Math.abs(cosTheta2) < 0.99 && cosTheta2 > -1 && cosTheta2 < 1;
+            document.getElementById('solution-count').textContent = 
+                hasMultipleSolutions ? '2个解' : '1个解';
+        }
+
+        // 模式切换
+        function setMode(newMode) {
+            mode = newMode;
+            
+            if (mode === 'forward') {
+                document.getElementById('mode-display').textContent = '正运动学模式';
+                document.getElementById('mode-display').className = 'mode-indicator mode-forward';
+                document.getElementById('forward-info').style.display = 'block';
+                document.getElementById('inverse-info').style.display = 'none';
+                document.getElementById('forward-controls').style.display = 'flex';
+                document.getElementById('forward-controls').style.flexDirection = 'column';
+                document.getElementById('inverse-controls').style.display = 'none';
+                trailPoints = [];
+            } else {
+                document.getElementById('mode-display').textContent = '逆运动学模式';
+                document.getElementById('mode-display').className = 'mode-indicator mode-inverse';
+                document.getElementById('forward-info').style.display = 'none';
+                document.getElementById('inverse-info').style.display = 'block';
+                document.getElementById('forward-controls').style.display = 'none';
+                document.getElementById('inverse-controls').style.display = 'block';
+                trailPoints = [];
+            }
+        }
+
+        // 切换逆解
+        function switchSolution() {
+            currentSolution *= -1;
+            const endPos = forwardKinematics(theta1, theta2);
+            const result = inverseKinematics(endPos.x, endPos.y);
+            if (result) {
+                theta1 = result.theta1;
+                theta2 = result.theta2;
+                document.getElementById('theta1').value = theta1;
+                document.getElementById('theta2').value = theta2;
+                document.getElementById('theta1-val').textContent = theta1.toFixed(0) + '°';
+                document.getElementById('theta2-val').textContent = theta2.toFixed(0) + '°';
+                updateRobot();
+            }
+        }
+
+        // 重置位置
+        function resetPosition() {
+            theta1 = 45;
+            theta2 = -30;
+            currentSolution = 1;
+            document.getElementById('theta1').value = theta1;
+            document.getElementById('theta2').value = theta2;
+            document.getElementById('theta1-val').textContent = theta1.toFixed(0) + '°';
+            document.getElementById('theta2-val').textContent = theta2.toFixed(0) + '°';
+            trailPoints = [];
+            updateRobot();
+        }
+
+        // 滑块事件
+        document.getElementById('theta1').addEventListener('input', (e) => {
+            if (mode === 'forward') {
+                theta1 = parseFloat(e.target.value);
+                document.getElementById('theta1-val').textContent = theta1.toFixed(0) + '°';
+                updateRobot();
+            }
+        });
+
+        document.getElementById('theta2').addEventListener('input', (e) => {
+            if (mode === 'forward') {
+                theta2 = parseFloat(e.target.value);
+                document.getElementById('theta2-val').textContent = theta2.toFixed(0) + '°';
+                updateRobot();
+            }
+        });
+
+        // 鼠标拖拽（逆运动学模式）
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const dragPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            if (mode !== 'inverse') return;
+            
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(endEffector);
+            
+            if (intersects.length > 0) {
+                isDragging = true;
+                controls.enabled = false;
+            }
+        });
+
+        renderer.domElement.addEventListener('mousemove', (e) => {
+            if (!isDragging || mode !== 'inverse') return;
+            
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const target = new THREE.Vector3();
+            raycaster.ray.intersectPlane(dragPlane, target);
+            
+            // 限制在工作空间内
+            const dist = Math.sqrt(target.x*target.x + target.y*target.y);
+            if (dist >= Math.abs(l1-l2) && dist <= l1+l2) {
+                const result = inverseKinematics(target.x, target.y);
+                if (result) {
+                    theta1 = result.theta1;
+                    theta2 = result.theta2;
+                    updateRobot();
+                }
+            }
+        });
+
+        renderer.domElement.addEventListener('mouseup', () => {
+            isDragging = false;
+            controls.enabled = true;
+        });
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 窗口调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 初始化
+        resetPosition();
+        animate();
+    </script>
+</body>
+</html>

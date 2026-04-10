@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>自适应控制 - 参数在线估计</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #333; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .main-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+        .control-panel { background: #f8f9fa; padding: 20px; border-radius: 15px; }
+        .panel-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
+        .param-box { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #3498db; }
+        .param-label { font-weight: 600; color: #666; }
+        .param-value { font-size: 24px; font-weight: bold; color: #333; margin-top: 5px; }
+        .param-estimate { font-size: 16px; color: #27ae60; }
+        .error-bar { height: 8px; background: #ecf0f1; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+        .error-fill { height: 100%; background: linear-gradient(90deg, #27ae60, #f39c12, #e74c3c); transition: width 0.3s; }
+        canvas { width: 100%; height: 250px; background: white; border-radius: 10px; margin-bottom: 15px; }
+        .robot-viz { height: 200px; background: white; border-radius: 10px; position: relative; overflow: hidden; }
+        .controls { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        button { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-start { background: #667eea; color: white; }
+        .btn-start:hover { background: #5a67d8; transform: translateY(-2px); }
+        .btn-change { background: #f39c12; color: white; }
+        .btn-change:hover { background: #d68910; }
+        .description { margin-top: 20px; padding: 20px; background: #e8f4f8; border-radius: 10px; border-left: 4px solid #3498db; }
+        .formula { background: #f0f0f0; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 14px; margin: 15px 0; }
+        .status-indicator { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; }
+        .status-converged { background: #d4edda; color: #155724; }
+        .status-adapting { background: #fff3cd; color: #856404; }
+        .legend { display: flex; justify-content: center; gap: 30px; margin-top: 10px; font-size: 14px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-color { width: 20px; height: 3px; border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>自适应控制 - 参数在线估计</h1>
+        <p class="subtitle">实时估计未知负载质量，调整控制器参数</p>
+
+        <div class="formula" style="text-align: center;">
+            <strong>自适应律：</strong>θ̂̇ = Γ·φ·r &nbsp;&nbsp; (参数根据跟踪误差自适应更新)<br>
+            <strong>控制律：</strong>τ = Y(q,q̇,q̈)·θ̂ &nbsp;&nbsp; (使用估计参数计算控制转矩)
+        </div>
+
+        <div class="main-grid">
+            <div class="control-panel">
+                <div class="panel-title">参数估计状态</div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span id="status-badge" class="status-indicator status-adapting">🔄 正在自适应...</span>
+                </div>
+
+                <div class="param-box">
+                    <div class="param-label">真实负载质量 m</div>
+                    <div class="param-value" id="true-mass">2.0 kg</div>
+                </div>
+
+                <div class="param-box" style="border-left-color: #27ae60;">
+                    <div class="param-label">估计质量 m̂</div>
+                    <div class="param-value param-estimate" id="estimated-mass">1.0 kg</div>
+                    <div class="error-bar">
+                        <div id="mass-error-bar" class="error-fill" style="width: 50%"></div>
+                    </div>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                        估计误差: <span id="mass-error">50%</span>
+                    </div>
+                </div>
+
+                <div class="param-box" style="border-left-color: #9b59b6;">
+                    <div class="param-label">跟踪误差 RMS</div>
+                    <div class="param-value" id="tracking-error">-</div>
+                </div>
+
+                <div class="description">
+                    <h3 style="margin-top: 0;">💡 自适应控制原理</h3>
+                    <p><strong>1. 回归矩阵 Y：</strong>包含机器人运动学信息（位置、速度、加速度）</p>
+                    <p><strong>2. 自适应增益 Γ：</strong>决定参数收敛速度，过大可能不稳定</p>
+                    <p><strong>3. 复合误差 r：</strong>结合位置误差和速度误差</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="control-panel">
+                    <div class="panel-title">质量估计收敛过程</div>
+                    <canvas id="massChart"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div><span>真实质量</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div><span>估计质量</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #3498db;"></div><span>估计误差</span></div>
+                    </div>
+                </div>
+
+                <div class="control-panel" style="margin-top: 20px;">
+                    <div class="panel-title">轨迹跟踪性能</div>
+                    <canvas id="trackingChart"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div><span>期望轨迹</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #667eea;"></div><span>实际轨迹</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-start" onclick="startSimulation()">▶ 开始仿真</button>
+            <button class="btn-change" onclick="changeLoad()">⚡ 改变负载</button>
+            <button class="btn-start" onclick="resetSimulation()" style="background: #e74c3c;">↺ 重置</button>
+        </div>
+    </div>
+
+    <script>
+        // 系统参数
+        let trueMass = 2.0;  // 真实质量（未知）
+        let estimatedMass = 1.0;  // 初始估计
+        let adaptiveGain = 0.5;  // 自适应增益 Γ
+
+        // 动力学状态
+        let position = 0;
+        let velocity = 0;
+        let targetPos = 0;
+        let time = 0;
+
+        // 历史数据
+        let massHistory = [];
+        let estimateHistory = [];
+        let positionHistory = [];
+        let targetHistory = [];
+        let errorHistory = [];
+
+        // 仿真状态
+        let isRunning = false;
+        let hasChanged = false;
+
+        // 目标轨迹
+        function targetTrajectory(t) {
+            return 0.5 * Math.sin(0.5 * t);
+        }
+
+        // 计算回归矩阵（简化的一维系统）
+        function regressor(q, qd, qdd) {
+            // 对于单质量系统：τ = m·q̈
+            // 回归矩阵 Y = q̈
+            return qdd;
+        }
+
+        // 自适应控制计算
+        function computeControl(q, qd, target, target_d, target_dd) {
+            // 复合误差
+            const lambda = 5.0;
+            const e = target - q;
+            const ed = target_d - qd;
+            const r = ed + lambda * e;
+
+            // 参考加速度
+            const qdd_ref = target_dd + lambda * ed;
+
+            // 控制律：τ = m̂·q̈_ref + Kv·r
+            const Kv = 10;
+            const tau = estimatedMass * qdd_ref + Kv * r;
+
+            // 自适应律：m̂̇ = Γ·Y·r = Γ·q̈_ref·r
+            const massDot = adaptiveGain * qdd_ref * r;
+            estimatedMass += massDot * 0.016;  // 积分
+
+            // 限制估计范围
+            estimatedMass = Math.max(0.1, Math.min(10, estimatedMass));
+
+            return tau;
+        }
+
+        // 动力学仿真
+        function simulate(tau, dt) {
+            // τ = m·q̈ → q̈ = τ/m
+            const acceleration = tau / trueMass;
+            velocity += acceleration * dt;
+            position += velocity * dt;
+
+            return { position, velocity };
+        }
+
+        // 绘制图表
+        function drawMassChart() {
+            const canvas = document.getElementById('massChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 真实质量线
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height * 0.3);
+            ctx.lineTo(canvas.width, canvas.height * 0.3);
+            ctx.stroke();
+
+            // 估计质量曲线
+            if (estimateHistory.length > 1) {
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                for (let i = 0; i < estimateHistory.length; i++) {
+                    const x = (i / 300) * canvas.width;
+                    const y = canvas.height - (estimateHistory[i] / 5) * canvas.height * 0.8;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // 标签
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = '14px Arial';
+            ctx.fillText('真实质量: ' + trueMass.toFixed(1) + ' kg', 10, canvas.height * 0.3 - 10);
+        }
+
+        function drawTrackingChart() {
+            const canvas = document.getElementById('trackingChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 目标轨迹
+            if (targetHistory.length > 1) {
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let i = 0; i < targetHistory.length; i++) {
+                    const x = (i / 300) * canvas.width;
+                    const y = canvas.height/2 - targetHistory[i] * 100;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // 实际轨迹
+            if (positionHistory.length > 1) {
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (let i = 0; i < positionHistory.length; i++) {
+                    const x = (i / 300) * canvas.width;
+                    const y = canvas.height/2 - positionHistory[i] * 100;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        // 更新UI
+        function updateUI() {
+            document.getElementById('true-mass').textContent = trueMass.toFixed(1) + ' kg';
+            document.getElementById('estimated-mass').textContent = estimatedMass.toFixed(2) + ' kg';
+            
+            const error = Math.abs(trueMass - estimatedMass);
+            const errorPercent = (error / trueMass * 100).toFixed(0);
+            document.getElementById('mass-error').textContent = errorPercent + '%';
+            document.getElementById('mass-error-bar').style.width = errorPercent + '%';
+
+            // 计算RMS误差
+            if (errorHistory.length > 0) {
+                const sumSq = errorHistory.reduce((a, b) => a + b*b, 0);
+                const rms = Math.sqrt(sumSq / errorHistory.length);
+                document.getElementById('tracking-error').textContent = rms.toFixed(3);
+            }
+
+            // 状态指示
+            const isConverged = error < 0.1 && errorHistory.length > 100;
+            const badge = document.getElementById('status-badge');
+            if (hasChanged && !isConverged) {
+                badge.textContent = '🔄 重新自适应...';
+                badge.className = 'status-indicator status-adapting';
+            } else if (isConverged) {
+                badge.textContent = '✓ 已收敛';
+                badge.className = 'status-indicator status-converged';
+            }
+        }
+
+        // 仿真步进
+        function simulationStep() {
+            if (!isRunning) return;
+
+            const dt = 0.016;
+            time += dt;
+
+            const target = targetTrajectory(time);
+            const target_d = 0.5 * 0.5 * Math.cos(0.5 * time);
+            const target_dd = -0.5 * 0.25 * Math.sin(0.5 * time);
+
+            const tau = computeControl(position, velocity, target, target_d, target_dd);
+            simulate(tau, dt);
+
+            // 记录
+            massHistory.push(trueMass);
+            estimateHistory.push(estimatedMass);
+            positionHistory.push(position);
+            targetHistory.push(target);
+            errorHistory.push(Math.abs(target - position));
+
+            if (massHistory.length > 300) {
+                massHistory.shift();
+                estimateHistory.shift();
+                positionHistory.shift();
+                targetHistory.shift();
+                errorHistory.shift();
+            }
+
+            drawMassChart();
+            drawTrackingChart();
+            updateUI();
+
+            requestAnimationFrame(simulationStep);
+        }
+
+        function startSimulation() {
+            if (isRunning) return;
+            isRunning = true;
+            simulationStep();
+        }
+
+        function changeLoad() {
+            trueMass = 1.0 + Math.random() * 3.0;  // 1-4kg随机
+            hasChanged = true;
+            // 估计值保持，观察重新收敛
+        }
+
+        function resetSimulation() {
+            isRunning = false;
+            time = 0;
+            position = 0;
+            velocity = 0;
+            trueMass = 2.0;
+            estimatedMass = 1.0;
+            hasChanged = false;
+            massHistory = [];
+            estimateHistory = [];
+            positionHistory = [];
+            targetHistory = [];
+            errorHistory = [];
+            
+            document.getElementById('status-badge').textContent = '🔄 正在自适应...';
+            document.getElementById('status-badge').className = 'status-indicator status-adapting';
+            
+            drawMassChart();
+            drawTrackingChart();
+            updateUI();
+        }
+
+        // 初始化
+        resetSimulation();
+    </script>
+</body>
+</html>

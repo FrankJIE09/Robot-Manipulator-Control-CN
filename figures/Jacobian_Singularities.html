@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>雅可比矩阵与奇异位形</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #1a1a2e; overflow: hidden; }
+        #canvas-container { width: 100vw; height: 100vh; }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            max-width: 400px;
+            pointer-events: none;
+        }
+        h1 { margin: 0 0 15px 0; font-size: 20px; color: #333; }
+        .formula-box {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+        .critical {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 450px;
+        }
+        .control-row { display: flex; align-items: center; gap: 15px; }
+        .control-label { font-weight: 600; min-width: 100px; }
+        input[type="range"] { flex: 1; }
+        .angle-value { min-width: 60px; text-align: right; font-weight: bold; color: #667eea; }
+        .metric-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 200px;
+        }
+        .metric { display: flex; justify-content: space-between; margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 5px; }
+        .metric-label { font-size: 13px; color: #666; }
+        .metric-value { font-weight: bold; font-size: 16px; }
+        .good { color: #27ae60; }
+        .bad { color: #e74c3c; }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-singularity { background: #e74c3c; color: white; }
+        .btn-singularity:hover { background: #c0392b; }
+        .btn-reset { background: #95a5a6; color: white; }
+        .velocity-viz {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4f8;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="info">
+        <h1>雅可比矩阵与奇异位形</h1>
+        
+        <div class="formula-box">
+            <strong>速度映射：</strong>ẋ = J(q)·q̇<br>
+            <strong>雅可比矩阵：</strong>J = [∂x/∂q₁  ∂x/∂q₂]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[∂y/∂q₁  ∂y/∂q₂]
+        </div>
+
+        <div id="status-normal" class="warning">
+            <strong>✓ 正常位形</strong><br>
+            det(J) ≠ 0，满秩，所有方向运动可达
+        </div>
+
+        <div id="status-singular" class="warning critical" style="display: none;">
+            <strong>⚠ 奇异位形！</strong><br>
+            det(J) ≈ 0，秩亏，某些方向速度不可控
+        </div>
+
+        <p style="font-size: 12px; color: #666; margin-top: 10px;">
+            调节关节角度，观察雅可比行列式变化。当机械臂完全伸展或折叠时会出现奇异位形。
+        </p>
+    </div>
+
+    <div class="metric-panel">
+        <h3 style="margin: 0 0 15px 0; font-size: 16px;">实时指标</h3>
+        
+        <div class="metric">
+            <span class="metric-label">det(J)</span>
+            <span class="metric-value" id="det-j">0.00</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">条件数</span>
+            <span class="metric-value" id="cond-num">1.00</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">可操作性</span>
+            <span class="metric-value" id="manipulability">0.00</span>
+        </div>
+
+        <div class="velocity-viz">
+            <div style="font-weight: bold; margin-bottom: 8px;">末端速度椭圆</div>
+            <div style="font-size: 12px; color: #666;">
+                蓝色：关节空间单位速度映射<br>
+                红色：笛卡尔空间等速约束
+            </div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div style="text-align: center; font-weight: bold; color: #333;">
+            调节关节角度观察奇异位形
+        </div>
+        <div class="control-row">
+            <span class="control-label">关节1 θ₁</span>
+            <input type="range" id="theta1" min="-180" max="180" value="45" step="1">
+            <span class="angle-value" id="theta1-val">45°</span>
+        </div>
+        <div class="control-row">
+            <span class="control-label">关节2 θ₂</span>
+            <input type="range" id="theta2" min="-180" max="180" value="0" step="1">
+            <span class="angle-value" id="theta2-val">0°</span>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn-singularity" onclick="goToSingularity('extend')">→ 伸展奇异</button>
+            <button class="btn-singularity" onclick="goToSingularity('fold')">→ 折叠奇异</button>
+            <button class="btn-reset" onclick="resetPosition()">↺ 重置</button>
+        </div>
+    </div>
+
+    <script>
+        // 场景
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e);
+        scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 3, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const orbit = new THREE.OrbitControls(camera, renderer.domElement);
+        orbit.enableDamping = true;
+
+        // 灯光
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // 网格
+        const grid = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+        scene.add(grid);
+
+        // 机器人参数
+        const l1 = 2.0, l2 = 1.5;
+        let theta1 = 45, theta2 = 0;
+
+        // 连杆
+        const robotGroup = new THREE.Group();
+        scene.add(robotGroup);
+
+        function createLink(length, color) {
+            const group = new THREE.Group();
+            const geom = new THREE.BoxGeometry(length, 0.15, 0.1);
+            const mat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.6 });
+            const mesh = new THREE.Mesh(geom, mat);
+            mesh.position.x = length/2;
+            mesh.castShadow = true;
+            group.add(mesh);
+            
+            const joint = new THREE.Mesh(
+                new THREE.SphereGeometry(0.12, 32, 32),
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+            );
+            group.add(joint);
+            
+            return group;
+        }
+
+        const link1 = createLink(l1, 0x3498db);
+        robotGroup.add(link1);
+
+        const link2 = createLink(l2, 0x9b59b6);
+        link1.add(link2);
+        link2.position.x = l1;
+
+        // 末端
+        const ee = new THREE.Mesh(
+            new THREE.SphereGeometry(0.15, 32, 32),
+            new THREE.MeshStandardMaterial({ color: 0xe74c3c, emissive: 0xe74c3c, emissiveIntensity: 0.3 })
+        );
+        link2.add(ee);
+        ee.position.x = l2;
+
+        // 速度椭圆
+        const ellipseGroup = new THREE.Group();
+        scene.add(ellipseGroup);
+
+        function updateEllipse() {
+            ellipseGroup.clear();
+            
+            const t1 = theta1 * Math.PI/180;
+            const t2 = theta2 * Math.PI/180;
+            
+            // 雅可比矩阵元素
+            const J11 = -l1*Math.sin(t1) - l2*Math.sin(t1+t2);
+            const J12 = -l2*Math.sin(t1+t2);
+            const J21 = l1*Math.cos(t1) + l2*Math.cos(t1+t2);
+            const J22 = l2*Math.cos(t1+t2);
+            
+            // 计算末端位置
+            const x = l1*Math.cos(t1) + l2*Math.cos(t1+t2);
+            const y = l1*Math.sin(t1) + l2*Math.sin(t1+t2);
+            
+            ellipseGroup.position.set(x, y, 0);
+            
+            // 绘制速度椭圆（关节空间单位圆映射）
+            const points = [];
+            for (let i = 0; i <= 64; i++) {
+                const angle = (i/64) * Math.PI * 2;
+                const dq1 = Math.cos(angle);
+                const dq2 = Math.sin(angle);
+                
+                const dx = J11*dq1 + J12*dq2;
+                const dy = J21*dq1 + J22*dq2;
+                
+                points.push(new THREE.Vector3(dx*0.3, dy*0.3, 0));
+            }
+            
+            const ellipseGeom = new THREE.BufferGeometry().setFromPoints(points);
+            const ellipseMat = new THREE.LineBasicMaterial({ color: 0x3498db, linewidth: 2 });
+            const ellipse = new THREE.Line(ellipseGeom, ellipseMat);
+            ellipseGroup.add(ellipse);
+            
+            // 计算指标
+            const detJ = J11*J22 - J12*J21;
+            const trace = J11*J11 + J12*J12 + J21*J21 + J22*J22;
+            const cond = Math.sqrt(trace*trace/2 - detJ*detJ);
+            
+            // 特征值（近似）
+            const lambda1 = Math.sqrt(trace/2 + Math.sqrt(trace*trace/4 - detJ*detJ));
+            const lambda2 = Math.sqrt(trace/2 - Math.sqrt(trace*trace/4 - detJ*detJ));
+            
+            // 绘制主轴
+            const line1 = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(lambda1*0.3,0,0)]),
+                new THREE.LineBasicMaterial({ color: 0xe74c3c })
+            );
+            const line2 = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,lambda2*0.3,0)]),
+                new THREE.LineBasicMaterial({ color: 0xe74c3c })
+            );
+            ellipseGroup.add(line1);
+            ellipseGroup.add(line2);
+            
+            // 更新UI
+            document.getElementById('det-j').textContent = detJ.toFixed(3);
+            document.getElementById('cond-num').textContent = (lambda1/lambda2).toFixed(2);
+            document.getElementById('manipulability').textContent = Math.sqrt(Math.abs(detJ)).toFixed(3);
+            
+            // 奇异检测
+            const isSingular = Math.abs(detJ) < 0.1;
+            document.getElementById('status-normal').style.display = isSingular ? 'none' : 'block';
+            document.getElementById('status-singular').style.display = isSingular ? 'block' : 'none';
+            
+            document.getElementById('det-j').className = isSingular ? 'metric-value bad' : 'metric-value good';
+            document.getElementById('cond-num').className = isSingular ? 'metric-value bad' : 'metric-value good';
+            
+            // 颜色变化
+            if (isSingular) {
+                ee.material.emissive.setHex(0xff0000);
+                ee.material.emissiveIntensity = 0.8;
+            } else {
+                ee.material.emissive.setHex(0xe74c3c);
+                ee.material.emissiveIntensity = 0.3;
+            }
+        }
+
+        function updateRobot() {
+            const r1 = theta1 * Math.PI/180;
+            const r2 = theta2 * Math.PI/180;
+            
+            link1.rotation.z = r1;
+            link2.rotation.z = r2;
+            
+            updateEllipse();
+        }
+
+        // 事件
+        document.getElementById('theta1').addEventListener('input', (e) => {
+            theta1 = parseFloat(e.target.value);
+            document.getElementById('theta1-val').textContent = theta1.toFixed(0) + '°';
+            updateRobot();
+        });
+
+        document.getElementById('theta2').addEventListener('input', (e) => {
+            theta2 = parseFloat(e.target.value);
+            document.getElementById('theta2-val').textContent = theta2.toFixed(0) + '°';
+            updateRobot();
+        });
+
+        function goToSingularity(type) {
+            if (type === 'extend') {
+                theta1 = 0;
+                theta2 = 0;
+            } else {
+                theta1 = 0;
+                theta2 = 180;
+            }
+            document.getElementById('theta1').value = theta1;
+            document.getElementById('theta2').value = theta2;
+            document.getElementById('theta1-val').textContent = theta1.toFixed(0) + '°';
+            document.getElementById('theta2-val').textContent = theta2.toFixed(0) + '°';
+            updateRobot();
+        }
+
+        function resetPosition() {
+            theta1 = 45;
+            theta2 = 0;
+            document.getElementById('theta1').value = theta1;
+            document.getElementById('theta2').value = theta2;
+            document.getElementById('theta1-val').textContent = theta1.toFixed(0) + '°';
+            document.getElementById('theta2-val').textContent = theta2.toFixed(0) + '°';
+            updateRobot();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            orbit.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        updateRobot();
+        animate();
+    </script>
+</body>
+</html>

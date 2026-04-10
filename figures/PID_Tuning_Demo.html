@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>PID参数调节与机器人关节控制</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        .control-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .slider-group {
+            margin-bottom: 20px;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .slider-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-preset {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .btn-preset:hover {
+            background: #bbdefb;
+        }
+        .btn-action {
+            background: #667eea;
+            color: white;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-action:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        canvas {
+            width: 100%;
+            height: 300px;
+            background: white;
+            border-radius: 10px;
+        }
+        .robot-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            height: 200px;
+            background: white;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .joint-arm {
+            position: absolute;
+            width: 120px;
+            height: 12px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 6px;
+            transform-origin: left center;
+            left: 50%;
+            top: 50%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .joint-center {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #333;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .target-marker {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid #e74c3c;
+            left: 50%;
+            top: 30%;
+            transform: translateX(-50%);
+        }
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .metric {
+            display: inline-block;
+            margin: 5px 15px 5px 0;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .metric-label {
+            color: #666;
+        }
+        .metric-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .pid-formula {
+            text-align: center;
+            font-size: 18px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        .description {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+        }
+        .description h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .description p {
+            margin: 8px 0;
+            color: #856404;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PID 参数调节与机器人关节控制</h1>
+        <p class="subtitle">实时观察 Kp、Ki、Kd 对关节跟踪性能的影响</p>
+        
+        <div class="pid-formula">
+            τ(t) = Kp·e(t) + Ki·∫e(t)dt + Kd·de(t)/dt
+        </div>
+
+        <div class="main-grid">
+            <div class="control-panel">
+                <div class="panel-title">PID 参数调节</div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>比例增益 Kp</span>
+                        <span class="slider-value" id="kp-value">10.0</span>
+                    </div>
+                    <input type="range" id="kp" min="0" max="100" value="10" step="0.5">
+                    <small>决定响应速度和稳态误差</small>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>积分增益 Ki</span>
+                        <span class="slider-value" id="ki-value">0.0</span>
+                    </div>
+                    <input type="range" id="ki" min="0" max="20" value="0" step="0.1">
+                    <small>消除稳态误差，但可能引起超调</small>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>微分增益 Kd</span>
+                        <span class="slider-value" id="kd-value">2.0</span>
+                    </div>
+                    <input type="range" id="kd" min="0" max="20" value="2" step="0.1">
+                    <small>抑制振荡，增加阻尼</small>
+                </div>
+
+                <div class="panel-title" style="margin-top: 25px;">预设配置</div>
+                <div class="preset-buttons">
+                    <button class="btn-preset" onclick="setPreset('under')">🔴 欠阻尼</button>
+                    <button class="btn-preset" onclick="setPreset('critical')">🟢 临界阻尼</button>
+                    <button class="btn-preset" onclick="setPreset('over')">🔵 过阻尼</button>
+                    <button class="btn-preset" onclick="setPreset('oscillate')">📊 振荡</button>
+                </div>
+
+                <button class="btn-action" onclick="startSimulation()">▶ 开始仿真</button>
+                <button class="btn-action" onclick="resetSimulation()" style="background: #e74c3c;">⏹ 重置</button>
+
+                <div class="description">
+                    <h3>💡 调节建议</h3>
+                    <p><strong>先调 Kp：</strong>从小到大，直到出现轻微振荡</p>
+                    <p><strong>再加 Kd：</strong>消除振荡，提高稳定性</p>
+                    <p><strong>最后加 Ki：</strong>消除稳态误差（小量即可）</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="chart-container">
+                    <div class="panel-title">响应曲线</div>
+                    <canvas id="responseChart" width="800" height="300"></canvas>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #e74c3c;"></div>
+                            <span>目标轨迹 (期望位置)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #667eea;"></div>
+                            <span>实际位置</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #27ae60;"></div>
+                            <span>控制转矩</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="robot-visual">
+                    <div class="target-marker"></div>
+                    <div class="joint-arm" id="robotArm"></div>
+                    <div class="joint-center"></div>
+                </div>
+
+                <div class="info-panel">
+                    <div class="metric">
+                        <span class="metric-label">超调量:</span>
+                        <span class="metric-value" id="overshoot">0%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">上升时间:</span>
+                        <span class="metric-value" id="riseTime">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">稳态误差:</span>
+                        <span class="metric-value" id="steadyError">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">调节时间:</span>
+                        <span class="metric-value" id="settlingTime">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PID 参数
+        let Kp = 10.0;
+        let Ki = 0.0;
+        let Kd = 2.0;
+
+        // 系统状态
+        let position = 0;
+        let velocity = 0;
+        let integral = 0;
+        let prevError = 0;
+
+        // 目标轨迹
+        let targetPosition = 0;
+        let time = 0;
+
+        // 历史数据
+        const maxDataPoints = 500;
+        let positionHistory = [];
+        let targetHistory = [];
+        let torqueHistory = [];
+
+        // 仿真状态
+        let isRunning = false;
+        let animationId = null;
+
+        // 系统参数（模拟机器人关节动力学）
+        const mass = 1.0;  // 转动惯量
+        const damping = 0.5;  // 自然阻尼
+
+        // 获取 DOM 元素
+        const kpSlider = document.getElementById('kp');
+        const kiSlider = document.getElementById('ki');
+        const kdSlider = document.getElementById('kd');
+        const kpValue = document.getElementById('kp-value');
+        const kiValue = document.getElementById('ki-value');
+        const kdValue = document.getElementById('kd-value');
+        const robotArm = document.getElementById('robotArm');
+
+        // 滑块事件
+        kpSlider.addEventListener('input', (e) => {
+            Kp = parseFloat(e.target.value);
+            kpValue.textContent = Kp.toFixed(1);
+        });
+
+        kiSlider.addEventListener('input', (e) => {
+            Ki = parseFloat(e.target.value);
+            kiValue.textContent = Ki.toFixed(1);
+        });
+
+        kdSlider.addEventListener('input', (e) => {
+            Kd = parseFloat(e.target.value);
+            kdValue.textContent = Kd.toFixed(1);
+        });
+
+        // 预设配置
+        function setPreset(type) {
+            switch(type) {
+                case 'under':
+                    Kp = 20; Ki = 0; Kd = 0;
+                    break;
+                case 'critical':
+                    Kp = 25; Ki = 0.5; Kd = 5;
+                    break;
+                case 'over':
+                    Kp = 5; Ki = 0.1; Kd = 8;
+                    break;
+                case 'oscillate':
+                    Kp = 50; Ki = 0; Kd = 0;
+                    break;
+            }
+            kpSlider.value = Kp;
+            kiSlider.value = Ki;
+            kdSlider.value = Kd;
+            kpValue.textContent = Kp.toFixed(1);
+            kiValue.textContent = Ki.toFixed(1);
+            kdValue.textContent = Kd.toFixed(1);
+        }
+
+        // 目标轨迹生成（阶跃 + 正弦）
+        function generateTarget(t) {
+            // 前3秒：阶跃到45度
+            if (t < 3) {
+                return 45;
+            }
+            // 之后：正弦跟踪
+            return 45 + 20 * Math.sin((t - 3) * 0.5);
+        }
+
+        // PID 控制计算
+        function computePID(error, dt) {
+            integral += error * dt;
+            const derivative = (error - prevError) / dt;
+            prevError = error;
+            
+            return Kp * error + Ki * integral + Kd * derivative;
+        }
+
+        // 动力学仿真（简化的二阶系统）
+        function simulateDynamics(torque, dt) {
+            // τ = I·α + b·ω
+            // α = (τ - b·ω) / I
+            const acceleration = (torque - damping * velocity) / mass;
+            velocity += acceleration * dt;
+            position += velocity * dt;
+            
+            return { position, velocity };
+        }
+
+        // 绘制曲线
+        function drawChart() {
+            const canvas = document.getElementById('responseChart');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 30) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // 绘制目标轨迹（红色）
+            if (targetHistory.length > 1) {
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let i = 0; i < targetHistory.length; i++) {
+                    const x = (i / maxDataPoints) * canvas.width;
+                    const y = canvas.height - (targetHistory[i] / 100) * canvas.height * 0.8 - 30;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // 绘制实际位置（蓝色）
+            if (positionHistory.length > 1) {
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (let i = 0; i < positionHistory.length; i++) {
+                    const x = (i / maxDataPoints) * canvas.width;
+                    const y = canvas.height - (positionHistory[i] / 100) * canvas.height * 0.8 - 30;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // 绘制控制转矩（绿色，小刻度）
+            if (torqueHistory.length > 1) {
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 1.5;
+                ctx.globalAlpha = 0.6;
+                ctx.beginPath();
+                for (let i = 0; i < torqueHistory.length; i++) {
+                    const x = (i / maxDataPoints) * canvas.width;
+                    const y = canvas.height - ((torqueHistory[i] + 50) / 100) * canvas.height * 0.4 - 10;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+            }
+
+            // 绘制坐标轴标签
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.fillText('0°', 5, canvas.height - 10);
+            ctx.fillText('90°', 5, 20);
+            ctx.fillText('时间 →', canvas.width - 50, canvas.height - 5);
+        }
+
+        // 更新机器人可视化
+        function updateRobot() {
+            const angle = -position * Math.PI / 180;  // 转换为弧度，负号因为屏幕坐标
+            robotArm.style.transform = `rotate(${angle}rad)`;
+        }
+
+        // 计算性能指标
+        function calculateMetrics() {
+            if (positionHistory.length < 100) return;
+            
+            // 超调量
+            let maxPos = Math.max(...positionHistory.slice(0, 150));
+            let overshoot = Math.max(0, (maxPos - 45) / 45 * 100);
+            document.getElementById('overshoot').textContent = overshoot.toFixed(1) + '%';
+            
+            // 稳态误差（取最后50个点的平均）
+            let recent = positionHistory.slice(-50);
+            let avgPos = recent.reduce((a, b) => a + b, 0) / recent.length;
+            let recentTarget = targetHistory.slice(-50);
+            let avgTarget = recentTarget.reduce((a, b) => a + b, 0) / recentTarget.length;
+            let steadyError = Math.abs(avgTarget - avgPos);
+            document.getElementById('steadyError').textContent = steadyError.toFixed(2) + '°';
+        }
+
+        // 仿真步进
+        function simulationStep() {
+            if (!isRunning) return;
+
+            const dt = 0.02;  // 50Hz
+            time += dt;
+
+            // 生成目标
+            targetPosition = generateTarget(time);
+
+            // 计算误差
+            const error = targetPosition - position;
+
+            // PID 控制
+            const torque = computePID(error, dt);
+
+            // 动力学仿真
+            simulateDynamics(torque, dt);
+
+            // 记录历史
+            positionHistory.push(position);
+            targetHistory.push(targetPosition);
+            torqueHistory.push(torque);
+
+            if (positionHistory.length > maxDataPoints) {
+                positionHistory.shift();
+                targetHistory.shift();
+                torqueHistory.shift();
+            }
+
+            // 更新显示
+            drawChart();
+            updateRobot();
+            
+            if (time > 0.5) {
+                calculateMetrics();
+            }
+
+            animationId = requestAnimationFrame(simulationStep);
+        }
+
+        // 开始仿真
+        function startSimulation() {
+            if (isRunning) return;
+            
+            // 重置状态
+            position = 0;
+            velocity = 0;
+            integral = 0;
+            prevError = 0;
+            time = 0;
+            positionHistory = [];
+            targetHistory = [];
+            torqueHistory = [];
+            
+            isRunning = true;
+            simulationStep();
+        }
+
+        // 重置仿真
+        function resetSimulation() {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            position = 0;
+            velocity = 0;
+            integral = 0;
+            prevError = 0;
+            time = 0;
+            positionHistory = [];
+            targetHistory = [];
+            torqueHistory = [];
+            
+            drawChart();
+            updateRobot();
+            
+            document.getElementById('overshoot').textContent = '0%';
+            document.getElementById('riseTime').textContent = '-';
+            document.getElementById('steadyError').textContent = '-';
+            document.getElementById('settlingTime').textContent = '-';
+        }
+
+        // 初始化
+        drawChart();
+        updateRobot();
+    </script>
+</body>
+</html>

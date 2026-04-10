@@ -1,0 +1,212 @@
+\contentsline {chapter}{前言与系列介绍}{i}{chapter*.1}%
+\contentsline {section}{\numberline {0.1}系列介绍}{i}{section.0.1}%
+\contentsline {section}{\numberline {0.2}前言}{i}{section.0.2}%
+\contentsline {chapter}{\numberline {第一章\hspace {.3em}}商用机器人操作器}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}引言}{1}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}柔性机器人工作单元}{1}{subsection.1.1.1}%
+\contentsline {section}{\numberline {1.2}商用机器人构型与类型}{2}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}操作器性能}{2}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}常见运动学构型}{3}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}商用机器人的驱动类型}{4}{subsection.1.2.3}%
+\contentsline {section}{\numberline {1.3}商用机器人控制器}{5}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}运动轨迹生成和跟踪}{5}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}运动/过程集成和排序}{5}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}人机集成}{5}{subsection.1.3.3}%
+\contentsline {subsection}{\numberline {1.3.4}信息集成}{6}{subsection.1.3.4}%
+\contentsline {section}{\numberline {1.4}传感器}{6}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}传感器类型}{7}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}传感器数据处理}{8}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.3}视觉系统、相机和照明}{9}{subsection.1.4.3}%
+\contentsline {chapter}{\numberline {第二章\hspace {.3em}}控制理论导论}{11}{chapter.2}%
+\contentsline {section}{第二章：控制理论导论}{11}{section*.2}%
+\contentsline {section}{\numberline {2.1}引言}{11}{section.2.1}%
+\contentsline {section}{\numberline {2.2}线性状态变量系统}{12}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}连续时间系统}{12}{subsection.2.2.1}%
+\contentsline {subsubsection}{状态空间实现}{12}{equation.2.2.2}%
+\contentsline {subsubsection}{传递函数}{14}{example.2.2}%
+\contentsline {subsection}{\numberline {2.2.2}离散时间系统}{15}{subsection.2.2.2}%
+\contentsline {subsubsection}{状态空间表示}{15}{equation.2.2.13}%
+\contentsline {subsubsection}{传递函数表示}{16}{example.2.4}%
+\contentsline {section}{\numberline {2.3}非线性状态变量系统}{16}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}连续时间系统}{16}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}离散时间系统}{18}{subsection.2.3.2}%
+\contentsline {section}{\numberline {2.4}非线性系统与平衡点}{19}{section.2.4}%
+\contentsline {section}{\numberline {2.5}向量空间、范数与内积}{20}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}线性向量空间}{20}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}信号和系统的范数}{21}{subsection.2.5.2}%
+\contentsline {subsubsection}{向量范数}{21}{subsection.2.5.2}%
+\contentsline {subsubsection}{矩阵范数}{22}{lemma.2.1}%
+\contentsline {subsubsection}{函数范数}{22}{definition.2.7}%
+\contentsline {subsubsection}{系统范数}{23}{definition.2.8}%
+\contentsline {subsection}{\numberline {2.5.3}内积}{24}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}矩阵性质}{24}{subsection.2.5.4}%
+\contentsline {section}{\numberline {2.6}稳定性理论}{25}{section.2.6}%
+\contentsline {section}{\numberline {2.7}李雅普诺夫稳定性定理}{28}{section.2.7}%
+\contentsline {subsection}{\numberline {2.7.1}K类函数}{28}{subsection.2.7.1}%
+\contentsline {subsection}{\numberline {2.7.2}李雅普诺夫定理}{29}{subsection.2.7.2}%
+\contentsline {subsection}{\numberline {2.7.3}自治情况}{30}{subsection.2.7.3}%
+\contentsline {subsection}{\numberline {2.7.4}线性时不变情况}{31}{subsection.2.7.4}%
+\contentsline {section}{\numberline {2.8}输入/输出稳定性}{31}{section.2.8}%
+\contentsline {section}{\numberline {2.9}高级稳定性结果}{32}{section.2.9}%
+\contentsline {subsection}{\numberline {2.9.1}被动系统}{32}{subsection.2.9.1}%
+\contentsline {subsection}{\numberline {2.9.2}正实系统}{33}{subsection.2.9.2}%
+\contentsline {subsection}{\numberline {2.9.3}Lure问题}{33}{subsection.2.9.3}%
+\contentsline {subsection}{\numberline {2.9.4}MKY引理}{34}{subsection.2.9.4}%
+\contentsline {section}{\numberline {2.10}有用的定理与引理}{34}{section.2.10}%
+\contentsline {subsection}{\numberline {2.10.1}小增益定理}{35}{subsection.2.10.1}%
+\contentsline {subsection}{\numberline {2.10.2}总稳定性定理}{35}{subsection.2.10.2}%
+\contentsline {subsection}{\numberline {2.10.3}Bellman-Gronwall引理}{36}{subsection.2.10.3}%
+\contentsline {subsection}{\numberline {2.10.4}Barbalat引理}{36}{subsection.2.10.4}%
+\contentsline {section}{\numberline {2.11}线性控制器设计}{36}{section.2.11}%
+\contentsline {section}{\numberline {2.12}总结与注记}{38}{section.2.12}%
+\contentsline {section}{参考文献}{38}{section.2.12}%
+\contentsline {chapter}{\numberline {第三章\hspace {.3em}}机器人动力学}{41}{chapter.3}%
+\contentsline {section}{\numberline {3.1}引言}{41}{section.3.1}%
+\contentsline {section}{\numberline {3.2}拉格朗日-欧拉动力学}{42}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}力、惯量与能量}{42}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}拉格朗日运动方程}{43}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}推导操作器动力学}{47}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}机器人方程的结构与性质}{51}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}惯量矩阵性质}{53}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}科里奥利/向心项性质}{53}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}重力、摩擦与干扰性质}{58}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}参数线性}{60}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}无源性与能量守恒}{63}{subsection.3.3.5}%
+\contentsline {section}{\numberline {3.4}状态变量表示与反馈线性化}{64}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}哈密顿公式}{65}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}位置/速度公式}{66}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}反馈线性化}{67}{subsection.3.4.3}%
+\contentsline {section}{\numberline {3.5}笛卡尔动力学与其他动力学}{69}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}笛卡尔机械臂动力学}{69}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}笛卡尔动力学的结构与性质}{70}{subsection.3.5.2}%
+\contentsline {section}{\numberline {3.6}执行器动力学}{72}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}带执行器的机械臂动力学}{72}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}三阶机械臂加执行器动力学}{73}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}具有关节柔性的动力学}{74}{subsection.3.6.3}%
+\contentsline {section}{\numberline {3.7}总结}{76}{section.3.7}%
+\contentsline {section}{\numberline {3.8}参考文献}{77}{section.3.8}%
+\contentsline {section}{\numberline {3.9}习题}{78}{section.3.9}%
+\contentsline {chapter}{\numberline {第四章\hspace {.3em}}计算力矩控制}{81}{chapter.4}%
+\contentsline {section}{\numberline {4.1}引言}{81}{section.4.1}%
+\contentsline {section}{\numberline {4.2}路径生成}{82}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}将笛卡尔轨迹转换到关节空间}{82}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}多项式路径插值}{83}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}带抛物线混合的线性函数}{84}{subsection.4.2.3}%
+\contentsline {subsection}{\numberline {4.2.4}最小时间轨迹}{85}{subsection.4.2.4}%
+\contentsline {section}{\numberline {4.3}机器人系统的计算机仿真}{85}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}机器人动力学仿真}{86}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}数字机器人控制器的仿真}{86}{subsection.4.3.2}%
+\contentsline {section}{\numberline {4.4}计算力矩控制}{88}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}内前馈环推导}{88}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}PD外环设计}{90}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}PID外环设计}{93}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4.4}计算力矩类控制器}{93}{subsection.4.4.4}%
+\contentsline {subsection}{\numberline {4.4.5}PD-Plus-Gravity控制器}{94}{subsection.4.4.5}%
+\contentsline {subsection}{\numberline {4.4.6}经典关节控制}{96}{subsection.4.4.6}%
+\contentsline {section}{\numberline {4.5}数字机器人控制}{100}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}基于近似连续控制器的设计}{100}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}执行器饱和和积分器抗饱和补偿}{100}{subsection.4.5.2}%
+\contentsline {section}{\numberline {4.6}最优外环设计}{102}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}线性二次最优控制}{102}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}线性二次计算力矩设计}{104}{subsection.4.6.2}%
+\contentsline {section}{\numberline {4.7}笛卡尔控制}{105}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}笛卡尔计算力矩控制}{106}{subsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7.2}笛卡尔误差计算}{107}{subsection.4.7.2}%
+\contentsline {section}{\numberline {4.8}总结}{107}{section.4.8}%
+\contentsline {section}{参考文献}{109}{section.4.8}%
+\contentsline {section}{习题}{111}{Item.117}%
+\contentsline {chapter}{\numberline {第五章\hspace {.3em}}机器人操作器的鲁棒控制}{115}{chapter.5}%
+\contentsline {section}{\numberline {5.1}引言}{115}{section.5.1}%
+\contentsline {section}{\numberline {5.2}反馈线性化控制器}{116}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}李雅普诺夫设计}{118}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}输入-输出设计}{122}{subsection.5.2.2}%
+\contentsline {subsubsection}{静态控制器}{122}{subsection.5.2.2}%
+\contentsline {subsubsection}{动态控制器}{125}{equation.5.2.59}%
+\contentsline {section}{\numberline {5.3}非线性控制器}{131}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}直接无源控制器}{131}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}变结构控制器}{133}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}饱和型控制器}{137}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}动力学重新设计}{140}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}解耦设计}{140}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}虚拟机器人概念}{141}{subsection.5.4.2}%
+\contentsline {section}{\numberline {5.5}总结}{142}{section.5.5}%
+\contentsline {chapter}{\numberline {第六章\hspace {.3em}}机器人操作器的自适应控制}{149}{chapter.6}%
+\contentsline {section}{\numberline {6.1}引言}{149}{section.6.1}%
+\contentsline {section}{\numberline {6.2}计算力矩方法的自适应控制}{150}{section.6.2}%
+\contentsline {section}{\numberline {6.3}惯量相关方法的自适应控制}{157}{section.6.3}%
+\contentsline {section}{\numberline {6.4}基于无源性的自适应控制器}{162}{section.6.4}%
+\contentsline {section}{\numberline {6.5}持续激励}{167}{section.6.5}%
+\contentsline {section}{\numberline {6.6}复合自适应控制器}{169}{section.6.6}%
+\contentsline {section}{\numberline {6.7}自适应控制器的鲁棒性}{175}{section.6.7}%
+\contentsline {section}{\numberline {6.8}总结}{180}{section.6.8}%
+\contentsline {chapter}{\numberline {第七章\hspace {.3em}}先进控制技术}{185}{chapter.7}%
+\contentsline {chapter}{\numberline {第八章\hspace {.3em}}机器人的神经网络控制}{213}{chapter.8}%
+\contentsline {section}{\numberline {8.1}引言}{213}{section.8.1}%
+\contentsline {section}{\numberline {8.2}神经网络背景}{214}{section.8.2}%
+\contentsline {subsection}{\numberline {8.2.1}多层神经网络}{214}{subsection.8.2.1}%
+\contentsline {subsection}{\numberline {8.2.2}线性参数神经网络}{216}{subsection.8.2.2}%
+\contentsline {section}{\numberline {8.3}使用静态神经网络的跟踪控制}{218}{section.8.3}%
+\contentsline {subsection}{\numberline {8.3.1}机器人手臂动力学和误差系统}{218}{subsection.8.3.1}%
+\contentsline {subsection}{\numberline {8.3.2}自适应控制}{220}{subsection.8.3.2}%
+\contentsline {subsection}{\numberline {8.3.3}神经网络反馈跟踪控制器}{220}{subsection.8.3.3}%
+\contentsline {subsection}{\numberline {8.3.4}初始跟踪误差和初始神经网络权重}{221}{subsection.8.3.4}%
+\contentsline {section}{\numberline {8.4}线性参数神经网络的调参算法}{222}{section.8.4}%
+\contentsline {section}{\numberline {8.5}非线性参数神经网络的调参算法}{224}{section.8.5}%
+\contentsline {subsection}{\numberline {8.5.1}神经网络控制器的无源性性质}{227}{subsection.8.5.1}%
+\contentsline {section}{\numberline {8.6}小结}{230}{section.8.6}%
+\contentsline {chapter}{\numberline {第九章\hspace {.3em}}力控制}{235}{chapter.9}%
+\contentsline {section}{\numberline {9.1}引言}{235}{section.9.1}%
+\contentsline {section}{\numberline {9.2}刚度控制}{235}{section.9.2}%
+\contentsline {subsection}{\numberline {9.2.1}单自由度机械臂的刚度控制}{236}{subsection.9.2.1}%
+\contentsline {subsection}{\numberline {9.2.2}雅可比矩阵和环境力}{237}{subsection.9.2.2}%
+\contentsline {subsection}{\numberline {9.2.3}$N$连杆机械臂的刚度控制}{241}{subsection.9.2.3}%
+\contentsline {section}{\numberline {9.3}混合位置/力控制}{244}{section.9.3}%
+\contentsline {subsection}{\numberline {9.3.1}笛卡尔二连杆臂的混合位置/力控制}{244}{subsection.9.3.1}%
+\contentsline {subsection}{\numberline {9.3.2}$N$连杆机械臂的混合位置/力控制}{246}{subsection.9.3.2}%
+\contentsline {section}{\numberline {9.4}混合阻抗控制}{248}{section.9.4}%
+\contentsline {subsection}{\numberline {9.4.1}环境建模}{248}{subsection.9.4.1}%
+\contentsline {subsection}{\numberline {9.4.2}位置和力控制模型}{250}{subsection.9.4.2}%
+\contentsline {subsection}{\numberline {9.4.3}阻抗控制公式}{251}{subsection.9.4.3}%
+\contentsline {section}{\numberline {9.5}降维状态位置/力控制}{253}{section.9.5}%
+\contentsline {subsection}{\numberline {9.5.1}完整约束对机械臂动力学的影响}{253}{subsection.9.5.1}%
+\contentsline {subsection}{\numberline {9.5.2}降维建模和控制}{255}{subsection.9.5.2}%
+\contentsline {section}{\numberline {9.6}总结}{257}{section.9.6}%
+\contentsline {chapter}{\numberline {第十章\hspace {.3em}}机器人控制实现与软件}{263}{chapter.10}%
+\contentsline {section}{\numberline {10.1}引言}{263}{section.10.1}%
+\contentsline {section}{\numberline {10.2}工具与技术}{264}{section.10.2}%
+\contentsline {section}{\numberline {10.3}机器人平台的设计}{266}{section.10.3}%
+\contentsline {subsection}{\numberline {10.3.1}概述}{266}{subsection.10.3.1}%
+\contentsline {subsection}{\numberline {10.3.2}核心类}{268}{subsection.10.3.2}%
+\contentsline {subsection}{\numberline {10.3.3}机器人控制类}{270}{subsection.10.3.3}%
+\contentsline {subsection}{\numberline {10.3.4}外部设备类}{271}{subsection.10.3.4}%
+\contentsline {subsection}{\numberline {10.3.5}工具类}{272}{subsection.10.3.5}%
+\contentsline {subsection}{\numberline {10.3.6}配置管理}{272}{subsection.10.3.6}%
+\contentsline {subsection}{\numberline {10.3.7}对象管理器}{272}{subsection.10.3.7}%
+\contentsline {subsection}{\numberline {10.3.8}并发/通信模型}{274}{subsection.10.3.8}%
+\contentsline {subsection}{\numberline {10.3.9}绘图与控制调整能力}{275}{subsection.10.3.9}%
+\contentsline {subsection}{\numberline {10.3.10}数学库}{276}{subsection.10.3.10}%
+\contentsline {subsection}{\numberline {10.3.11}错误管理和前端GUI}{277}{subsection.10.3.11}%
+\contentsline {section}{\numberline {10.4}机器人平台的操作}{278}{section.10.4}%
+\contentsline {subsection}{\numberline {10.4.1}场景查看器和控制面板}{278}{subsection.10.4.1}%
+\contentsline {subsection}{\numberline {10.4.2}用于移动机器人的实用程序}{279}{subsection.10.4.2}%
+\contentsline {subsection}{\numberline {10.4.3}编写、编译、链接和启动控制程序}{280}{subsection.10.4.3}%
+\contentsline {section}{\numberline {10.5}编程示例}{282}{section.10.5}%
+\contentsline {subsection}{\numberline {10.5.1}仿真与实现的比较}{282}{subsection.10.5.1}%
+\contentsline {subsection}{\numberline {10.5.2}虚拟墙壁}{283}{subsection.10.5.2}%
+\contentsline {section}{\numberline {10.6}总结}{285}{section.10.6}%
+\contentsline {chapter}{\numberline {附录 A\hspace {.3em}}机器人运动学与雅可比矩阵回顾}{289}{appendix.A}%
+\contentsline {section}{\numberline {A.1}A.1 基本操作器几何}{289}{section.A.1}%
+\contentsline {section}{\numberline {A.2}A.2 机器人运动学}{290}{section.A.2}%
+\contentsline {subsection}{\numberline {A.2.1}$A$矩阵}{290}{subsection.A.2.1}%
+\contentsline {subsection}{\numberline {A.2.2}齐次变换}{291}{subsection.A.2.2}%
+\contentsline {subsection}{\numberline {A.2.3}臂$T$矩阵}{292}{subsection.A.2.3}%
+\contentsline {subsection}{\numberline {A.2.4}正向运动学}{292}{subsection.A.2.4}%
+\contentsline {section}{\numberline {A.3}A.3 操作器雅可比矩阵}{293}{section.A.3}%
+\contentsline {subsection}{\numberline {A.3.1}速度和加速度的变换}{293}{subsection.A.3.1}%
+\contentsline {subsection}{\numberline {A.3.2}力的变换}{294}{subsection.A.3.2}%
+\contentsline {subsection}{\numberline {A.3.3}笛卡尔位置描述}{295}{subsection.A.3.3}%
+\contentsline {subsection}{\numberline {A.3.4}计算臂雅可比}{295}{subsection.A.3.4}%
+\contentsline {chapter}{\numberline {附录 B\hspace {.3em}}控制器仿真软件}{299}{appendix.B}%
+\contentsline {section}{附录B 控制器仿真软件}{299}{section*.37}%
+\contentsline {chapter}{\numberline {附录 C\hspace {.3em}}常见机器人手臂的动力学}{301}{appendix.C}%
+\contentsline {section}{附录C 常见机器人机械臂的动力学}{301}{section*.38}%

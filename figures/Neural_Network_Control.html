@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>神经网络控制 - 函数逼近与学习</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1600px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #333; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .nn-visual { background: #f8f9fa; padding: 20px; border-radius: 15px; height: 400px; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        .control-panel { background: #f8f9fa; padding: 20px; border-radius: 15px; }
+        .panel-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
+        .slider-group { margin-bottom: 20px; }
+        .slider-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 600; }
+        .slider-value { color: #667eea; font-weight: bold; }
+        input[type="range"] { width: 100%; height: 8px; border-radius: 4px; background: #ddd; outline: none; -webkit-appearance: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #667eea; cursor: pointer; }
+        .learning-viz { background: white; padding: 15px; border-radius: 10px; margin-top: 15px; }
+        .error-curve { height: 150px; }
+        .controls { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        button { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-start { background: #667eea; color: white; }
+        .btn-start:hover { background: #5a67d8; transform: translateY(-2px); }
+        .btn-target { background: #e74c3c; color: white; }
+        .formula { background: #f0f0f0; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 14px; margin: 15px 0; text-align: center; }
+        .target-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .legend { display: flex; justify-content: center; gap: 30px; margin-top: 10px; font-size: 14px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-color { width: 20px; height: 3px; border-radius: 2px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .stat-box { background: white; padding: 12px; border-radius: 8px; text-align: center; }
+        .stat-label { font-size: 12px; color: #666; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #667eea; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>神经网络函数逼近与控制</h1>
+        <p class="subtitle">多层前馈神经网络学习非线性动力学映射</p>
+
+        <div class="formula">
+            <strong>神经网络输出：</strong>f(x) = Σᵢ wᵢ·σ(vᵢᵀ·x + bᵢ)  &nbsp;&nbsp;(σ为sigmoid激活函数)<br>
+            <strong>权重更新：</strong>ẇ = -η·(∂E/∂w) = -η·e·(∂f/∂w)  &nbsp;&nbsp;(梯度下降学习)
+        </div>
+
+        <div class="main-grid">
+            <div>
+                <div class="nn-visual">
+                    <div class="panel-title">神经网络结构可视化</div>
+                    <canvas id="nnCanvas"></canvas>
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color" style="background: #3498db;"></div><span>输入层</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background: #9b59b6;"></div><span>隐藏层</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div><span>输出层</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div><span>激活强度</span></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="control-panel">
+                    <div class="panel-title">网络参数配置</div>
+                    
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>隐藏层神经元数</span>
+                            <span class="slider-value" id="neurons-value">8</span>
+                        </div>
+                        <input type="range" id="neurons" min="2" max="20" value="8" step="1">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>学习率 η</span>
+                            <span class="slider-value" id="lr-value">0.1</span>
+                        </div>
+                        <input type="range" id="learning-rate" min="0.01" max="0.5" value="0.1" step="0.01">
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">训练迭代</div>
+                            <div class="stat-value" id="iterations">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">当前误差</div>
+                            <div class="stat-value" id="current-error">-</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">逼近精度</div>
+                            <div class="stat-value" id="accuracy">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="learning-viz">
+                    <div class="panel-title">学习过程 - 函数逼近</div>
+                    <canvas id="learningCanvas" class="error-curve"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div><span>目标函数 f(x)</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #667eea;"></div><span>网络输出 f̂(x)</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-start" onclick="startLearning()">▶ 开始学习</button>
+            <button class="btn-target" onclick="setTarget('sine')">正弦函数</button>
+            <button class="btn-target" onclick="setTarget('complex')">复杂非线性</button>
+            <button class="btn-target" onclick="setTarget('robot')">机器人动力学</button>
+            <button class="btn-start" onclick="resetNetwork()" style="background: #e74c3c;">↺ 重置网络</button>
+        </div>
+    </div>
+
+    <script>
+        // 神经网络参数
+        let numInputs = 1;
+        let numHidden = 8;
+        let numOutputs = 1;
+        let learningRate = 0.1;
+
+        // 权重和偏置
+        let W1 = [];  // 输入到隐藏
+        let b1 = [];
+        let W2 = [];  // 隐藏到输出
+        let b2 = [];
+
+        // 激活值
+        let hiddenActivations = [];
+        let outputActivation = 0;
+
+        // 学习状态
+        let isLearning = false;
+        let iteration = 0;
+        let targetFunction = 'sine';
+        let errorHistory = [];
+
+        // 初始化网络
+        function initNetwork() {
+            W1 = [];
+            b1 = [];
+            for (let i = 0; i < numHidden; i++) {
+                W1.push((Math.random() - 0.5) * 2);
+                b1.push((Math.random() - 0.5) * 2);
+            }
+            
+            W2 = [];
+            for (let i = 0; i < numHidden; i++) {
+                W2.push((Math.random() - 0.5) * 2);
+            }
+            b2 = (Math.random() - 0.5) * 2;
+            
+            hiddenActivations = new Array(numHidden).fill(0);
+            errorHistory = [];
+            iteration = 0;
+        }
+
+        // sigmoid激活
+        function sigmoid(x) {
+            return 1 / (1 + Math.exp(-x));
+        }
+
+        // 前向传播
+        function forward(x) {
+            // 隐藏层
+            for (let i = 0; i < numHidden; i++) {
+                const z = W1[i] * x + b1[i];
+                hiddenActivations[i] = sigmoid(z);
+            }
+            
+            // 输出层
+            let output = b2;
+            for (let i = 0; i < numHidden; i++) {
+                output += W2[i] * hiddenActivations[i];
+            }
+            
+            return output;
+        }
+
+        // 反向传播
+        function backward(x, target) {
+            const output = forward(x);
+            const error = output - target;
+            
+            // 输出层梯度
+            const dW2 = [];
+            for (let i = 0; i < numHidden; i++) {
+                dW2.push(error * hiddenActivations[i]);
+            }
+            const db2 = error;
+            
+            // 隐藏层梯度
+            const dW1 = [];
+            const db1 = [];
+            for (let i = 0; i < numHidden; i++) {
+                const delta = error * W2[i] * hiddenActivations[i] * (1 - hiddenActivations[i]);
+                dW1.push(delta * x);
+                db1.push(delta);
+            }
+            
+            // 更新权重
+            for (let i = 0; i < numHidden; i++) {
+                W2[i] -= learningRate * dW2[i];
+                W1[i] -= learningRate * dW1[i];
+                b1[i] -= learningRate * db1[i];
+            }
+            b2 -= learningRate * db2;
+            
+            return error * error;  // 返回平方误差
+        }
+
+        // 目标函数
+        function targetFunc(x) {
+            switch(targetFunction) {
+                case 'sine':
+                    return Math.sin(x * Math.PI);
+                case 'complex':
+                    return Math.sin(x * Math.PI) * Math.cos(x * 3 * Math.PI) + 0.3 * Math.sin(x * 10 * Math.PI);
+                case 'robot':
+                    // 模拟机器人重力+科里奥利效应
+                    return 2 * Math.sin(x) + 0.5 * Math.sin(3 * x) + 0.2 * x * x;
+                default:
+                    return Math.sin(x * Math.PI);
+            }
+        }
+
+        // 绘制神经网络结构
+        function drawNN() {
+            const canvas = document.getElementById('nnCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const layer1X = canvas.width * 0.15;
+            const layer2X = canvas.width * 0.5;
+            const layer3X = canvas.width * 0.85;
+
+            // 绘制连接
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            
+            // 输入到隐藏
+            for (let i = 0; i < numHidden; i++) {
+                const y2 = canvas.height * (0.2 + 0.6 * i / (numHidden - 1 || 1));
+                ctx.beginPath();
+                ctx.moveTo(layer1X, canvas.height / 2);
+                ctx.lineTo(layer2X, y2);
+                ctx.stroke();
+            }
+
+            // 隐藏到输出
+            for (let i = 0; i < numHidden; i++) {
+                const y2 = canvas.height * (0.2 + 0.6 * i / (numHidden - 1 || 1));
+                ctx.beginPath();
+                ctx.moveTo(layer2X, y2);
+                ctx.lineTo(layer3X, canvas.height / 2);
+                
+                // 根据权重调整线条粗细
+                const lineWidth = Math.abs(W2[i]) * 3;
+                ctx.lineWidth = Math.max(1, lineWidth);
+                ctx.strokeStyle = W2[i] > 0 ? '#27ae60' : '#e74c3c';
+                ctx.stroke();
+            }
+
+            // 绘制输入层节点
+            ctx.fillStyle = '#3498db';
+            ctx.beginPath();
+            ctx.arc(layer1X, canvas.height / 2, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('x', layer1X, canvas.height / 2 + 4);
+
+            // 绘制隐藏层节点
+            for (let i = 0; i < numHidden; i++) {
+                const y = canvas.height * (0.2 + 0.6 * i / (numHidden - 1 || 1));
+                
+                // 根据激活值调整颜色
+                const activation = hiddenActivations[i] || 0;
+                const intensity = Math.floor(activation * 255);
+                ctx.fillStyle = `rgb(${155 + intensity}, ${89 + intensity}, ${182})`;
+                
+                ctx.beginPath();
+                ctx.arc(layer2X, y, 18, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '10px Arial';
+                ctx.fillText(`σ${i+1}`, layer2X, y + 3);
+            }
+
+            // 绘制输出层节点
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(layer3X, canvas.height / 2, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.fillText('y', layer3X, canvas.height / 2 + 4);
+        }
+
+        // 绘制学习曲线
+        function drawLearning() {
+            const canvas = document.getElementById('learningCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制网格
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+
+            // 绘制目标函数
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = 0; x < canvas.width; x += 2) {
+                const input = (x / canvas.width) * 2 - 1;
+                const y = targetFunc(input);
+                const yPixel = canvas.height / 2 - y * canvas.height * 0.3;
+                if (x === 0) ctx.moveTo(x, yPixel);
+                else ctx.lineTo(x, yPixel);
+            }
+            ctx.stroke();
+
+            // 绘制网络输出
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let x = 0; x < canvas.width; x += 2) {
+                const input = (x / canvas.width) * 2 - 1;
+                const y = forward(input);
+                const yPixel = canvas.height / 2 - y * canvas.height * 0.3;
+                if (x === 0) ctx.moveTo(x, yPixel);
+                else ctx.lineTo(x, yPixel);
+            }
+            ctx.stroke();
+
+            // 绘制采样点
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 19) * canvas.width;
+                const input = (i / 19) * 2 - 1;
+                const target = targetFunc(input);
+                const yPixel = canvas.height / 2 - target * canvas.height * 0.3;
+                
+                ctx.fillStyle = '#e74c3c';
+                ctx.beginPath();
+                ctx.arc(x, yPixel, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 学习一步
+        function learningStep() {
+            if (!isLearning) return;
+
+            let totalError = 0;
+            
+            // 随机采样训练
+            for (let i = 0; i < 10; i++) {
+                const x = (Math.random() - 0.5) * 2;  // -1 到 1
+                const target = targetFunc(x);
+                totalError += backward(x, target);
+            }
+
+            iteration++;
+            errorHistory.push(totalError / 10);
+            if (errorHistory.length > 100) errorHistory.shift();
+
+            // 更新UI
+            document.getElementById('iterations').textContent = iteration;
+            document.getElementById('current-error').textContent = (totalError / 10).toFixed(4);
+            
+            // 计算精度
+            let sumError = 0;
+            for (let i = 0; i <= 20; i++) {
+                const x = (i / 10) - 1;
+                const output = forward(x);
+                const target = targetFunc(x);
+                sumError += Math.abs(output - target);
+            }
+            const avgError = sumError / 21;
+            const accuracy = Math.max(0, 100 - avgError * 50);
+            document.getElementById('accuracy').textContent = accuracy.toFixed(1) + '%';
+
+            drawNN();
+            drawLearning();
+
+            if (iteration < 10000 && isLearning) {
+                requestAnimationFrame(learningStep);
+            } else {
+                isLearning = false;
+            }
+        }
+
+        // 事件处理
+        document.getElementById('neurons').addEventListener('input', (e) => {
+            numHidden = parseInt(e.target.value);
+            document.getElementById('neurons-value').textContent = numHidden;
+            initNetwork();
+            drawNN();
+            drawLearning();
+        });
+
+        document.getElementById('learning-rate').addEventListener('input', (e) => {
+            learningRate = parseFloat(e.target.value);
+            document.getElementById('lr-value').textContent = learningRate.toFixed(2);
+        });
+
+        function startLearning() {
+            if (isLearning) return;
+            isLearning = true;
+            learningStep();
+        }
+
+        function setTarget(type) {
+            targetFunction = type;
+            errorHistory = [];
+            iteration = 0;
+            document.getElementById('iterations').textContent = '0';
+            document.getElementById('current-error').textContent = '-';
+            document.getElementById('accuracy').textContent = '-';
+            drawLearning();
+        }
+
+        function resetNetwork() {
+            isLearning = false;
+            initNetwork();
+            drawNN();
+            drawLearning();
+            document.getElementById('iterations').textContent = '0';
+            document.getElementById('current-error').textContent = '-';
+            document.getElementById('accuracy').textContent = '-';
+        }
+
+        // 初始化
+        initNetwork();
+        drawNN();
+        drawLearning();
+    </script>
+</body>
+</html>

@@ -23,7 +23,21 @@
 
 - **GitHub 仓库**: https://github.com/FrankJIE09/Robot-Manipulator-Control-CN
 - **在线阅读（GitHub Pages）**: https://frankjie09.github.io/Robot-Manipulator-Control-CN/
-- **SCARA 交互式可视化**: https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/SCARA/SCARA_Type_I_vs_II_Comparison.html
+
+### 交互式可视化工具
+
+| 可视化 | 描述 | 链接 |
+|--------|------|------|
+| **SCARA 机器人对比** | I型 vs II型 SCARA 运动学对比 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/SCARA/SCARA_Type_I_vs_II_Comparison.html) |
+| **并联连杆操作器** | 六自由度 Stewart 平台可视化 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Parallel_Link/Parallel_Link_Manipulator.html) |
+| **齿轮传动对比** | 传统齿轮 vs 直接驱动，展示间隙和惯性 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Gear_Drive_Comparison.html) |
+| **PID 参数调节** | 实时调节 Kp/Ki/Kd，观察对机器人关节控制的影响 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/PID_Tuning_Demo.html) |
+| **正逆运动学** | 探索正运动学与逆运动学的关系，多解性问题 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Forward_Inverse_Kinematics.html) |
+| **计算力矩控制对比** | PID vs 计算力矩控制性能对比 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Computed_Torque_Control.html) |
+| **阻抗控制** | 弹簧-质量-阻尼模型，调节虚拟阻抗参数 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Impedance_Control.html) |
+| **雅可比矩阵与奇异位形** | 观察雅可比行列式变化，理解奇异位形 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Jacobian_Singularities.html) |
+| **自适应控制** | 参数在线估计，观察收敛过程 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Adaptive_Control.html) |
+| **神经网络控制** | 神经网络学习非线性函数过程可视化 | [查看](https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Neural_Network_Control.html) |
 
 ---
 
@@ -79,12 +93,19 @@ xelatex 机器人操作器控制-理论与实践.tex
 ├── figures/            # 图片和交互式可视化文件
 │   ├── SCARA/
 │   │   └── SCARA_Type_I_vs_II_Comparison.html
-│   └── Parallel_Link/
-│       └── Parallel_Link_Manipulator.html
+│   ├── Parallel_Link/
+│   │   └── Parallel_Link_Manipulator.html
+│   ├── PID_Tuning_Demo.html
+│   ├── Forward_Inverse_Kinematics.html
+│   ├── Computed_Torque_Control.html
+│   ├── Impedance_Control.html
+│   ├── Jacobian_Singularities.html
+│   ├── Adaptive_Control.html
+│   ├── Neural_Network_Control.html
+│   └── Gear_Drive_Comparison.html
 ├── source/             # 原文本提取文件
 ├── 机器人操作器控制-理论与实践.tex  # 主文档入口
 ├── 机器人操作器控制-理论与实践.pdf  # 编译后的 PDF
-├── 机器人操作器控制-理论与实践.pdf  # 中文 PDF 文件名
 └── README.md           # 本文件
 ```
 

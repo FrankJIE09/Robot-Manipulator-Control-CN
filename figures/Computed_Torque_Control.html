@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>计算力矩控制 vs PID控制对比</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1600px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #333; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .control-panel { background: #f8f9fa; padding: 20px; border-radius: 15px; }
+        .panel-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid; }
+        .panel-pid { border-bottom-color: #e74c3c; }
+        .panel-ctc { border-bottom-color: #27ae60; }
+        canvas { width: 100%; height: 250px; background: white; border-radius: 10px; margin-bottom: 10px; }
+        .robot-viz { height: 200px; background: white; border-radius: 10px; position: relative; overflow: hidden; }
+        .arm-segment { position: absolute; height: 12px; border-radius: 6px; transform-origin: left center; }
+        .target { position: absolute; width: 20px; height: 20px; background: #e74c3c; border-radius: 50%; transform: translate(-50%, -50%); }
+        .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .metric { background: white; padding: 10px; border-radius: 8px; text-align: center; }
+        .metric-label { font-size: 12px; color: #666; }
+        .metric-value { font-size: 18px; font-weight: bold; }
+        .formula-box { background: #f0f0f0; padding: 15px; border-radius: 10px; margin: 15px 0; font-family: monospace; font-size: 13px; }
+        .controls { text-align: center; margin-top: 20px; }
+        button { padding: 12px 25px; margin: 5px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-start { background: #667eea; color: white; }
+        .btn-start:hover { background: #5a67d8; transform: translateY(-2px); }
+        .btn-preset { background: #e3f2fd; color: #1976d2; }
+        .legend { display: flex; justify-content: center; gap: 30px; margin-top: 10px; font-size: 14px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-color { width: 20px; height: 3px; border-radius: 2px; }
+        .description { margin-top: 20px; padding: 20px; background: #fff3cd; border-radius: 10px; border-left: 4px solid #ffc107; }
+        .description h3 { margin-top: 0; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>计算力矩控制 vs PID控制</h1>
+        <p class="subtitle">非线性补偿的重要性演示</p>
+        
+        <div class="formula-box" style="text-align: center; font-size: 16px;">
+            <strong>计算力矩控制：</strong> τ = M(q)·(q̈d + Kv·ė + Kp·e) + C(q,q̇)·q̇ + G(q)<br>
+            <strong>PID控制：</strong> τ = Kp·e + Ki·∫e·dt + Kd·ė &nbsp;&nbsp;(忽略非线性动力学)
+        </div>
+
+        <div class="comparison-grid">
+            <div class="control-panel">
+                <div class="panel-title panel-pid">传统PID控制（无非线性补偿）</div>
+                <canvas id="pidChart"></canvas>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div><span>目标轨迹</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background: #3498db;"></div><span>实际位置</span></div>
+                </div>
+                <div class="robot-viz" id="pidRobot">
+                    <div class="arm-segment" id="pidArm1" style="background: #e74c3c; width: 100px; left: 50%; top: 50%;"></div>
+                    <div class="arm-segment" id="pidArm2" style="background: #c0392b; width: 80px; left: 50%; top: 50%;"></div>
+                    <div class="target" id="pidTarget"></div>
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">跟踪误差(RMS)</div>
+                        <div class="metric-value" id="pidError" style="color: #e74c3c;">0.00</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">超调量</div>
+                        <div class="metric-value" id="pidOvershoot" style="color: #e74c3c;">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="panel-title panel-ctc">计算力矩控制（完整动力学补偿）</div>
+                <canvas id="ctcChart"></canvas>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div><span>目标轨迹</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div><span>实际位置</span></div>
+                </div>
+                <div class="robot-viz" id="ctcRobot">
+                    <div class="arm-segment" id="ctcArm1" style="background: #27ae60; width: 100px; left: 50%; top: 50%;"></div>
+                    <div class="arm-segment" id="ctcArm2" style="background: #229954; width: 80px; left: 50%; top: 50%;"></div>
+                    <div class="target" id="ctcTarget"></div>
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">跟踪误差(RMS)</div>
+                        <div class="metric-value" id="ctcError" style="color: #27ae60;">0.00</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">超调量</div>
+                        <div class="metric-value" id="ctcOvershoot" style="color: #27ae60;">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-start" onclick="startSimulation()">▶ 开始对比仿真</button>
+            <button class="btn-preset" onclick="setTrajectory('step')">阶跃响应</button>
+            <button class="btn-preset" onclick="setTrajectory('sine')">正弦跟踪</button>
+            <button class="btn-preset" onclick="setTrajectory('circle')">圆周运动</button>
+            <button class="btn-start" onclick="resetSimulation()" style="background: #e74c3c;">⏹ 重置</button>
+        </div>
+
+        <div class="description">
+            <h3>💡 关键观察点</h3>
+            <p><strong>1. 非线性效应：</strong>当机器人手臂伸展时，转动惯量增大，PID控制会出现跟踪滞后；计算力矩控制通过M(q)实时补偿这种变化。</p>
+            <p><strong>2. 科里奥利力：</strong>快速运动时，科里奥利力C(q,q̇)·q̇会干扰关节运动；计算力矩控制将其作为前馈项补偿。</p>
+            <p><strong>3. 重力补偿：</strong>竖直方向运动时，重力G(q)造成稳态误差；计算力矩控制通过重力补偿消除这种误差。</p>
+        </div>
+    </div>
+
+    <script>
+        // 机器人参数
+        const m1 = 1.0, m2 = 0.8;  // 质量
+        const l1 = 1.0, l2 = 0.8;  // 长度
+        const g = 9.81;
+
+        // 状态变量
+        let theta1_pid = 0, theta2_pid = 0;
+        let omega1_pid = 0, omega2_pid = 0;
+        let theta1_ctc = 0, theta2_ctc = 0;
+        let omega1_ctc = 0, omega2_ctc = 0;
+
+        // PID参数
+        const Kp = 50, Ki = 0, Kd = 10;
+        let integral1_pid = 0, integral2_pid = 0;
+        let integral1_ctc = 0, integral2_ctc = 0;
+
+        // 计算力矩参数
+        const Kp_ctc = 100, Kv_ctc = 20;
+
+        // 轨迹
+        let trajectoryType = 'sine';
+        let time = 0;
+        let isRunning = false;
+
+        // 历史数据
+        let pidData = [], ctcData = [], targetData = [];
+
+        // 质量矩阵
+        function massMatrix(t1, t2) {
+            const c2 = Math.cos(t2);
+            const M11 = (m1+m2)*l1*l1 + m2*l2*l2 + 2*m2*l1*l2*c2;
+            const M12 = m2*l2*l2 + m2*l1*l2*c2;
+            const M22 = m2*l2*l2;
+            return [[M11, M12], [M12, M22]];
+        }
+
+        // 科里奥利力和离心力
+        function coriolis(t1, t2, w1, w2) {
+            const s2 = Math.sin(t2);
+            const C1 = -m2*l1*l2*s2*(2*w1*w2 + w2*w2);
+            const C2 = m2*l1*l2*s2*w1*w1;
+            return [C1, C2];
+        }
+
+        // 重力
+        function gravity(t1, t2) {
+            const c1 = Math.cos(t1), c12 = Math.cos(t1+t2);
+            const G1 = (m1+m2)*g*l1*c1 + m2*g*l2*c12;
+            const G2 = m2*g*l2*c12;
+            return [G1, G2];
+        }
+
+        // 目标轨迹生成
+        function targetTrajectory(t) {
+            if (trajectoryType === 'step') {
+                return { t1: t > 1 ? 1.0 : 0, t2: t > 1 ? 0.5 : 0 };
+            } else if (trajectoryType === 'sine') {
+                return { t1: 0.5*Math.sin(0.5*t), t2: 0.3*Math.sin(0.8*t) };
+            } else {
+                return { t1: 0.5*Math.cos(0.3*t), t2: 0.3*Math.sin(0.3*t) };
+            }
+        }
+
+        // PID控制计算
+        function computePID(e1, e2, dt) {
+            integral1_pid += e1*dt;
+            integral2_pid += e2*dt;
+            const tau1 = Kp*e1 + Ki*integral1_pid + Kd*(-omega1_pid);
+            const tau2 = Kp*e2 + Ki*integral2_pid + Kd*(-omega2_pid);
+            return [tau1, tau2];
+        }
+
+        // 计算力矩控制
+        function computeCTC(target, target_d, target_dd) {
+            const e1 = target.t1 - theta1_ctc;
+            const e2 = target.t2 - theta2_ctc;
+            const edot1 = target_d.t1 - omega1_ctc;
+            const edot2 = target_d.t2 - omega2_ctc;
+
+            const qdd_des1 = target_dd.t1 + Kv_ctc*edot1 + Kp_ctc*e1;
+            const qdd_des2 = target_dd.t2 + Kv_ctc*edot2 + Kp_ctc*e2;
+
+            const M = massMatrix(theta1_ctc, theta2_ctc);
+            const C = coriolis(theta1_ctc, theta2_ctc, omega1_ctc, omega2_ctc);
+            const G = gravity(theta1_ctc, theta2_ctc);
+
+            const tau1 = M[0][0]*qdd_des1 + M[0][1]*qdd_des2 + C[0] + G[0];
+            const tau2 = M[1][0]*qdd_des1 + M[1][1]*qdd_des2 + C[1] + G[1];
+
+            return [tau1, tau2];
+        }
+
+        // 动力学仿真
+        function simulate(tau, t1, t2, w1, w2, dt) {
+            const M = massMatrix(t1, t2);
+            const C = coriolis(t1, t2, w1, w2);
+            const G = gravity(t1, t2);
+
+            const det = M[0][0]*M[1][1] - M[0][1]*M[1][0];
+            const alpha1 = (M[1][1]*(tau[0]-C[0]-G[0]) - M[0][1]*(tau[1]-C[1]-G[1])) / det;
+            const alpha2 = (-M[1][0]*(tau[0]-C[0]-G[0]) + M[0][0]*(tau[1]-C[1]-G[1])) / det;
+
+            const new_w1 = w1 + alpha1*dt;
+            const new_w2 = w2 + alpha2*dt;
+            const new_t1 = t1 + new_w1*dt;
+            const new_t2 = t2 + new_w2*dt;
+
+            return { t1: new_t1, t2: new_t2, w1: new_w1, w2: new_w2 };
+        }
+
+        // 绘制图表
+        function drawChart(canvasId, data, targetData, color) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 网格
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 50) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 30) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+
+            // 目标轨迹
+            if (targetData.length > 1) {
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let i = 0; i < targetData.length; i++) {
+                    const x = (i / 200) * canvas.width;
+                    const y = canvas.height/2 - targetData[i].t1 * 100;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // 实际轨迹
+            if (data.length > 1) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (let i = 0; i < data.length; i++) {
+                    const x = (i / 200) * canvas.width;
+                    const y = canvas.height/2 - data[i].t1 * 100;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        // 更新机器人可视化
+        function updateRobotViz(prefix, t1, t2) {
+            const arm1 = document.getElementById(prefix + 'Arm1');
+            const arm2 = document.getElementById(prefix + 'Arm2');
+
+            const deg1 = t1 * 180 / Math.PI;
+            const deg2 = (t1 + t2) * 180 / Math.PI;
+
+            arm1.style.transform = `rotate(${deg1}deg)`;
+
+            const x1 = 100 * Math.cos(t1);
+            const y1 = 100 * Math.sin(t1);
+            arm2.style.left = `calc(50% + ${x1}px)`;
+            arm2.style.top = `calc(50% + ${y1}px)`;
+            arm2.style.transform = `rotate(${deg2}deg)`;
+        }
+
+        // 更新目标位置
+        function updateTarget(target) {
+            const x = 100 * Math.cos(target.t1) + 80 * Math.cos(target.t1 + target.t2);
+            const y = 100 * Math.sin(target.t1) + 80 * Math.sin(target.t1 + target.t2);
+
+            ['pid', 'ctc'].forEach(prefix => {
+                const el = document.getElementById(prefix + 'Target');
+                el.style.left = `calc(50% + ${x}px)`;
+                el.style.top = `calc(50% + ${y}px)`;
+            });
+        }
+
+        // 计算性能指标
+        function calculateMetrics(data, targetData) {
+            if (data.length < 50) return { error: 0, overshoot: 0 };
+
+            let sumError = 0;
+            let maxPos = -Infinity;
+            let target = 0;
+
+            for (let i = 0; i < data.length; i++) {
+                const error = Math.abs(targetData[i].t1 - data[i].t1);
+                sumError += error * error;
+                maxPos = Math.max(maxPos, data[i].t1);
+                target = targetData[i].t1;
+            }
+
+            const rmsError = Math.sqrt(sumError / data.length);
+            const overshoot = target > 0 ? Math.max(0, (maxPos - target) / target * 100) : 0;
+
+            return { error: rmsError, overshoot: overshoot };
+        }
+
+        // 仿真步进
+        function simulationStep() {
+            if (!isRunning) return;
+
+            const dt = 0.01;
+            time += dt;
+
+            const target = targetTrajectory(time);
+            const target_d = { t1: 0.5*0.5*Math.cos(0.5*time), t2: 0.3*0.8*Math.cos(0.8*time) };
+            const target_dd = { t1: -0.5*0.25*Math.sin(0.5*time), t2: -0.3*0.64*Math.sin(0.8*time) };
+
+            // PID控制
+            const e1_pid = target.t1 - theta1_pid;
+            const e2_pid = target.t2 - theta2_pid;
+            const tau_pid = computePID(e1_pid, e2_pid, dt);
+            const result_pid = simulate(tau_pid, theta1_pid, theta2_pid, omega1_pid, omega2_pid, dt);
+            theta1_pid = result_pid.t1; theta2_pid = result_pid.t2;
+            omega1_pid = result_pid.w1; omega2_pid = result_pid.w2;
+
+            // 计算力矩控制
+            const tau_ctc = computeCTC(target, target_d, target_dd);
+            const result_ctc = simulate(tau_ctc, theta1_ctc, theta2_ctc, omega1_ctc, omega2_ctc, dt);
+            theta1_ctc = result_ctc.t1; theta2_ctc = result_ctc.t2;
+            omega1_ctc = result_ctc.w1; omega2_ctc = result_ctc.w2;
+
+            // 记录数据
+            pidData.push({ t1: theta1_pid, t2: theta2_pid });
+            ctcData.push({ t1: theta1_ctc, t2: theta2_ctc });
+            targetData.push(target);
+
+            if (pidData.length > 200) {
+                pidData.shift(); ctcData.shift(); targetData.shift();
+            }
+
+            // 更新显示
+            drawChart('pidChart', pidData, targetData, '#3498db');
+            drawChart('ctcChart', ctcData, targetData, '#27ae60');
+
+            updateRobotViz('pid', theta1_pid, theta2_pid);
+            updateRobotViz('ctc', theta1_ctc, theta2_ctc);
+            updateTarget(target);
+
+            // 更新指标
+            const pidMetrics = calculateMetrics(pidData, targetData);
+            const ctcMetrics = calculateMetrics(ctcData, targetData);
+
+            document.getElementById('pidError').textContent = pidMetrics.error.toFixed(3);
+            document.getElementById('pidOvershoot').textContent = pidMetrics.overshoot.toFixed(1) + '%';
+            document.getElementById('ctcError').textContent = ctcMetrics.error.toFixed(3);
+            document.getElementById('ctcOvershoot').textContent = ctcMetrics.overshoot.toFixed(1) + '%';
+
+            requestAnimationFrame(simulationStep);
+        }
+
+        function setTrajectory(type) {
+            trajectoryType = type;
+            resetSimulation();
+        }
+
+        function startSimulation() {
+            if (isRunning) return;
+            isRunning = true;
+            simulationStep();
+        }
+
+        function resetSimulation() {
+            isRunning = false;
+            time = 0;
+            theta1_pid = 0; theta2_pid = 0; omega1_pid = 0; omega2_pid = 0;
+            theta1_ctc = 0; theta2_ctc = 0; omega1_ctc = 0; omega2_ctc = 0;
+            integral1_pid = 0; integral2_pid = 0;
+            integral1_ctc = 0; integral2_ctc = 0;
+            pidData = []; ctcData = []; targetData = [];
+
+            drawChart('pidChart', [], [], '#3498db');
+            drawChart('ctcChart', [], [], '#27ae60');
+
+            document.getElementById('pidError').textContent = '0.00';
+            document.getElementById('pidOvershoot').textContent = '0%';
+            document.getElementById('ctcError').textContent = '0.00';
+            document.getElementById('ctcOvershoot').textContent = '0%';
+        }
+
+        // 初始化
+        resetSimulation();
+    </script>
+</body>
+</html>
