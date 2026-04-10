@@ -126,6 +126,22 @@ y(t) = b_0 x_1(t) + b_1 x_2(t) + \cdots + b_{n-1} x_n(t) + u(t)
 y &= Cx + Du
 \end{aligned}
 \end{equation}
+
+{\small\itshape
+\hspace*{2em}\textbf{[校对者注：符号含义说明]}
+
+\hspace*{2em}状态空间方程中各符号的物理含义：
+\begin{itemize}
+    \item $\boldsymbol{x}$ \textbf{(状态向量)}：系统内部的状态变量，包含描述系统行为所需的全部信息。如机器人关节的角度 $x_1$、角速度 $x_2$、角加速度 $x_3$ 等。$x_1$ 是位置，$x_2=\dot{x}_1$ 是速度，$x_3=\dot{x}_2$ 是加速度。
+    
+    \item $\boldsymbol{u}$ \textbf{(输入/控制量)}：外部施加的控制作用，如电机转矩、电压、力等。这是我们可以主动调节的量。
+    
+    \item $\boldsymbol{y}$ \textbf{(输出/观测量)}：通过传感器实际测量得到的量，如编码器读数（角度）、陀螺仪读数（角速度）。$y$ 可以是 $x$ 的任意组合，取决于传感器的类型和安装位置。
+\end{itemize}
+
+\hspace*{2em}以机器人单关节为例：若只用编码器测角度，则 $y=x_1$；若同时用陀螺仪测角速度，则输出方程包含 $x_1$ 和 $x_2$ 两项。
+}
+
 其中
 \begin{equation}\label{eq:2.2.5}
 A = \begin{bmatrix}
