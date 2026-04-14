@@ -1,0 +1,603 @@
+% 稳定性理论速查表
+% 基于第二章控制理论导论整理
+\documentclass[UTF8,12pt,a4paper,landscape]{ctexart}
+
+% 页面设置（横向A4，适合宽表格）
+\usepackage{geometry}
+\geometry{left=1.5cm,right=1.5cm,top=2cm,bottom=2cm}
+
+% 数学包
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+% 表格增强
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{colortbl}
+
+% 颜色
+\usepackage{xcolor}
+\definecolor{headerblue}{RGB}{70,130,180}
+\definecolor{lightgray}{RGB}{245,245,245}
+\definecolor{lightgreen}{RGB}{144,238,144}
+\definecolor{lightyellow}{RGB}{255,255,224}
+\definecolor{lightcoral}{RGB}{240,128,128}
+
+% 超链接
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue}
+
+% 页眉页脚
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 机器人操作器控制 - 稳定性理论速查表}
+\fancyhead[R]{\small \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% 标题设置
+\title{\textbf{控制理论稳定性速查表}\\\large 基于第二章：控制理论导论}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\section*{一、基本稳定性定义（李雅普诺夫意义）}
+\renewcommand{\arraystretch}{1.4}
+
+\begin{longtable}{|>{\columncolor{lightgray}}p{2.8cm}|p{4.5cm}|p{6cm}|p{4.5cm}|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{稳定性类型}} & \textcolor{white}{\textbf{数学条件}} & \textcolor{white}{\textbf{直观解释}} & \textcolor{white}{\textbf{前提条件}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{稳定性类型}} & \textcolor{white}{\textbf{数学条件}} & \textcolor{white}{\textbf{直观解释}} & \textcolor{white}{\textbf{前提条件}} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{稳定性 (SL)} & 
+$\forall\epsilon>0, \exists\delta(\epsilon,t_0)>0$：\\
+当 $\|x_0-x_e\|<\delta$ 时，\\
+$\|x(t)-x_e\|<\epsilon, \forall t\geq t_0$ &
+初始状态足够接近平衡点时，系统状态将永远保持在平衡点附近 &
+平衡点 $x_e$ 满足 $f(t_0,x_e)=0$ \\
+\hline
+
+\textbf{不稳定性 (UL)} &
+无论初始状态多么接近平衡点，状态轨迹都不会被限制在平衡点附近 &
+平衡点不稳定，任意小的扰动都会导致系统偏离 &
+存在某个 $\epsilon>0$，对任意 $\delta>0$，存在初始状态满足 $\|x_0-x_e\|<\delta$ 但 $\|x(t)-x_e\|\geq\epsilon$ \\
+\hline
+
+\textbf{收敛性 (C)} &
+$\forall\epsilon>0, \exists\delta_1(t_0), T(\epsilon,x_0,t_0)>0$：\\
+当 $\|x_0-x_e\|<\delta_1$ 时，\\
+$\|x(t)-x_e\|<\epsilon, \forall t\geq t_0+T$ &
+从平衡点附近开始的状态最终会收敛到平衡点 &
+平衡点存在且孤立 \\
+\hline
+
+\rowcolor{lightgreen}
+\textbf{渐近稳定性 (AS)} &
+同时满足：\\
+1. 稳定性（SL）\\
+2. 收敛性（C） &
+系统在平衡点附近保持稳定，并且最终收敛到平衡点 &
+平衡点 $x_e$ 存在，且对某 $t_0$ 既是稳定又是收敛的 \\
+\hline
+
+\rowcolor{lightgreen}
+\textbf{全局渐近稳定 (GAS)} &
+对所有 $x_0\in\mathbb{R}^n$：\\
+1. 稳定性（SL）\\
+2. $x(t)\to x_e$ 当 $t\to\infty$ &
+无论从何处开始，系统最终都会收敛到平衡点 &
+系统只有一个平衡点 $x_e$（吸引域为全空间） \\
+\hline
+
+\textbf{均匀稳定性 (US)} &
+稳定性定义中的 $\delta(\epsilon,t_0)$ 与 $t_0$ 无关 &
+稳定性不依赖于初始时刻的选择 &
+时变系统 $\dot{x}=f(t,x)$ \\
+\hline
+
+\textbf{均匀收敛性 (UC)} &
+$\delta_1$ 和 $T$ 可独立于 $t_0$ 选择 &
+收敛速度不依赖于初始时刻 &
+时变系统 \\
+\hline
+
+\rowcolor{lightyellow}
+\textbf{均匀渐近稳定 (UAS)} &
+同时满足：\\
+1. 均匀稳定性（US）\\
+2. 均匀收敛性（UC） &
+稳定性与收敛性都与初始时刻无关 &
+时变系统，平衡点存在 \\
+\hline
+
+\rowcolor{lightyellow}
+\textbf{全局均匀渐近稳定 (GUAS)} &
+同时满足：\\
+1. 均匀稳定性（US）\\
+2. 均匀收敛性（UC）\\
+3. 全局性（吸引域为 $\mathbb{R}^n$） &
+全局意义下的均匀渐近稳定 &
+系统只有一个平衡点 \\
+\hline
+
+\rowcolor{lightcoral}
+\textbf{指数稳定性} &
+$\exists\alpha>0, \beta\geq 0$：\\
+$\|x(t)\|\leq\beta\|x_0\|e^{-\alpha(t-t_0)}$ &
+状态以指数速度收敛到平衡点（收敛速度可量化） &
+平衡点存在 \\
+\hline
+
+\rowcolor{lightcoral}
+\textbf{全局指数稳定 (GES)} &
+对所有 $x_0\in\mathbb{R}^n$：\\
+$\|x(t)\|\leq\beta\|x_0\|e^{-\alpha(t-t_0)}$ &
+全局意义下的指数收敛 &
+系统只有一个平衡点 \\
+\hline
+
+\caption{基本稳定性定义速查表}
+\end{longtable}
+
+\vspace{0.5cm}
+\textbf{注：} 稳定性关系链：$\text{GES} \Rightarrow \text{GUAS} \Rightarrow \text{UAS} \Rightarrow \text{AS} \Rightarrow \text{稳定}$
+
+\newpage
+\section*{二、有界性定义}
+
+\begin{longtable}{|>{\columncolor{lightgray}}p{3.5cm}|p{5.5cm}|p{6cm}|p{3.5cm}|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{有界性类型}} & \textcolor{white}{\textbf{数学条件}} & \textcolor{white}{\textbf{直观解释}} & \textcolor{white}{\textbf{前提条件}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{有界性类型}} & \textcolor{white}{\textbf{数学条件}} & \textcolor{white}{\textbf{直观解释}} & \textcolor{white}{\textbf{前提条件}} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{有界性 (B)} &
+$\forall\delta>0$，当 $\|x_0-x_e\|<\delta$ 时，\\
+$\exists\epsilon(r,t_0)<\infty$ 使得：\\
+$\|x(t)-x_e\|<\epsilon, \forall t\geq t_0$ &
+从平衡点附近开始的状态永远不会离得太远 &
+平衡点 $x_e$ 存在 \\
+\hline
+
+\textbf{均匀有界性 (UB)} &
+$\epsilon(r,t_0)$ 可独立于 $t_0$ &
+有界性与初始时刻无关 &
+时变系统 \\
+\hline
+
+\textbf{均匀最终有界 (UUB)} &
+$\forall\delta>0, \epsilon>0$，\\
+$\exists T(\epsilon,\delta)<\infty$：\\
+当 $\|x_0-x_e\|<\delta$ 时，\\
+$\|x(t)-x_e\|<\epsilon, \forall t\geq T$ &
+从平衡点附近开始的状态最终会变得有界（进入并保持在某区域内） &
+平衡点存在，$\epsilon$ 为最终界 \\
+\hline
+
+\textbf{全局均匀最终有界 (GUUB)} &
+$\forall\epsilon>0$，\\
+$\exists T(\epsilon)<\infty$：\\
+$\|x(t)-x_e\|<\epsilon, \forall t\geq T$ &
+全局意义下的均匀最终有界 &
+$\epsilon$ 为最终界，适用于所有初始状态 \\
+\hline
+
+\caption{有界性定义速查表}
+\end{longtable}
+
+\newpage
+\section*{三、李雅普诺夫稳定性定理}
+
+\begin{longtable}{|>{\columncolor{lightgray}}p{3cm}|p{4.5cm}|p{4cm}|p{5.5cm}|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{稳定性结论}} & \textcolor{white}{\textbf{李雅普诺夫函数条件}} & \textcolor{white}{\textbf{导数条件}} & \textcolor{white}{\textbf{适用范围/备注}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{稳定性结论}} & \textcolor{white}{\textbf{李雅普诺夫函数条件}} & \textcolor{white}{\textbf{导数条件}} & \textcolor{white}{\textbf{适用范围/备注}} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{稳定性} &
+$V(t,x)$ 正定：\\
+$V(t,0)=0$，且 $V(t,x)>0$（$x\neq 0$） &
+$\dot{V}$ 半负定：\\
+$\dot{V}(t,x)\leq 0$ &
+$x\in N$（原点的邻域）\\
+适用于时变/时不变系统 \\
+\hline
+
+\textbf{均匀稳定性} &
+上述条件 + \\ $V(t,x)$ 递减（存在K类函数$\beta$使得 $V(t,x)\leq\beta(\|x\|)$） &
+$\dot{V}$ 半负定 &
+适用于时变系统 \\
+\hline
+
+\rowcolor{lightgreen}
+\textbf{渐近稳定性} &
+$V(t,x)$ 正定 &
+$\dot{V}$ 负定：\\
+$\dot{V}(t,0)=0$，且 $\dot{V}(t,x)<0$（$x\neq 0$） &
+$x\in N$（原点的邻域） \\
+\hline
+
+\rowcolor{lightgreen}
+\textbf{全局渐近稳定} &
+$V(t,x)$ 正定 &
+$\dot{V}$ 负定 &
+$N=\mathbb{R}^n$（全局）\\
+要求系统只有一个平衡点 \\
+\hline
+
+\textbf{均匀渐近稳定 (UAS)} &
+$V(t,x)$ 正定且递减 &
+$\dot{V}$ 负定 &
+$x\in N$ \\
+\hline
+
+\rowcolor{lightyellow}
+\textbf{全局均匀渐近稳定 (GUAS)} &
+$V(t,x)$ 正定、递减、\textbf{径向无界}：\\
+$V(t,x)\to\infty$ 当 $\|x\|\to\infty$ &
+$\dot{V}$ 负定 &
+$N=\mathbb{R}^n$ \\
+\hline
+
+\rowcolor{lightcoral}
+\textbf{指数稳定性} &
+$\exists\alpha,\beta>0$：\\
+$\alpha\|x\|^2\leq V(t,x)\leq\beta\|x\|^2$ &
+$\dot{V}(t,x)\leq -\gamma\|x\|^2$，\\
+$\gamma>0$ &
+$V$ 为二次型或具有类似二次型的上下界 \\
+\hline
+
+\rowcolor{lightcoral}
+\textbf{全局指数稳定} &
+上述条件对所有 $x\in\mathbb{R}^n$ 成立 &
+上述条件对所有 $x\in\mathbb{R}^n$ 成立 &
+全局意义下的指数稳定 \\
+\hline
+
+\caption{李雅普诺夫稳定性定理速查表}
+\end{longtable}
+
+\vspace{0.3cm}
+\textbf{关键定义说明：}
+\begin{itemize}
+\item \textbf{正定函数：} $V(t,0)=0$ 且对所有 $x\neq 0$ 有 $V(t,x)>0$
+\item \textbf{半负定：} 对所有 $x$ 有 $\dot{V}(t,x)\leq 0$
+\item \textbf{K类函数 $\alpha(\cdot)$：} 连续，$\alpha(0)=0$，对 $x>0$ 有 $\alpha(x)>0$，非递减
+\item \textbf{沿轨迹导数：} $\dot{V}(t,x)=\frac{\partial V}{\partial t}+\frac{\partial V}{\partial x}f(t,x)$
+\end{itemize}
+
+\newpage
+\section*{四、自治系统特殊情况（LaSalle定理）}
+
+对于自治系统 $\dot{x}=f(x)$，原点为平衡点：
+
+\begin{longtable}{|>{\columncolor{lightgray}}p{3.5cm}|p{5cm}|p{5cm}|p{4cm}|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{稳定性结论}} & \textcolor{white}{\textbf{李雅普诺夫函数条件}} & \textcolor{white}{\textbf{导数条件}} & \textcolor{white}{\textbf{额外条件}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{稳定性结论}} & \textcolor{white}{\textbf{李雅普诺夫函数条件}} & \textcolor{white}{\textbf{导数条件}} & \textcolor{white}{\textbf{额外条件}} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{渐近稳定性} &
+$V(x)>0$（$x\neq 0$） &
+$\dot{V}\leq 0$ &
+$\dot{V}=0$ 仅在 $x=0$ 时成立 \\
+\hline
+
+\textbf{全局渐近稳定} &
+上述条件 + \\ $V(x)$ 径向无界 &
+$\dot{V}\leq 0$ &
+$\dot{V}=0$ 仅在 $x=0$ 时成立 \\
+\hline
+
+\caption{自治系统的LaSalle定理速查表}
+\end{longtable}
+
+\vspace{0.5cm}
+\section*{五、线性时不变系统稳定性}
+
+系统：$\dot{x}=Ax$
+
+\begin{longtable}{|>{\columncolor{lightgray}}p{3.5cm}|p{5cm}|p{4cm}|p{4.5cm}|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{判定方法}} & \textcolor{white}{\textbf{条件/方程}} & \textcolor{white}{\textbf{结论}} & \textcolor{white}{\textbf{备注}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{判定方法}} & \textcolor{white}{\textbf{条件/方程}} & \textcolor{white}{\textbf{结论}} & \textcolor{white}{\textbf{备注}} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{特征值判据} &
+$A$ 的所有特征值满足：\\
+$\text{Re}(\lambda_i)<0$，$i=1,\ldots,n$ &
+系统渐近稳定 &
+最常用方法 \\
+\hline
+
+\textbf{李雅普诺夫方程} &
+存在 $P>0$ 满足：\\
+$A^T P + PA = -Q$，\\
+其中 $Q>0$（任意正定矩阵） &
+系统稳定 &
+提供充分必要条件 \\
+\hline
+
+\textbf{Krasovskii定理} &
+存在对称正定矩阵 $P, Q$ 使得：\\
+$F(x)=A(x)^T P + PA(x) + Q > 0$ &
+自治非线性系统原点AS &
+$V(x)=f(x)^T P f(x)$ 为李雅普诺夫函数 \\
+\hline
+
+\caption{线性时不变系统稳定性判据速查表}
+\end{longtable}
+
+\newpage
+\section*{六、输入-输出稳定性（BIBO稳定性）}
+
+系统：$y(t)=(Hu)(t)$
+
+\begin{longtable}{|>{\columncolor{lightgray}}p{3cm}|p{5cm}|p{5cm}|p{3.5cm}|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{稳定性类型}} & \textcolor{white}{\textbf{数学条件}} & \textcolor{white}{\textbf{物理意义}} & \textcolor{white}{\textbf{前提}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{稳定性类型}} & \textcolor{white}{\textbf{数学条件}} & \textcolor{white}{\textbf{物理意义}} & \textcolor{white}{\textbf{前提}} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{BIBO稳定性} &
+$\|u(t)\|\leq M<\infty$ 时，\\
+$\exists\gamma>0, b$ 使得：\\
+$\|y(t)\|\leq\gamma M + b$ &
+有界输入产生有界输出 &
+系统对所有有界输入都有响应 \\
+\hline
+
+\textbf{$L_p$稳定性} &
+$u\in L_p$ 时 $Hu\in L_p$，且\\
+$\|y\|_p\leq\gamma\|u\|_p + b$ &
+$L_p$空间输入产生$L_p$空间输出 &
+$p\in[1,\infty]$ \\
+\hline
+
+\textbf{$L_\infty$稳定性} &
+输入有界时输出有界 &
+等价于BIBO稳定 &
+常用于工程应用 \\
+\hline
+
+\caption{输入-输出稳定性速查表}
+\end{longtable}
+
+\vspace{0.5cm}
+\section*{七、被动性与正实系统}
+
+\begin{longtable}{|>{\columncolor{lightgray}}p{3cm}|p{5cm}|p{5cm}|p{3.5cm}|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{概念}} & \textcolor{white}{\textbf{数学条件}} & \textcolor{white}{\textbf{物理意义}} & \textcolor{white}{\textbf{系统类型}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{概念}} & \textcolor{white}{\textbf{数学条件}} & \textcolor{white}{\textbf{物理意义}} & \textcolor{white}{\textbf{系统类型}} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{被动性} &
+$\exists\gamma>-\infty$ 使得：\\
+$\int_0^T y^T(t)u(t)dt\geq -\gamma$，\\
+$\forall T>0$ &
+系统不产生能量（只消耗或储存） &
+输入输出维数相同的非线性系统 \\
+\hline
+
+\textbf{严格被动性} &
+$\exists\delta>0, \gamma>-\infty$：\\
+$\int_0^T y^Tu dt\geq\delta\int_0^T\|u\|^2dt - \gamma$ &
+系统消耗能量（有能量耗散） &
+非线性系统 \\
+\hline
+
+\textbf{正实 (PR)} &
+$P(s)$ 满足：\\
+1. 右半平面无极点\\
+2. $j\omega$轴极点简单且留数正定\\
+3. $\text{He}[P(s)]$ 半正定（$\text{Re}(s)>0$） &
+频域中的被动性等价 &
+线性时不变系统 \\
+\hline
+
+\textbf{严格正实 (SPR)} &
+$P(s)$ 满足：\\
+1. 右闭半平面无极点\\
+2. $\text{He}[P(s)]$ 正定（$\text{Re}(s)>0$） &
+严格被动性的频域等价 &
+线性时不变系统 \\
+\hline
+
+\textbf{MKY引理} &
+$P(s)=C(sI-A)^{-1}B$ 为SPR \\ 当且仅当：\\
+1. $A^T P+PA=-Q$（$P,Q>0$）\\
+2. $C=B^T P$ &
+SPR的代数判据，用于设计自适应控制器 &
+可控系统，$D=0$ \\
+\hline
+
+\caption{被动性与正实系统速查表}
+\end{longtable}
+
+\newpage
+\section*{八、重要引理与定理}
+
+\begin{longtable}{|>{\columncolor{lightgray}}p{3cm}|p{5cm}|p{5cm}|p{3.5cm}|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{定理/引理}} & \textcolor{white}{\textbf{条件}} & \textcolor{white}{\textbf{结论}} & \textcolor{white}{\textbf{应用}} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{定理/引理}} & \textcolor{white}{\textbf{条件}} & \textcolor{white}{\textbf{结论}} & \textcolor{white}{\textbf{应用}} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{小增益定理} &
+两个系统满足：\\
+$\|y_1\|_T\leq\gamma_1\|e_1\|_T+\beta_1$\\
+$\|y_2\|_T\leq\gamma_2\|e_2\|_T+\beta_2$\\
+且 $\gamma_1\gamma_2<1$ &
+反馈互连系统BIBO稳定：\\
+$e_1,y_2\in L_p$，$y_1,e_2\in L_p$ &
+分析反馈系统稳定性 \\
+\hline
+
+\textbf{总稳定性定理} &
+$\dot{x}=Ax+f(t,x)+g(t,x)$\\
+1. $A$ 指数稳定：$\|e^{At}\|\leq Ke^{-at}$\\
+2. $f(t,0)=0$，$\|f(t,x_1)-f(t,x_2)\|\leq\beta_1\|x_1-x_2\|$\\
+3. $\|g(t,x)\|\leq\beta_2 r$，$\|g(t,x_1)-g(t,x_2)\|\leq\beta_2\|x_1-x_2\|$ &
+状态有界：\\
+$\|x(t)\|\leq k_1 e^{-\alpha t}\|x(0)\|+k_2 r$ &
+设计鲁棒控制器 \\
+\hline
+
+\textbf{Bellman-Gronwall引理} &
+$x(t)\leq\int_0^t a(\tau)x(\tau)d\tau+b(t)$ &
+$x(t)\leq\int_0^t a(\tau)b(\tau)\exp\left(\int_\tau^t a(\sigma)d\sigma\right)d\tau+b(t)$ &
+微分方程解的估计 \\
+\hline
+
+\textbf{Barbalat引理} &
+1. $\dot{f}(t)$ 一致连续\\
+2. $\lim_{t\to\infty}f(t)=k<\infty$ &
+$\lim_{t\to\infty}\dot{f}(t)=0$ &
+证明自适应控制系统收敛性 \\
+\hline
+
+\textbf{范数等价性} &
+$\|\cdot\|_a$ 和 $\|\cdot\|_b$ 是 $\mathbb{R}^n$ 上的任意两个范数 &
+$\exists k_1,k_2>0$：\\
+$k_1\|x\|_a\leq\|x\|_b\leq k_2\|x\|_a$ &
+稳定性分析中范数选择的灵活性 \\
+\hline
+
+\textbf{Rayleigh-Ritz} &
+$A$ 实对称正定，$\lambda_{\min},\lambda_{\max}$ 为最小/大特征值 &
+$\lambda_{\min}x^T x\leq x^T Ax\leq\lambda_{\max}x^T x$ &
+二次型上下界估计 \\
+\hline
+
+\textbf{Gerschgorin圆盘定理} &
+$A=[a_{ij}]$ 对称，$r_i=\sum_{j\neq i}|a_{ij}|$，$a_{ii}>0$ &
+$A$ 正定 &
+矩阵正定性快速检验 \\
+\hline
+
+\textbf{线性系统增益} &
+系统 $H$ BIBO稳定，$y=(h*u)(t)$ &
+$\gamma_\infty(H)=\int_0^\infty|h(t)|dt$\\
+$\gamma_2(H)=\sup_\omega|H(j\omega)|$ &
+计算系统诱导范数 \\
+\hline
+
+\caption{重要定理与引理速查表}
+\end{longtable}
+
+\vspace{1cm}
+\section*{九、符号说明}
+
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{headerblue}
+\textcolor{white}{\textbf{符号}} & \textcolor{white}{\textbf{含义}} & \textcolor{white}{\textbf{说明}} \\
+\hline
+$x_e$ & 平衡点/固定点 & 满足 $f(t_0,x_e)=0$ \\
+\hline
+$\|\cdot\|$ & 向量范数或矩阵范数 & 通常指欧几里得范数 \\
+\hline
+$\|\cdot\|_p$ & $p$-范数 & $1\leq p\leq\infty$ \\
+\hline
+$\lambda_{\min}(A),\lambda_{\max}(A)$ & 矩阵 $A$ 的最小/最大特征值 & 用于二次型分析 \\
+\hline
+$V(t,x)$ & 李雅普诺夫函数候选 & 标量函数，正定 \\
+\hline
+$\dot{V}$ & 沿系统轨迹的全导数 & $\frac{\partial V}{\partial t}+\frac{\partial V}{\partial x}f(t,x)$ \\
+\hline
+$L_p$ & $p$次可积函数空间 & $\int_0^\infty|f(t)|^p dt<\infty$ \\
+\hline
+$\text{Re}(s)$ & 复数实部 & 用于稳定性分析 \\
+\hline
+$\text{He}[T(s)]$ & Hermitian部分 & $T(s)+T^*(s)$ 的一半 \\
+\hline
+$P>0$ & 矩阵 $P$ 正定 & 对所有非零 $x$ 有 $x^T P x>0$ \\
+\hline
+$P\geq 0$ & 矩阵 $P$ 半正定 & 对所有 $x$ 有 $x^T P x\geq 0$ \\
+\hline
+\end{tabular}
+
+\vspace{1cm}
+\begin{center}
+\rule{0.8\textwidth}{0.4pt}
+
+\textit{本速查表基于《机器人操作器控制：理论与实践》第二章内容整理}
+
+\textit{适用于机器人控制系统的设计与分析}
+\end{center}
+
+\end{document}
