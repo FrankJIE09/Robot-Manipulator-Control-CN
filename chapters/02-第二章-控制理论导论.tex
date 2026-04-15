@@ -632,6 +632,20 @@ $f$ 被称为属于 $L_p$。
 其中 $\sup f(t)$ 表示 $f(t)$ 的上确界，即大于或等于 $f(t)$ 最大值的最小数。$L_1$ 表示具有有限绝对面积的信号集合，而 $L_2$ 表示具有有限总能量的信号集合。
 \end{definition}
 
+\begin{example}[函数范数示例]
+
+1. 函数 $f(t)=e^{-t}$ 属于 $L_1$。事实上，$||e^{-t}||_1=1$。函数 $f(t)=\frac{1}{t+1}$ 属于 $L_2$。正弦函数 $f(t)=2\sin t$ 属于 $L_\infty$，因为其幅值被2限制，且 $||2\sin t||_\infty=2$。
+
+2. 假设向量函数 $x(t)$ 具有连续且实值的分量，即：
+\[
+x(t) = [x_1(t), x_2(t), \ldots, x_n(t)]^T
+\]
+那么
+\[
+||x||_\infty = \max_i \sup_{t \geq 0} |x_i(t)|
+\]
+\end{example}
+
 \subsubsection{系统范数}
 
 接下来我们想研究多输入多输出（MIMO）系统对多维信号的影响。换句话说，时变向量 $u(t)$ 通过MIMO系统 $H$ 时会发生什么？设 $H$ 是一个具有 $m$ 输入和 $l$ 输出的系统，因此其对输入 $u(t)$ 的输出由下式给出：
@@ -666,6 +680,28 @@ y(t) = (Hu)(t)
 内积是向量空间中两个向量之间的运算，它将使我们能够定义几何概念，如正交性和傅里叶级数等。以下定义了内积。
 
 \begin{definition}[内积]
+在向量空间 $V$ 上定义的内积是一个函数 $\langle \cdot, \cdot \rangle$，从 $V$ 到 $F$，其中 $F$ 是 $\mathbb{R}$ 或 $\mathbb{C}$，使得对所有 $x, y, z \in V$：
+\begin{enumerate}
+\item $\langle x, y \rangle = \langle y, x \rangle^*$，其中 $\langle \cdot, \cdot \rangle^*$ 表示复共轭
+\item $\langle x, y+z \rangle = \langle x, y \rangle + \langle x, z \rangle$
+\item $\langle \alpha x, y \rangle = \alpha \langle x, y \rangle$，对所有标量 $\alpha$
+\item $\langle x, x \rangle \geq 0$，其中仅当 $x=0_V$ 时取等号
+\end{enumerate}
+\end{definition}
+
+\begin{example}[内积示例]
+$\mathbb{R}^n$ 中的通常点积是内积。具体来说，对于 $x, y \in \mathbb{R}^n$：
+\[
+\langle x, y \rangle = x^T y = \sum_{i=1}^{n} x_i y_i
+\]
+
+这也是有限维空间中最常用的内积。该内积诱导的范数是欧几里得范数：
+\[
+||x||_2 = \sqrt{\langle x, x \rangle} = \sqrt{x^T x} = \sqrt{\sum_{i=1}^{n} x_i^2}
+\]
+\end{example}
+
+\begin{definition}[诱导范数]
 在向量空间 $V$ 上定义的内积是一个函数 $\langle \cdot, \cdot \rangle$，从 $V$ 到 $F$，其中 $F$ 是 $\mathbb{R}$ 或 $\mathbb{C}$，使得对所有 $x, y, z \in V$：
 \begin{enumerate}
 \item $\langle x, y \rangle = \langle y, x \rangle^*$，其中 $\langle \cdot, \cdot \rangle^*$ 表示复共轭
@@ -846,6 +882,32 @@ $x_e$ 是收敛的，如果它对于任何 $t_0$ 都是收敛的。
 函数 $\alpha(x)=x^2$ 是一个K类函数。函数 $\alpha(x)=x^2+1$ 不是K类函数，因为条件(1)不成立。另一方面，$\alpha(x)=-x^2$ 不是K类函数，因为条件(2)和(3)不成立。
 \end{example}
 
+\begin{example}[刚性机器人PD控制器的稳定性]
+考虑刚性机器人动力学
+\[
+M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) = \tau
+\]
+其中 $M(q)$ 是惯性矩阵，$V_m$ 包含科里奥利力和离心力项，$G(q)$ 是重力向量。
+
+考虑PD控制律
+\[
+\tau = K_p e + K_v \dot{e} + G(q)
+\]
+其中 $e = q_d - q$ 是跟踪误差，$K_p$ 和 $K_v$ 是正定增益矩阵。
+
+定义Lyapunov函数候选
+\[
+V = \frac{1}{2}\dot{q}^T M(q) \dot{q} + \frac{1}{2}e^T K_p e
+\]
+
+对时间求导并代入闭环动力学，利用斜对称性质 $\dot{M} - 2V_m$，可得
+\[
+\dot{V} = -\dot{q}^T K_v \dot{q} \leq 0
+\]
+
+这表明系统是稳定的，且跟踪误差将收敛到零。
+\end{example}
+
 \begin{definition}[正定函数]
 在以下内容中，$\mathbb{R}_+ = [0, \infty)$。
 \begin{enumerate}
@@ -894,6 +956,8 @@ V(t, x) \leq \beta(||x||)
 \[
 N = \{x \in \mathbb{R}^n; ||x|| \leq \epsilon\}
 \]
+其中，\textbf{正定}是指 $V(t,0)=0$ 且对所有 $x \neq 0$ 有 $V(t,x)>0$；\textbf{半负定}是指对所有 $x$ 有 $\dot{V}(t,x) \leq 0$；\textbf{负定}是指 $\dot{V}(t,0)=0$ 且对所有 $x \neq 0$ 有 $\dot{V}(t,x)<0$；\textbf{递减}是指存在$K$类函数$\alpha$使得 $V(t,x) \leq \alpha(||x||)$；\textbf{径向无界}是指当 $||x|| \rightarrow \infty$ 时 $V(t,x) \rightarrow \infty$。$\dot{V}$ 表示 $V$ 沿系统轨迹的全导数：$\dot{V} = \frac{\partial V}{\partial t} + \frac{\partial V}{\partial x}f(t,x)$。
+
 那么：
 \begin{enumerate}
 \item 稳定性：如果存在标量函数 $V(t, x)$ 具有连续偏导数，使得对 $x \in N$：
@@ -927,6 +991,10 @@ N = \{x \in \mathbb{R}^n; ||x|| \leq \epsilon\}
 \end{theorem}
 
 定理中的函数 $V(t, x)$ 被称为李雅普诺夫函数。注意，该定理提供了原点稳定性的充分条件，无法为特定系统提供李雅普诺夫函数候选并不表示原点的稳定性。
+
+\begin{quote}
+\textit{注：读者可以通过}\href{https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Lyapunov_Stability_Demo.html}{\textbf{交互式可视化工具}}\textit{直观理解李雅普诺夫稳定性定理中的各种稳定性类型（稳定、渐近稳定、指数稳定、全局渐近稳定、不稳定），观察不同条件下的状态轨迹演变。}
+\end{quote}
 
 \subsection{自治情况}
 

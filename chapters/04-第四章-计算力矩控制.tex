@@ -535,6 +535,30 @@ PD计算力矩控制律给出为
 TRESP所需的子程序如图4.4.2所示。它们是
 \end{examplebox}
 
+\begin{examplebox}[示例4.4-2：PID计算力矩控制的仿真]
+在示例4.4.1中我们仿真了双连杆平面臂的PD计算力矩控制器。在此示例中，我们向臂动力学添加恒定的未知扰动，并比较PD与PID计算力矩控制。
+
+设臂动力学为
+\begin{equation}
+    M(q)\ddot{q} + N(q, \dot{q}) = \tau + \tau_d
+\end{equation}
+其中$\tau_d$是每个分量为1 N-m的恒定扰动。这可以模拟未知动力学，如摩擦等。1 N-m的值代表了相当大的偏置。
+
+在图4.4.2的子程序arm(x, xp)中，向非线性项$N_1$和$N_2$的计算添加1，并使用PD计算力矩控制器，取$k_p=100$，$k_v=20$，得到图4.4.7(a)中的误差图。由于未建模的恒定扰动未被计算力矩定律考虑，跟踪误差中存在不可接受的残余偏置。最大误差为0.033 rad，略小于2度。
+
+现在添加积分误差加权项，取$k_i=500$，得到图4.4.7(b)的结果，显示出零稳态误差，效果相当好。
+
+相关的控制力矩如图4.4.8所示，表明使用积分项并不会显著增加力矩幅值。
+
+为了仿真PID控制律，有必要向子程序arm(x, xp)中的$x$添加两个额外的状态。方便起见，称它们为$x(5)$和$x(6)$，因此添加到子程序中的行是
+\begin{align}
+    \dot{x}(5) &= e(1) \\
+    \dot{x}(6) &= e(2)
+\end{align}
+
+因此，现在有必要在子程序arm(x, xp)中计算$e(1)$和$e(2)$以进行积分。
+\end{examplebox}
+
 \subsection{PID外环设计}
 
 为了提高性能，可以使用PID外环控制
@@ -921,6 +945,61 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 相反，有必要使用两个导数滤波器，一个用于估计关节速度，一个用于提供速度误差$\dot{e}_k$的估计。尝试使用$\dot{q}_{dk} - v_k$的仿真很好地说明了这一点。
 
 请注意，速度估计也用于代替$\dot{q}$计算非线性项中的值。
+\end{examplebox}
+
+\begin{examplebox}[示例4.5-2：带抗饱和补偿的数字PI控制器]
+采样周期为$T$秒的一般数字PI控制器由下式给出
+\begin{equation}
+    u_k = u_{k-1} + k_p e_k + \frac{k_p T}{T_I} \sum_{i=0}^{k} e_i
+\end{equation}
+
+我们使用改进的匹配极零点(MPZ)方法对连续PI控制器进行采样，在积分器中获得$T$秒的延迟以允许计算时间。比例增益为$k_p$，重置时间为$T_I$；两者在设计阶段都是固定的。跟踪误差为$e_k$。
+
+乘以$(1-z^{-1})$写成
+\begin{equation}
+    (1-z^{-1})U(z) = k_p(1-z^{-1})E(z) + \frac{k_p T}{T_I} E(z)
+\end{equation}
+
+这是传递函数形式。用于实现的相应差分方程形式为
+\begin{equation}
+    u_k = u_{k-1} + k_p e_k + \frac{k_p T}{T_I} e_k
+\end{equation}
+
+由于自回归多项式$R=1-z^{-1}$在$z=1$处有根，使其处于边缘稳定，因此该控制器将经历饱和问题。因此，当$u_k$受限时，积分器将继续积分，"饱和"超出饱和水平。
+
+\textbf{a. 抗饱和补偿}
+
+为了纠正这个问题，选择一个观测器多项式
+\begin{equation}
+    A_0(z) = z - \alpha
+\end{equation}
+
+其中$|\alpha|<1$在期望位置有一个极点。设计参数$\alpha$可以通过仿真研究选择。然后具有抗饱和保护的控制器由下式给出
+\begin{align}
+    u_k &= u_{k-1} + k_p(e_k - e_{k-1}) + \frac{k_p T}{T_I} e_k + (1-\alpha)(u_{k-1} - u_{k-1}^{sat}) \\
+    u_k^{sat} &= \mathrm{sat}(u_k)
+\end{align}
+
+如果$\alpha=1$，我们获得特殊情况，称为位置形式，没有抗饱和补偿。如果$\alpha=0$，我们获得死拍抗饱和补偿
+\begin{equation}
+    u_k = u_{k-1} + k_p e_k + \frac{k_p T}{T_I} e_k + (u_{k-1} - u_{k-1}^{sat})
+\end{equation}
+
+具有相应的差分方程实现。如果$u_k$未饱和，这相当于通过将(10)右侧的第二和第三项加到$u_{k-1}$来更新工厂控制。这些项因此不过是$u_k - u_{k-1}$。因此，$\alpha=0$的补偿器称为PI控制器的速度形式。
+
+\textbf{b. 直流电机的数字控制}
+
+考虑由下式给出的简化直流电机模型
+\begin{equation}
+    J\dot{\omega} + b\omega = \tau
+\end{equation}
+
+其中$\omega$是角速度。电机速度控制器具有形式
+\begin{equation}
+    \tau_k = k_p e_k + \frac{k_p T}{T_I} \sum_{i=0}^{k} e_i
+\end{equation}
+
+其中$e=r-\omega$是跟踪误差，$r$是期望的命令角速度。
 \end{examplebox}
 
 \section{最优外环设计}
