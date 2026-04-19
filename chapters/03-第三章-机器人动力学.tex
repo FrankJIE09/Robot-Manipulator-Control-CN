@@ -1408,15 +1408,15 @@ M'(q)\ddot{q} + V'(q,\dot{q}) + F'(\dot{q}) + G'(q) = K' v
 
 为了探索这一点，让我们按分量写出完整动力学
 \begin{equation}
-(J_{Mi} + r_i^2 m_{ii})\ddot{q}_i + (B_{Mi} + r_i^2 v_i)\dot{q}_i + k_i\text{sgn}(\dot{q}_i) + d_i = k_i'v_i
+(J_{Mi} + r_i^2 m_{ii})\ddot{q}_i + B_i\dot{q}_i + r_i F_{Mi} = \frac{r_i K_{Mi}}{R_{ai}} v_i - r_i^2 d_i, \quad i = 1,\ldots,n
 \end{equation}
 其中$B \equiv \text{diag}\{B_i\}$，$d_i$是由下式给出的干扰
 \begin{equation}
-d_i = \sum_{j \neq i}m_{ij}\ddot{q}_j + \sum_{j,k}V_{jki}\dot{q}_j\dot{q}_k + g_i + f_i(\dot{q}_i)
+d_i = \sum_{j \neq i} m_{ij}\ddot{q}_j + \sum_{j,k} V_{jki}\dot{q}_j\dot{q}_k + F_i + G_i
 \end{equation}
-其中$m_{ij}$是$M'$的非对角元素，$V_{jki}$是第$i$个连杆摩擦的张量分量，$G_i$是第$i$个重力分量。
+其中$m_{ij}$为等效惯量矩阵$M' = J_M + R^2 M$的第$(i,j)$元素（$m_{ii}$为其对角元），$V_{jki}$为与科里奥利/向心项相关的Christoffel型系数，$F_i$与$G_i$分别为第$i$个关节的摩擦与重力分量。
 
-这个方程表明，当$r_i$很小时，$r_i^2 m_{ii}$远小于$J_{Mi}$的情形下，主对角线由电机惯量$J_{Mi}$主导，机械臂动力学可近似看作$n$个具有常数系数的解耦二阶方程；关节耦合与重力等进入$d_i$，表现为耦合扰动项。也就是说，在强减速、小$r_i$时若连杆项相对反射电机惯量可忽略，控制设计往往以执行器主导的关节动态为出发点。
+这个方程表明，当$r_i$很小时，若$r_i^2 m_{ii}$相对$J_{Mi}$可忽略，则主对角项由电机惯量$J_{Mi}$主导，动力学可近似为$n$个常系数解耦二阶方程；关节间耦合、科氏与摩擦及重力等均收入$d_i$，并在右端以$-r_i^2 d_i$形式出现。因而$r_i$很小时该项常被看作小扰动，控制设计可先在执行器主导模型上展开（须结合实际负载与非线性再作修正）。
 
 不幸的是，现代高性能任务使科里奥利和向心项变大，因此$d_i$不小。此外，现代高性能机械臂具有接近统一的齿轮比（例如，直驱机械臂），因此非线性必须在任何认真的控制设计中考虑。
 
