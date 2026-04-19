@@ -3,7 +3,10 @@
 % 标记主文档，使章节文件检测到后关闭独立模式
 \newcommand{\maindoc}{true}
 
-\usepackage{amsmath,amssymb,amsthm,graphicx,hyperref,bm,listings,float}
+\usepackage{amsmath,amssymb,amsthm,graphicx,hyperref,bm,listings,float,booktabs,enumitem}
+% 与分章 \input 时一致的常用符号（各章 standalone 中已有定义）
+\newcommand{\ATAN}{\mathrm{ATAN2}}
+\newcommand{\dd}{\mathrm{d}}
 \usepackage{geometry}
 \usepackage{standalone}
 \usepackage{tocloft}

@@ -279,17 +279,17 @@
                     <div class="param-title">外部激励</div>
                     <div class="slider-group">
                         <div class="slider-label">
-                            <span>u₁ (作用在m₁的力)</span>
+                            <span>u₁ (上层输入力)</span>
                             <span class="slider-value" id="u1Value">0 N</span>
                         </div>
                         <input type="range" id="u1" min="-10" max="10" value="0" step="0.5">
                     </div>
                     <div class="slider-group">
                         <div class="slider-label">
-                            <span>u₂ (地面加速度)</span>
-                            <span class="slider-value" id="u2Value">0 m/s²</span>
+                            <span>u₂ (下层输入力)</span>
+                            <span class="slider-value" id="u2Value">0 N</span>
                         </div>
-                        <input type="range" id="u2" min="-5" max="5" value="0" step="0.1">
+                        <input type="range" id="u2" min="-10" max="10" value="0" step="0.5">
                     </div>
                 </div>
 
@@ -311,17 +311,14 @@
                 </div>
 
                 <div class="info-box">
-                    <h3>系统动力学方程（三质量系统）</h3>
+                    <h3>系统动力学方程</h3>
                     <div class="equation">
-                        ẏ₁ = -(k₁y₁ + c₁ẏ₁ - k₁y₂ - c₁ẏ₂ + u₁) / m₁
+                        m₁ÿ₁ + c₁(ẏ₁-ẏ₂) + k₁(y₁-y₂) = u₁
                     </div>
                     <div class="equation">
-                        ẏ₂ = (k₁y₁ + c₁ẏ₁ - (k₁+k₂)y₂ - (c₁+c₂)ẏ₂ + k₂y₃ + c₂ẏ₃) / m₂
+                        m₂ÿ₂ + c₁(ẏ₂-ẏ₁) + c₂ẏ₂ + k₁(y₂-y₁) + k₂y₂ = u₂
                     </div>
-                    <div class="equation">
-                        ẏ₃ = u₂ (地面加速度输入)
-                    </div>
-                    <p>这是一个典型的MIMO隔振系统：u₁作用在上层平台，u₂控制地面运动，输出为y₁和y₂。</p>
+                    <p>这是一个典型的MIMO（多输入多输出）机械系统，用于实验隔振平台。</p>
                 </div>
             </div>
         </div>
@@ -340,8 +337,8 @@
             u1: 0, u2: 0
         };
 
-        // 状态变量 [y1, v1, y2, v2, y3, v3] (位移和速度，y3是地面位移)
-        let state = [0, 0, 0, 0, 0, 0];
+        // 状态变量 [y1, v1, y2, v2] (位移和速度)
+        let state = [0, 0, 0, 0];
         let isRunning = true;
         let time = 0;
 
@@ -361,33 +358,27 @@
                     if (id.startsWith('m')) unit = ' kg';
                     else if (id.startsWith('k')) unit = ' N/m';
                     else if (id.startsWith('c')) unit = ' N·s/m';
-                    else if (id === 'u1') unit = ' N';
-                    else if (id === 'u2') unit = ' m/s²';
-
+                    else if (id.startsWith('u')) unit = ' N';
+                    
                     valueDisplay.textContent = val + unit;
                 });
             });
         }
 
-        // 动力学计算（4阶龙格-库塔）- 三质量系统
-        // 状态: [y1, v1, y2, v2, y3, v3] 其中y3是地面位移，v3=ẏ3
+        // 动力学计算（4阶龙格-库塔）
         function dynamics(state, t) {
-            const [y1, v1, y2, v2, y3, v3] = state;
+            const [y1, v1, y2, v2] = state;
             const { m1, m2, k1, k2, c1, c2, u1, u2 } = params;
-
-            // 根据状态空间方程：
-            // ẋ₁ = x₂ (即 ẏ₁ = v₁)
-            // ẋ₂ = -(k₁/m₁)x₁ - (c₁/m₁)x₂ + (k₁/m₁)x₃ + (c₁/m₁)x₄ + (1/m₁)u₁
-            // ẋ₃ = x₄ (即 ẏ₂ = v₂)
-            // ẋ₄ = (k₁/m₂)x₁ + (c₁/m₂)x₂ - ((k₁+k₂)/m₂)x₃ - ((c₁+c₂)/m₂)x₄ + (k₂/m₂)x₅ + (c₂/m₂)x₆
-            // ẋ₅ = x₆ (即 ẏ₃ = v₃)
-            // ẋ₆ = u₂
-
-            const a1 = -(k1*y1 + c1*v1 - k1*y2 - c1*v2 + u1) / m1;
-            const a2 = (k1*y1 + c1*v1 - (k1+k2)*y2 - (c1+c2)*v2 + k2*y3 + c2*v3) / m2;
-            const a3 = u2;  // 地面加速度等于输入u₂
-
-            return [v1, a1, v2, a2, v3, a3];
+            
+            // 相对位移和速度
+            const dy = y1 - y2;
+            const dv = v1 - v2;
+            
+            // 加速度计算
+            const a1 = (u1 - c1 * dv - k1 * dy) / m1;
+            const a2 = (u2 + c1 * dv + k1 * dy - c2 * v2 - k2 * y2) / m2;
+            
+            return [v1, a1, v2, a2];
         }
 
         function rk4Step(dt) {
@@ -395,8 +386,8 @@
             const k2 = dynamics(state.map((s, i) => s + 0.5 * dt * k1[i]), time + 0.5 * dt);
             const k3 = dynamics(state.map((s, i) => s + 0.5 * dt * k2[i]), time + 0.5 * dt);
             const k4 = dynamics(state.map((s, i) => s + dt * k3[i]), time + dt);
-
-            for (let i = 0; i < 6; i++) {
+            
+            for (let i = 0; i < 4; i++) {
                 state[i] += (dt / 6) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
             }
             time += dt;
@@ -411,82 +402,54 @@
             const groundY = canvas.height - 50;
             const scale = 50; // 像素/米
 
-            const [y1, v1, y2, v2, y3, v3] = state;
+            const [y1, v1, y2, v2] = state;
 
-            // 计算平台位置（y3是地面位移，向上为正）
-            const groundOffset = -y3 * scale;  // 地面偏移量
-            const platform2Y = groundY - 100 - y2 * scale + groundOffset;
+            // 计算平台位置
+            const platform2Y = groundY - 100 - y2 * scale;
             const platform1Y = platform2Y - 100 - (y1 - y2) * scale;
 
-            // 计算地面偏移（根据y3位移）
-            const groundOffset = -state[4] * scale;  // state[4] = y3
-            const currentGroundY = groundY + groundOffset;
-
-            // 绘制地面（可移动）
-            ctx.strokeStyle = '#666';
-            ctx.lineWidth = 4;
-            ctx.fillStyle = 'rgba(100, 100, 100, 0.3)';
+            // 绘制地面
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(centerX - 150, currentGroundY);
-            ctx.lineTo(centerX + 150, currentGroundY);
+            ctx.moveTo(centerX - 150, groundY);
+            ctx.lineTo(centerX + 150, groundY);
             for (let i = -140; i <= 140; i += 20) {
-                ctx.moveTo(centerX + i, currentGroundY);
-                ctx.lineTo(centerX + i - 10, currentGroundY + 15);
+                ctx.moveTo(centerX + i, groundY);
+                ctx.lineTo(centerX + i - 10, groundY + 10);
             }
             ctx.stroke();
-            ctx.fillRect(centerX - 150, currentGroundY, 300, 30);
 
-            // 绘制静态参考线（显示地面相对运动）
-            ctx.strokeStyle = '#333';
-            ctx.setLineDash([5, 5]);
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(centerX - 200, groundY);
-            ctx.lineTo(centerX + 200, groundY);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            // 地面位移标签
-            if (Math.abs(state[4]) > 0.01) {
-                ctx.fillStyle = '#888';
-                ctx.font = '12px Arial';
-                ctx.fillText('y₃=' + state[4].toFixed(2) + 'm', centerX + 160, currentGroundY + 5);
-            }
-
-            // 绘制下层弹簧 k2（连接m2和地面）
+            // 绘制下层弹簧 k2
             ctx.strokeStyle = '#ffe66d';
             ctx.lineWidth = 3;
             ctx.beginPath();
             const spring2Top = platform2Y + 40;
-            const spring2Bottom = currentGroundY;
+            const spring2Bottom = groundY;
             const coils2 = 8;
             const spring2Length = spring2Bottom - spring2Top;
-            if (spring2Length > 10) {
-                ctx.moveTo(centerX, spring2Top);
-                for (let i = 0; i <= coils2; i++) {
-                    const x = centerX + (i % 2 === 0 ? -15 : 15) * Math.sin(Math.PI * i / coils2);
-                    const y = spring2Top + (spring2Length * i / coils2);
-                    ctx.lineTo(x, y);
-                }
-                ctx.lineTo(centerX, spring2Bottom);
+            ctx.moveTo(centerX, spring2Top);
+            for (let i = 0; i <= coils2; i++) {
+                const x = centerX + (i % 2 === 0 ? -15 : 15) * Math.sin(Math.PI * i / coils2);
+                const y = spring2Top + (spring2Length * i / coils2);
+                ctx.lineTo(x, y);
             }
+            ctx.lineTo(centerX, spring2Bottom);
             ctx.stroke();
 
             // 绘制下层阻尼器 c2
             ctx.strokeStyle = '#95a5a6';
             ctx.lineWidth = 4;
             ctx.beginPath();
-            if (spring2Length > 30) {
-                ctx.moveTo(centerX + 40, spring2Top);
-                ctx.lineTo(centerX + 40, spring2Top + spring2Length * 0.3);
-                ctx.moveTo(centerX + 25, spring2Top + spring2Length * 0.3);
-                ctx.lineTo(centerX + 55, spring2Top + spring2Length * 0.3);
-                ctx.lineTo(centerX + 55, spring2Bottom - spring2Length * 0.3);
-                ctx.lineTo(centerX + 25, spring2Bottom - spring2Length * 0.3);
-                ctx.lineTo(centerX + 25, spring2Top + spring2Length * 0.3);
-                ctx.moveTo(centerX + 40, spring2Bottom - spring2Length * 0.3);
-                ctx.lineTo(centerX + 40, spring2Bottom);
-            }
+            ctx.moveTo(centerX + 40, spring2Top);
+            ctx.lineTo(centerX + 40, spring2Top + spring2Length * 0.3);
+            ctx.moveTo(centerX + 25, spring2Top + spring2Length * 0.3);
+            ctx.lineTo(centerX + 55, spring2Top + spring2Length * 0.3);
+            ctx.lineTo(centerX + 55, spring2Bottom - spring2Length * 0.3);
+            ctx.lineTo(centerX + 25, spring2Bottom - spring2Length * 0.3);
+            ctx.lineTo(centerX + 25, spring2Top + spring2Length * 0.3);
+            ctx.moveTo(centerX + 40, spring2Bottom - spring2Length * 0.3);
+            ctx.lineTo(centerX + 40, spring2Bottom);
             ctx.stroke();
 
             // 绘制平台 m2
@@ -609,16 +572,10 @@
             // 绘制参数标注
             ctx.fillStyle = '#ffe66d';
             ctx.font = '12px Arial';
-            if (spring1Length > 10) {
-                ctx.fillText('k₁', centerX - 50, spring1Top + spring1Length / 2);
-            }
-            if (spring1Length > 10) {
-                ctx.fillText('c₁', centerX + 65, spring1Top + spring1Length / 2);
-            }
-            if (spring2Length > 10) {
-                ctx.fillText('k₂', centerX - 50, spring2Top + spring2Length / 2);
-                ctx.fillText('c₂', centerX + 65, spring2Top + spring2Length / 2);
-            }
+            ctx.fillText('k₁', centerX - 50, spring1Top + spring1Length / 2);
+            ctx.fillText('c₁', centerX + 65, spring1Top + spring1Length / 2);
+            ctx.fillText('k₂', centerX - 50, spring2Top + spring2Length / 2);
+            ctx.fillText('c₂', centerX + 65, spring2Top + spring2Length / 2);
         }
 
         // 动画循环
@@ -649,14 +606,14 @@
         }
 
         function resetSimulation() {
-            state = [0, 0, 0, 0, 0, 0];  // 6维状态 [y1, v1, y2, v2, y3, v3]
+            state = [0, 0, 0, 0];
             time = 0;
             params.u1 = 0;
             params.u2 = 0;
             document.getElementById('u1').value = 0;
             document.getElementById('u2').value = 0;
             document.getElementById('u1Value').textContent = '0 N';
-            document.getElementById('u2Value').textContent = '0 m/s²';
+            document.getElementById('u2Value').textContent = '0 N';
         }
 
         // 初始化

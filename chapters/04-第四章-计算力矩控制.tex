@@ -206,11 +206,13 @@
 
 很容易求解在每个时间间隔$[t_k, t_{k+1}]$上确保满足边界条件(4.2.2)的系数。结果是
 \begin{equation}
-    \begin{cases}
-        a_{i0} = q_{ik}, & a_{i1} = v_i/t_b, & a_{i2} = -v_i/(2t_b) \\
-        b_{i0} = q_{ik} + v_it_b/2, & b_{i1} = v_i \\
-        c_{i0} = q_{i,k+1} - v_it_f^2/(2t_b), & c_{i1} = v_it_f/t_b, & c_{i2} = -v_i/(2t_b)
-    \end{cases}
+\left\{
+\begin{aligned}
+        a_{i0} &= q_{ik}, & a_{i1} &= v_i/t_b, & a_{i2} &= -v_i/(2t_b) \\
+        b_{i0} &= q_{ik} + v_it_b/2, & b_{i1} &= v_i \\
+        c_{i0} &= q_{i,k+1} - v_it_f^2/(2t_b), & c_{i1} &= v_it_f/t_b, & c_{i2} &= -v_i/(2t_b)
+\end{aligned}
+\right.
 \end{equation}
 
 \subsection{最小时间轨迹}

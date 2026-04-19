@@ -1358,13 +1358,13 @@ M' = \begin{bmatrix} \frac{J+m_1r^2+m_2r^2}{r^2} & 0 & 0 \\ 0 & m_1+m_2 & 0 \\ 0
 
 我们将考虑电动执行器的情况，假设电机是电枢控制的。液压执行器由类似的方程描述。在本小节中，我们假设电枢电感可以忽略。
 
-$n$-连杆机器人机械臂的方程来自表3.3.1：
+$n$-连杆机器人机械臂的方程来自表3.3.1（此处为与下文消元一致，先不显式写出干扰项$\tau_d$；需要时可在最终合成方程中统一加入）：
 \begin{equation}
-M(q)\ddot{q} + V(q,\dot{q}) + F(\dot{q}) + G(q) + \tau_d = \tau
+M(q)\ddot{q} + V(q,\dot{q}) + F(\dot{q}) + G(q) = \tau
 \end{equation}
-其中$q \in R^n$是机械臂关节变量。驱动连杆的电枢控制直流电机的动力学由$n$个解耦方程给出
+其中$q \in R^n$是机械臂关节变量；$\tau$为关节侧广义力矩。驱动连杆的电枢控制直流电机的动力学由$n$个解耦方程给出；$\tau_M$为电机轴侧负载力矩，与关节侧力矩满足$\tau_M = R\tau$（$R$为齿轮比矩阵，见(3.6.4)）。等价地可写成
 \begin{equation}
-J_M\ddot{q}_M + B_M\dot{q}_M + F_M + \tau = K_M v
+J_M\ddot{q}_M + B_M\dot{q}_M + F_M + R\tau = K_M v
 \end{equation}
 其中$\dot{q}_M = \text{vec}\{\dot{q}_{Mi}\}$，$\dot{q}_{Mi}$是第$i$个转子位置角，$\text{vec}\{\alpha_i\}$表示分量为$\alpha_i$的向量。控制输入是电机电压向量$v \in R^n$。
 
@@ -1388,18 +1388,19 @@ F_M = \text{vec}\{F_{Mi}\}
 
 注意大写的"M"表示电机常数和变量，而$V_m$是用克里斯托费尔符号定义的机械臂科里奥利/向心向量。
 
-使用(3.6.4)在(3.6.2)中消去$q_M$，然后代入(3.6.1)中的$\tau$，得到以关节变量表示的动力学
+使用(3.6.4)在(3.6.2)中消去$q_M$（有$\ddot{q}_M=R^{-1}\ddot{q}$，$\dot{q}_M=R^{-1}\dot{q}$），并将(3.6.1)中的$\tau = M\ddot{q}+V+F+G$代入(3.6.2)；两端左乘$R^{-1}$可整理为$\left(M + R^{-2}J_M\right)\ddot{q} + \left(V + R^{-2}B_M\right)\dot{q} + \left(F + R^{-1}F_M\right) + G = R^{-1}K_M v$。再将该式\textbf{两端左乘}$R^2$，并与记号$V_m \equiv V(q,\dot{q})$（见上文及表3.3.1中的科里奥利/向心项）、电机阻尼$B_M$并列书写，得到与图示等价的关节空间形式
 \begin{equation}
-(M + R^2J_M)\ddot{q} + (V + R^2B_M)\dot{q} + (F + RF_M) + G + \tau_d = RK_M v
+\left(J_M + R^2 M\right)\ddot{q} + \left(B_M + R^2 V_m\right)\dot{q} + \left(R F_M + R^2 F\right) + R^2 G = R K_M v
 \end{equation}
-或，通过适当定义符号，
+若(3.6.1)中尚含关节侧扰动$\tau_d$，则在上式左端加上$R^2\tau_d$，右端仍为$R K_M v$。或，通过适当定义符号，
 \begin{equation}
-M'(q)\ddot{q} + V'(q,\dot{q}) + F'(\dot{q}) + G(q) + \tau_d' = K'v
+M'(q)\ddot{q} + V'(q,\dot{q}) + F'(\dot{q}) + G'(q) = K' v
 \end{equation}
+其中$M'=J_M + R^2 M$，$V'=B_M + R^2 V_m$，$F'=R F_M + R^2 F(\dot{q})$，$G'=R^2 G(q)$，$K'=R K_M$；含扰动时左端加上$R^2\tau_d$。
 
 \textbf{完整机械臂加执行器动力学的性质}
 
-完整动力学(3.6.6)与机器人动力学(3.6.1)具有相同的形式。很容易验证完整机械臂加执行器动力学享有与表3.3.1中列出的机械臂动力学相同的性质（见习题）。特别地，$V'$是$\dot{M}'$和斜对称矩阵之间差的一半，所有有界性假设都成立，参数线性成立。因此，在我们设计控制器时，我们可以假设执行器已经包含在表3.3.1中的机械臂方程中。
+完整动力学(3.6.6)与关节空间机器人动力学在结构上仍可对照表3.3.1逐项讨论。由于$M'=J_M+R^2M(q)$且$V'=B_M+R^2V_m$，其中$B_M$为常值对角阵，与纯连杆模型相比，验证斜对称/科里奥利项性质时须将$R^2V_m$与$B_M\dot{q}$分拆处理（见习题）。有界性及参数线性等结论在常见假设下仍适用。因此，在我们设计控制器时，往往仍以合并后的等效方程为对象，而把执行器视为已并入动力学中。
 
 \textbf{独立关节动力学}
 
@@ -1407,7 +1408,7 @@ M'(q)\ddot{q} + V'(q,\dot{q}) + F'(\dot{q}) + G(q) + \tau_d' = K'v
 
 为了探索这一点，让我们按分量写出完整动力学
 \begin{equation}
-(J_{Mi}r_i^2 + m_{ii})\ddot{q}_i + (B_{Mi}r_i^2 + v_i)\dot{q}_i + k_i\text{sgn}(\dot{q}_i) + d_i = k_i'v_i
+(J_{Mi} + r_i^2 m_{ii})\ddot{q}_i + (B_{Mi} + r_i^2 v_i)\dot{q}_i + k_i\text{sgn}(\dot{q}_i) + d_i = k_i'v_i
 \end{equation}
 其中$B \equiv \text{diag}\{B_i\}$，$d_i$是由下式给出的干扰
 \begin{equation}
@@ -1415,7 +1416,7 @@ d_i = \sum_{j \neq i}m_{ij}\ddot{q}_j + \sum_{j,k}V_{jki}\dot{q}_j\dot{q}_k + g_
 \end{equation}
 其中$m_{ij}$是$M'$的非对角元素，$V_{jki}$是第$i$个连杆摩擦的张量分量，$G_i$是第$i$个重力分量。
 
-这个方程表明，如果$r_i$很小，机械臂动力学近似由$n$个具有常数系数的解耦二阶方程给出。关节耦合和重力的动力学效应仅作为干扰项乘以$r_i^2$出现。也就是说，机器人控制设计实际上只是控制执行器动力学的问题。
+这个方程表明，当$r_i$很小时，$r_i^2 m_{ii}$远小于$J_{Mi}$的情形下，主对角线由电机惯量$J_{Mi}$主导，机械臂动力学可近似看作$n$个具有常数系数的解耦二阶方程；关节耦合与重力等进入$d_i$，表现为耦合扰动项。也就是说，在强减速、小$r_i$时若连杆项相对反射电机惯量可忽略，控制设计往往以执行器主导的关节动态为出发点。
 
 不幸的是，现代高性能任务使科里奥利和向心项变大，因此$d_i$不小。此外，现代高性能机械臂具有接近统一的齿轮比（例如，直驱机械臂），因此非线性必须在任何认真的控制设计中考虑。
 
@@ -1428,7 +1429,7 @@ d_i = \sum_{j \neq i}m_{ij}\ddot{q}_j + \sum_{j,k}V_{jki}\dot{q}_j\dot{q}_k + g_
 L\frac{dI}{dt} + RI + K_b'\dot{q}_M = v
 \end{equation}
 \begin{equation}
-J_M\ddot{q}_M + B_M\dot{q}_M + F_M + \tau = K_T I
+J_M\ddot{q}_M + B_M\dot{q}_M + F_M + R\tau = K_T I
 \end{equation}
 其中$I \in R^n$是电枢电流向量，
 \begin{equation}
