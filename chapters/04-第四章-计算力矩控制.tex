@@ -271,13 +271,13 @@
 
 给定$x(t)$，有必要为积分程序提供一个子程序来计算$\dot{x}(t)$。一种求解$\ddot{q}$的方法是求逆$M(q)$。然而，由于潜在的数值问题，这不推荐。让我们将(4.3.3)表示为
 \begin{equation}
-    \dot{x} = g(x, u)
+    E(x)\dot{x} = f(x, u, t)
 \end{equation}
 请注意，在这种情况下，$u(t)$是由控制力$\tau(t)$和干扰$\tau_d(t)$组成的向量。
 
 附录B中给出了一个简单的时间响应程序TRESP。给定一个子程序F(time, x, xp)，它使用(4.3.4)根据$x(t)$和$u(t)$计算$\dot{x}$；它使用Runge-Kutta积分器来计算状态轨迹$x(t)$。为了在子程序F(t, x, xp)中求解$\dot{x}$，我们建议计算$M(q)$和$N(q, \dot{q})$，然后使用最小二乘技术求解
 \begin{equation}
-    \ddot{q} = M^{-1}(q)[-N(q, \dot{q}) + \tau]
+    M(q)\frac{d\dot{q}}{dt} = -N(q, \dot{q}) + \tau - \tau_d
 \end{equation}
 [i.e., (4.3.3)的底部部分]，这比$M(q)$的逆数值上更稳定。最小二乘方程求解器在商业上很容易获得，例如在[IMSL]、[LINPACK]等处。对于更简单的臂，可以解析地求逆$M(q)$。
 
