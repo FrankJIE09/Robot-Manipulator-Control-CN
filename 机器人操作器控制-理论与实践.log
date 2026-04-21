@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2022/dev/Debian) (preloaded format=xelatex 2026.4.9)  19 APR 2026 15:51
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2022/dev/Debian) (preloaded format=xelatex 2026.4.9)  20 APR 2026 21:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1321,9 +1321,11 @@ Overfull \hbox (35.42331pt too wide) detected at line 268
  []
 
 [48] [49] [50] [51] [52] [53] [54] [55] [56] [57] [58] [59] [60] [61] [62]
-[63] [64] [65] [66] [67] [68] [69] [70] [71] [72] [73] [74] [75] [76] [77]
-[78] [79] [80]
-Overfull \hbox (19.35347pt too wide) in paragraph at lines 1632--1633
+[63] [64] [65] [66] [67] [68] [69] [70] [71] [72] [73] [74] [75]
+Missing character: There is no 。 (U+3002) in font [lmroman12-regular]:mapping=t
+ex-text;!
+[76] [77] [78] [79] [80]
+Overfull \hbox (19.35347pt too wide) in paragraph at lines 1644--1645
 []\TU/FandolSong-Regular(0)/b/n/12 科 里 奥 利 项\TU/FandolSong-Regular(0)/m/n/12 。|
   证 明 动 力 学 方 程 中 的 科 里 奥 利\TU/lmr/m/n/12 /\TU/FandolSong-Regular(0)/m/n/12 向 心
  项 可 以 表 示 为 $\OML/cmm/m/it/12 V\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 q; []\OT1/cmr
@@ -1332,82 +1334,82 @@ t/12 q; []\OT1/cmr/m/n/12 )\OMS/cmsy/m/n/12 g$\TU/FandolSong-Regular(0)/m/n/12
 ，|
  []
 
-[81]) [82]
-第四章
-(./chapters/04-第四章-计算力矩控制.tex [83
+[81] [82]) [83] [84
 
-] [84] [85] [86] [87] [88]
+]
+第四章
+(./chapters/04-第四章-计算力矩控制.tex [85] [86] [87] [88] [89] [90]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [89]
-[90] [91] [92] [93]
+ [91]
+[92] [93] [94] [95]
 Overfull \hbox (267.47931pt too wide) detected at line 501
 [][][] \OT1/cmr/m/n/12 = [] [] + [] + []
  []
 
-[94] [95] [96] [97] [98] [99] [100] [101] [102] [103
+[96] [97] [98] [99] [100] [101] [102] [103] [104] [105
 
-] [104] [105]
+] [106] [107]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [106]
-[107] [108] [109] [110] [111] [112] [113] [114] [115] [116] [117]) [118]
+ [108]
+[109] [110] [111] [112] [113] [114] [115] [116] [117] [118] [119]) [120]
 第五章
-(./chapters/05-第五章-鲁棒控制.tex [119
+(./chapters/05-第五章-鲁棒控制.tex [121
 
-] [120] [121] [122] [123] [124] [125] [126]
-[127] [128] [129] [130] [131] [132] [133] [134] [135] [136] [137] [138]
-[139] [140] [141] [142] [143] [144] [145] [146] [147] [148
+] [122] [123] [124] [125] [126] [127] [128]
+[129] [130] [131] [132] [133] [134] [135] [136] [137] [138] [139] [140]
+[141] [142] [143] [144] [145] [146] [147] [148] [149] [150
 
-] [149] [150]
-[151]) [152]
+] [151] [152]
+[153]) [154]
 第六章
 (./chapters/06-第六章-自适应控制.tex
 Underfull \vbox (badness 7704) has occurred while \output is active []
 
- [153
+ [155
 
 ]
 Overfull \hbox (60.89194pt too wide) detected at line 82
 []
  []
 
-[154] [155] [156] [157] [158] [159] [160] [161] [162] [163] [164] [165]
-[166] [167] [168] [169] [170] [171] [172] [173] [174] [175] [176] [177]
-[178] [179] [180] [181] [182] [183] [184] [185] [186]) [187] [188
+[156] [157] [158] [159] [160] [161] [162] [163] [164] [165] [166] [167]
+[168] [169] [170] [171] [172] [173] [174] [175] [176] [177] [178] [179]
+[180] [181] [182] [183] [184] [185] [186] [187] [188]) [189] [190
 
 ]
 第七章
-(./chapters/07-第七章-先进控制技术.tex [189] [190] [191] [192] [193] [194] [195]
-[196] [197] [198] [199] [200] [201] [202] [203] [204] [205] [206] [207]
-[208] [209]
+(./chapters/07-第七章-先进控制技术.tex [191] [192] [193] [194] [195] [196] [197]
+[198] [199] [200] [201] [202] [203] [204] [205] [206] [207] [208] [209]
+[210] [211] [212]
 
-LaTeX Warning: Reference `eq:7.4.21' on page 210 undefined on input line 976.
+LaTeX Warning: Reference `eq:7.4.21' on page 213 undefined on input line 971.
 
-[210]
-Overfull \hbox (14.20262pt too wide) in paragraph at lines 1004--1006
+
+Overfull \hbox (14.20262pt too wide) in paragraph at lines 999--1001
 \TU/FandolSong-Regular(0)/m/n/12 式[]和[]给 出 的 条 件，|  我 们 可 以 使 用 标 准 \TU/lmr/m/n
 /12 Lyapunov \TU/FandolSong-Regular(0)/m/n/12 稳 定 性 论 证 来 说 明 式[]中
  []
 
-[211]
-Overfull \hbox (45.59526pt too wide) in paragraph at lines 1027--1029
+[213]
+Overfull \hbox (45.59526pt too wide) in paragraph at lines 1022--1024
 \TU/FandolSong-Regular(0)/m/n/12 其 中 $[]\OT1/cmr/m/n/12 (\OMS/cmsy/m/n/12 ^^A\O
 T1/cmr/m/n/12 )$ \TU/FandolSong-Regular(0)/m/n/12 是 $\OML/cmm/m/it/12 n \OMS/cm
 sy/m/n/12 ^^B \OT1/cmr/m/n/12 1$ \TU/FandolSong-Regular(0)/m/n/12 向 量。|  注 意 式[
 ]可 以 再 次 用 于 消 除 测 量 $[]$ 的 需 要；|  因 此，|  式[]和[]中
  []
 
-[212] [213] [214]) [215] [216
-
-]
+[214] [215] [216] [217]) [218]
 第八章
-(./chapters/08-第八章-神经网络控制.tex [217] [218] [219] [220] [221] [222] [223]
-[224]
+(./chapters/08-第八章-神经网络控制.tex [219
+
+] [220] [221] [222] [223] [224] [225]
+[226]
 Underfull \vbox (badness 1960) has occurred while \output is active []
 
- [225]
-[226] [227] [228] [229]
+ [227]
+[228] [229] [230] [231]
 Overfull \hbox (41.05678pt too wide) detected at line 487
 [][][] \OMS/cmsy/m/n/12 ^^T ^^@\OML/cmm/m/it/12 K[]\OMS/cmsy/m/n/12 k\OML/cmm/b
 /it/12 r\OMS/cmsy/m/n/12 k[] ^^@ \OML/cmm/m/it/12 K[]\OMS/cmsy/m/n/12 k\OML/cmm
@@ -1421,22 +1423,22 @@ m/n/12 + \OML/cmm/m/it/12 C[]\OMS/cmsy/m/n/12 k[]k[] \OT1/cmr/m/n/12 + \OML/cmm
 r/m/n/12 )
  []
 
-[230] [231] [232] [233] [234] [235
+[232] [233] [234] [235] [236] [237
 
-] [236] [237]) [238]
+] [238] [239]) [240]
 第九章
-(./chapters/09-第九章-力控制.tex [239
+(./chapters/09-第九章-力控制.tex [241
 
-] [240] [241] [242] [243] [244]
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 264.
-
+] [242] [243] [244] [245] [246]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 264.
 
-[245] [246] [247] [248] [249]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 264.
+
+[247] [248] [249] [250] [251]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 461.
@@ -1445,18 +1447,18 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 461.
 
-[250] [251] [252] [253] [254] [255] [256] [257] [258] [259] [260] [261]
-[262
+[252] [253] [254] [255] [256] [257] [258] [259] [260] [261] [262] [263]
+[264
 
 ]
 Underfull \vbox (badness 1629) has occurred while \output is active []
 
- [263]
-[264]) [265] [266
+ [265]
+[266]) [267] [268
 
 ]
 第十章
-(./chapters/10-第十章-控制实现与软件.tex [267]
+(./chapters/10-第十章-控制实现与软件.tex [269]
 Overfull \hbox (14.89203pt too wide) in paragraph at lines 88--89
 []\TU/FandolSong-Regular(0)/m/n/12 在 \TU/lmr/m/n/12 1990 \TU/FandolSong-Regular
 (0)/m/n/12 年 代 末，|  领 先 的 实 时 软 件 开 发 公 司 \TU/lmr/m/n/12 QSSL \TU/FandolSong-Re
@@ -1464,31 +1466,31 @@ gular(0)/m/n/12 发 布 了 \TU/lmr/m/n/12 QNX6 [[]] |\TU/FandolSong-Regular(0)/
 2 （即 \TU/lmr/m/n/12 QNX6/Neutrino
  []
 
-[268] [269] [270] [271] [272]
+[270] [271] [272] [273] [274]
 Overfull \hbox (8.9439pt too wide) in paragraph at lines 234--235
 \TU/FandolSong-Regular(0)/m/n/12 有 任 意 数 量 关 节 的 操 控 器 的 通 用 功 能。|  从 \TU/lmtt/
 m/n/12 Manipulator \TU/FandolSong-Regular(0)/m/n/12 类 派 生 的 是 \TU/lmtt/m/n/12 D
 efaultManipulator
  []
 
-[273]
+[275]
 Overfull \hbox (27.3039pt too wide) in paragraph at lines 236--237
 \TU/FandolSong-Regular(0)/m/n/12 动 学 和 雅 可 比 矩 阵 的 计 算。|  所 有 这 些 函 数 都 位 于 \TU
 /lmtt/m/n/12 ManipulatorModel \TU/FandolSong-Regular(0)/m/n/12 类 中。| \TU/lmtt/m
 /n/12 ManipulatorModel
  []
 
-[274] [275] [276]
+[276] [277] [278]
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
 nput line 324.
- [277] [278] [279] [280]
+ [279] [280] [281] [282]
 Overfull \hbox (4.92389pt too wide) in paragraph at lines 395--396
 []\TU/FandolSong-Regular(0)/m/n/12 除 了 矩 阵、|  向 量 和 变 换 类 之 外，| \TU/lmtt/m/n/12
  ButterworthFilter\TU/FandolSong-Regular(0)/m/n/12 、| \TU/lmtt/m/n/12 Different
 iator \TU/FandolSong-Regular(0)/m/n/12 和 \TU/lmtt/m/n/12 Integrator
  []
 
-[281] [282] [283] [284] [285] [286] [287]
+[283] [284] [285] [286] [287] [288] [289]
 Overfull \hbox (12.76065pt too wide) in paragraph at lines 595--596
 [][][][][][][][][][][][][][] 
  []
@@ -1496,18 +1498,18 @@ Overfull \hbox (12.76065pt too wide) in paragraph at lines 595--596
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [288]
-[289] [290
+ [290]
+[291] [292
 
-] [291]
+] [293]
 Underfull \hbox (badness 1009) in paragraph at lines 684--685
 []\TU/lmr/m/n/12 Barrett Technologies, 139 Main St, Kendall Square, Cambridge, 
 MA 02142,
  []
 
-) [292]
+) [294]
 附录 A
-(./chapters/A-附录A-运动学与雅可比矩阵.tex [293
+(./chapters/A-附录A-运动学与雅可比矩阵.tex [295
 
 ]
 
@@ -1518,7 +1520,7 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 71.
 
-[294] [295]
+[296] [297]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 134.
@@ -1527,7 +1529,7 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 134.
 
-[296] [297] [298] [299] [300]) [301] [302
+[298] [299] [300] [301] [302]) [303] [304
 
 ]
 附录 B
@@ -1536,16 +1538,16 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: The anchor of a bookmark and its parent's must not
 (hyperref)                be the same. Added a new anchor on input line 31.
 
-[303]) [304]
+[305]) [306]
 附录 C
 (./chapters/C-附录C-常见机器人动力学.tex
 
 Package hyperref Warning: The anchor of a bookmark and its parent's must not
 (hyperref)                be the same. Added a new anchor on input line 31.
 
-[305
+[307
 
-] [306] [307]) [308] (./机器人操作器控制-理论与实践.aux)
+] [308] [309]) [310] (./机器人操作器控制-理论与实践.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -1556,15 +1558,15 @@ LaTeX Warning: There were undefined references.
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `机器人操作器控制-理论与实践.out' has not changed.
-(rerunfilecheck)             Checksum: DBD522CD39189F301E34DC7B6AD1BB9A;29340.
+(rerunfilecheck)             Checksum: BBFE0AD210BE35499E50E275BBD4F7A3;30542.
  ) 
 Here is how much of TeX's memory you used:
- 35691 strings out of 477728
- 792741 string characters out of 5842239
- 1147471 words of memory out of 5000000
- 55686 multiletter control sequences out of 15000+600000
+ 35738 strings out of 477728
+ 795924 string characters out of 5842239
+ 1149553 words of memory out of 5000000
+ 55733 multiletter control sequences out of 15000+600000
  486827 words of font info for 128 fonts, out of 8000000 for 9000
  264 hyphenation exceptions out of 8191
  95i,17n,97p,1204b,1720s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on 机器人操作器控制-理论与实践.pdf (320 pages).
+Output written on 机器人操作器控制-理论与实践.pdf (322 pages).

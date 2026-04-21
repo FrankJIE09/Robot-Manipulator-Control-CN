@@ -1,0 +1,205 @@
+% 独立编译：xelatex 01-推导-三阶机电动力学从L'M'到等价形式.tex
+\documentclass[UTF8,a4paper,12pt]{ctexart}
+\usepackage{amsmath,amssymb,bm,geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\geometry{margin=2.5cm}
+\title{附录推导：从 $L'M'(\bm{q})\dddot{\bm{q}}+D(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})=\bm{v}$ 到 $\mathcal{D}\dddot{\bm{q}}+f(\cdot)=R K'_M \bm{v}$}
+\author{（与《机器人操作器控制》第三章 \S3.6 记号一致）}
+\date{}
+
+\newcommand{\ddt}{\mathrm{d}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+本文从「连杆 $+$ 电机机械 $+$ 电枢回路」三组方程出发，给出消元得到关节空间三阶微分方程的步骤，说明教材中紧凑写法
+$L'M'(\bm{q})\dddot{\bm{q}}+D(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})=\bm{v}$
+的来源；并给出与图示形式
+$\mathcal{D}(\bm{q})\dddot{\bm{q}}+f(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})=R K'_M \bm{v}$
+之间的代数关系（$K'_M=R_a^{-1}K'_m$，$R$ 为齿轮比矩阵）。
+\end{abstract}
+
+\section*{0.\ 基本模型（与正文 (3.6.1)、(3.6.10)、(3.6.11) 一致）}
+
+设关节变量 $\bm{q}\in\mathbb{R}^n$，电机转子角 $\bm{q}_M$，齿轮比矩阵 $R=\mathrm{diag}(r_i)$ 且
+\begin{equation}
+\bm{q}=R\bm{q}_M,\qquad \dot{\bm{q}}_M=R^{-1}\dot{\bm{q}},\qquad \ddot{\bm{q}}_M=R^{-1}\ddot{\bm{q}} .
+\end{equation}
+
+\paragraph{连杆（关节侧）}
+\begin{equation}
+M(\bm{q})\ddot{\bm{q}}+V(\bm{q},\dot{\bm{q}})+F(\dot{\bm{q}})+G(\bm{q})=\bm{\tau}.
+\label{eq:link}
+\end{equation}
+
+\paragraph{电机机械（电机轴侧，矩阵解耦）}
+\begin{equation}
+J_M\ddot{\bm{q}}_M+B_M\dot{\bm{q}}_M+\bm{F}_M+R\bm{\tau}=K'_m \bm{I},
+\label{eq:motor-mech}
+\end{equation}
+其中 $J_M,B_M,K'_m=\mathrm{diag}(K_{Mi})$ 为对角常阵；$\bm{I}$ 为电枢电流向量。
+
+\paragraph{电枢电气}
+\begin{equation}
+L\dot{\bm{I}}+R_a\bm{I}+K'_b\dot{\bm{q}}_M=\bm{v},
+\label{eq:electric}
+\end{equation}
+$L,R_a,K'_b=\mathrm{diag}(\cdot)$ 分别为电感、电枢电阻与反电动势系数（$K'_b=\mathrm{diag}(K_{bi})$）。
+
+\section*{1.\ 消去 $\bm{\tau}$：把 $\bm{I}$ 表为 $(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})$ 的函数}
+
+由 \eqref{eq:link} 得 $\bm{\tau}=M\ddot{\bm{q}}+N(\bm{q},\dot{\bm{q}})$，其中记 $N=V+F+G$。
+代入 \eqref{eq:motor-mech} 并用 $\dot{\bm{q}}_M=R^{-1}\dot{\bm{q}}$，$\ddot{\bm{q}}_M=R^{-1}\ddot{\bm{q}}$，有
+\begin{equation}
+R\bm{\tau}=RM\ddot{\bm{q}}+RN .
+\end{equation}
+于是 \eqref{eq:motor-mech} 等价于
+\begin{align}
+K'_m\bm{I}
+&=J_MR^{-1}\ddot{\bm{q}}+B_MR^{-1}\dot{\bm{q}}+\bm{F}_M+RM\ddot{\bm{q}}+RN \nonumber\\
+&=\underbrace{R\bigl(M+R^{-2}J_M\bigr)}_{R\,M'(\bm{q})}\ddot{\bm{q}}
+ +\underbrace{\bigl(B_MR^{-1}\dot{\bm{q}}+\bm{F}_M+RN(\bm{q},\dot{\bm{q}})\bigr)}_{=: \bm{\Phi}(\bm{q},\dot{\bm{q}})} .
+\label{eq:I-of-qddot}
+\end{align}
+其中关节侧等效惯量矩阵 $M'(\bm{q}):=M(\bm{q})+R^{-2}J_M$（与正文 $J_M+R^2M$ 的写法差「左乘 $R^2$」的等价整理，见全书带执行器小节）。
+于是
+\begin{equation}
+\bm{I}={K'_m}^{-1}\Bigl(R\,M'(\bm{q})\ddot{\bm{q}}+\bm{\Phi}(\bm{q},\dot{\bm{q}})\Bigr).
+\label{eq:I}
+\end{equation}
+
+\section*{2.\ 求 $\dot{\bm{I}}$ 以出现 $\dddot{\bm{q}}$}
+
+对 \eqref{eq:I} 对时间求全导数（逐项使用积法则与链式法则）：
+\begin{equation}
+\dot{\bm{I}}
+={K'_m}^{-1}\Bigl(R M'\dddot{\bm{q}}+R\dot{M}'\ddot{\bm{q}}+\dot{R}\,M'\ddot{\bm{q}}+\dot{\bm{\Phi}}+\cdots\Bigr),
+\label{eq:Idot-general}
+\end{equation}
+其中 $\dot{M}'=\sum_{k}\frac{\partial M'}{\partial q_k}\dot q_k$；若 $R$ 为常值对角阵则 $\dot R=0$；$\dot{\bm{\Phi}}$ 对 $\dddot{\bm{q}}$ 的依赖来自 $\bm{\Phi}$ 中含 $\ddot{\bm{q}}$、$\dot{\bm{q}}$ 的项（如科氏/摩擦），可并入 $M_{\mathrm{tot}}$。省略号表示整理后**不含** $\dddot{\bm{q}}$ 的余项。将所有 $\dddot{\bm{q}}$ 线性合并后记
+\begin{equation}
+\dot{\bm{I}}={K'_m}^{-1}\Bigl(M_{\mathrm{tot}}(\bm{q},\dot{\bm{q}})\dddot{\bm{q}}+\bm{\Psi}(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})\Bigr),
+\label{eq:Idot-compact}
+\end{equation}
+其中 $M_{\mathrm{tot}}$ 显含 $R M'$ 及来自 $\bm{\Phi}$ 的可能 $\dddot{\bm{q}}$ 耦合；$\bm{\Psi}$ 不显含 $\dddot{\bm{q}}$。
+
+\paragraph{说明} 若略去 $\dot M'$、$\bm{\Phi}$ 中对 $\dddot{\bm{q}}$ 的贡献，则可近似 $M_{\mathrm{tot}}\approx R M'(\bm{q})$，与正文在简化情形下写 $D\approx T M'$ 一致（$T=LR_a^{-1}$）。
+
+\section*{3.\ 代入电枢方程得到 $\dddot{\bm{q}}$ 项}
+
+将 \eqref{eq:I}、\eqref{eq:Idot-compact} 代入 \eqref{eq:electric}：
+\begin{equation}
+L\dot{\bm{I}}+R_a\bm{I}+K'_b R^{-1}\dot{\bm{q}}=\bm{v}.
+\end{equation}
+左乘 $R_a^{-1}$ 并记 $T=LR_a^{-1}$（电气时间常数矩阵），得
+\begin{equation}
+T\dot{\bm{I}}+\bm{I}+B'\dot{\bm{q}}=R_a^{-1}\bm{v},\qquad B':=R_a^{-1}K'_bR^{-1}
+\label{eq:norm-electric}
+\end{equation}
+（此处 $B'$ 与正文「$B'=R_a^{-1}K'_b$」差一个 $R^{-1}$ 因子，因为本式把 $\dot{\bm{q}}_M$ 已全部换成 $\dot{\bm{q}}$：$K'_b\dot{\bm{q}}_M=K'_bR^{-1}\dot{\bm{q}}$。读者与第三章排印对照时，务必固定「是否把 $\dot{\bm{q}}_M$ 换成 $\dot{\bm{q}}$」这一套。）
+
+把 \eqref{eq:I}、\eqref{eq:Idot-compact} 代入 $T\dot{\bm{I}}+\bm{I}+\cdots$ 后，左端关于 $\dddot{\bm{q}}$ 的线性主部为（在 $M_{\mathrm{tot}}\approx R M'$ 的简化下）
+\begin{equation}
+T{K'_m}^{-1}R\,M'(\bm{q})\dddot{\bm{q}}+\cdots .
+\end{equation}
+因此可解出**紧凑形**
+\begin{equation}
+\underbrace{\bigl(T{K'_m}^{-1}M_{\mathrm{tot}}\bigr)}_{\text{教材常记为 }L'(\bm{q})M'(\bm{q})\text{（吸收 }T,K'_m,R\text{ 等）}}\dddot{\bm{q}}
++\underbrace{D(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})}_{\text{不显含 }\dddot{\bm{q}}}
+=\bm{v}_1 ,
+\label{eq:compact-third}
+\end{equation}
+其中 $\bm{v}_1$ 与 $\bm{v}$ 之间相差一个由归一化步骤决定的常系数对角阵；若按 \eqref{eq:norm-electric} 右端取 $R_a^{-1}\bm{v}$，则 $\bm{v}_1$ 对应为该向量经左端 $T,\bm{I},\dot{\bm{q}}$ 等写开后的显式右端。教材中常把若干对角阵吸收进 $L'$、$M'$ 记号中，从而写成
+\begin{equation}
+\boxed{ \; L'(\bm{q})M'(\bm{q})\dddot{\bm{q}}+D(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})=\bm{v} \;}
+\label{eq:boxed-LMp}
+\end{equation}
+（与正文中式号一致；$D$ 为向量，含至多二阶导数项。）
+
+\section*{4.\ 化为图示 $\mathcal{D}\dddot{\bm{q}}+f=R K'_M \bm{v}$}
+
+定义电压\,$\to$\,关节侧等效增益（与正文 (3.6.3) 相同）
+\begin{equation}
+K'_M:=R_a^{-1}K'_m=\mathrm{diag}\{K_{Mi}R_{ai}^{-1}\}.
+\end{equation}
+
+\paragraph{记号约定} 图中用大写 $\mathcal{D}$ 表示 $\dddot{\bm{q}}$ 前的矩阵，$f$ 表示其余项（避免与 \eqref{eq:boxed-LMp} 中残余项符号 $D$ 混淆）。若令
+\begin{equation}
+\boxed{ \; \mathcal{D}(\bm{q}) := L'(\bm{q})M'(\bm{q}),\qquad
+f(\bm{q},\dot{\bm{q}},\ddot{\bm{q}}):=D(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})\;}
+\label{eq:script-D-f}
+\end{equation}
+则 \eqref{eq:boxed-LMp} 即
+\begin{equation}
+\mathcal{D}(\bm{q})\dddot{\bm{q}}+f(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})=\bm{v}.
+\label{eq:D-f-v}
+\end{equation}
+
+\paragraph{右端出现 $R K'_M \bm{v}$ 的一种等价写法}
+若希望**显式**标出关节侧电压增益与齿轮矩阵，可把 \eqref{eq:D-f-v} 看作已在「电流/扭矩已代换」意义下以 $\bm{v}$ 为电机端电压。另一常见排版将等效关节驱动力矩 $R^{-1}K'_M\bm{v}$（见前文二阶合并式）与第三阶推导结合：对 \eqref{eq:D-f-v} **两端左乘 $R K'_M$**（或等价地把电压项改记到右端），得到
+\begin{equation}
+\boxed{ \; \widetilde{\mathcal{D}}(\bm{q})\dddot{\bm{q}}+\widetilde{f}(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})
+=R K'_M \bm{v}\;}
+\label{eq:RKv}
+\end{equation}
+其中 $\widetilde{\mathcal{D}}:=R K'_M \mathcal{D}$，$\widetilde{f}:=R K'_M f$，即与 \eqref{eq:D-f-v} 仅差**左乘**可对角常阵 $R K'_M$（在无耦合时 $R,K'_M$ 均为对角，相当于逐关节缩放方程）。若原书图从另一归一化（例如先把 \eqref{eq:boxed-LMp} 乘以 $K'_m$）出发，则右端亦可直接写作 $R K'_M\bm{v}$ 而左端 $\mathcal{D}$ 吸收相应因子——\textbf{与 \eqref{eq:D-f-v} 在秩不变前提下等价}。
+
+\section*{5.\ 小结}
+
+\begin{enumerate}
+\item 三阶方程来自：电枢一阶（$L\dot I$）$+$ 机械二阶经消元得 $I(\ddot q,\ldots)$ $+$ 对 $I$ 再求导出现 $\dddot q$。
+\item $L'M'(\bm{q})\dddot{\bm{q}}+D(\cdot)=\bm{v}$ 中的 $M'$ 本质上为关节侧等效惯量与电机反射惯量之和；$L'$ 吸收 $L$、$R_a$ 及可能的 $K'_m$ 归一化。
+\item 记 $\mathcal{D}=L'M'$，$f=D$ 得 $\mathcal{D}\dddot{\bm{q}}+f=\bm{v}$；左乘 $RK'_M$ 得图中 $\widetilde{\mathcal{D}}\dddot{\bm{q}}+\tilde f=RK'_M\bm{v}$，属**同一动力学**的不同代数排列，须在阅读不同文献时核对「$\bm{v}$ 是否已含 $R_a^{-1}$」「$\dot{\bm{q}}_M$ 还是 $\dot{\bm{q}}$」两约定。
+\end{enumerate}
+
+\section*{附：与教材式 \texorpdfstring{(3.269)}{(3.269)} 对应记号的参数说明}
+
+教材中 third-order 紧凑式常写为
+$\mathcal{D}(\bm{q})\dddot{\bm{q}}+f(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})=R K'_M \bm{v}$
+（或与 $L' M' \dddot{\bm{q}}+D=\bm{v}$ 在归一化下等价）。以下按**出现符号**列表说明（与本文 \S0--\S4 及第三章正文一致）。
+
+\begin{table}[htbp]
+\centering
+\caption{式 (3.269) 形动力学中各符号含义}
+\label{tab:eq-3269-params}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{符号} & \textbf{含义} \\
+\midrule
+$\bm{q},\dot{\bm{q}},\ddot{\bm{q}},\dddot{\bm{q}}$ &
+关节广义坐标及其对时间的导数（速度、加速度、急动度），$\bm{q}\in\mathbb{R}^n$。 \\
+$\mathcal{D}(\bm{q})$ &
+紧接 $\dddot{\bm{q}}$ 前的系数矩阵；通常可取 $\mathcal{D}=L' M'$，其中 $L'$ 吸收电枢电气时间常数等归一化因子，$M'$ 为关节侧等效惯量矩阵（见下）。 \\
+$f(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})$ &
+不显含 $\dddot{\bm{q}}$ 的余项向量：含科氏/离心、摩擦、重力、反电动势耦合经代换后的项等（与正文记为 $D(\cdot)$ 时可视为同一对象，仅教材用 $f$ 避免与矩阵 $D$ 混淆）。 \\
+$R$ &
+齿轮比矩阵，一般为对角阵 $R=\mathrm{diag}(r_i)$；关系 $\bm{q}=R\bm{q}_M$（$q_{Mi}$ 为电机轴角）。 \\
+$K'_M$ &
+电压到电流侧的有效对角增益，$K'_M=R_a^{-1}K'_m=\mathrm{diag}\{K_{Mi}/R_{ai}\}$；$K_{Mi}$ 为扭矩常数，$R_{ai}$ 为电枢电阻。 \\
+$\bm{v}$ &
+电枢控制电压向量（与式 \eqref{eq:electric} 中 $\bm{v}$ 同义）。 \\
+\midrule
+\multicolumn{2}{l}{\textit{与 $\mathcal{D}=L'M'$ 分解常用相关的量（便于对照推导）}} \\
+\midrule
+$M'(\bm{q})$ &
+关节侧等效惯量：$M'=M(\bm{q})+R^{-2}J_M$；$M$ 为连杆惯量矩阵，$J_M$ 为电机转子惯量对角阵。 \\
+$L'$ &
+由电感 $L$、电阻 $R_a$、扭矩常数等归一化后写入紧凑式前的等效矩阵；常见关系含 $T=LR_a^{-1}$ 与 ${K'_m}^{-1}$ 等因子被吸收进 $L'$ 的定义（不同教材排版略有差异）。 \\
+$L,R_a,K'_m,K'_b$ &
+电感矩阵、电枢电阻矩阵、扭矩常数矩阵、反电动势系数矩阵（对角）。 \\
+$J_M,B_M,\bm{F}_M$ &
+电机转子惯量、粘性阻尼、摩擦向量（电机轴侧量）。 \\
+$M,V,F,G,\bm{\tau}$ &
+连杆动力学 $M\ddot{\bm{q}}+V+F+G=\bm{\tau}$ 中惯量、科氏/离心及摩擦项、重力、关节广义力矩。 \\
+$\bm{I},\dot{\bm{I}}$ &
+电枢电流向量及其时间导数。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\textbf{注：}若印本中该式写作 $L'(\bm{q})M'(\bm{q})\dddot{\bm{q}}+D(\bm{q},\dot{\bm{q}},\ddot{\bm{q}})=\bm{v}$，则表中 $\mathcal{D}\equiv L'M'$、$f\equiv D$，右端常为电机端电压 $\bm{v}$；若经左乘 $RK'_M$ 整理后出现式 \eqref{eq:RKv}，则与 (3.269) 为同一类**等价写法**，仅在系数与右端是否显含 $R,K'_M$ 上不同。
+
+\end{document}
