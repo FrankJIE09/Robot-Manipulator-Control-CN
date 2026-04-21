@@ -259,13 +259,13 @@
 \end{equation}
 以非线性状态空间形式表示
 \begin{equation}
-    \dot{x} = f(x, u)
+    E(x)\dot{x} = f(x, u, t)
 \end{equation}
 其中$x(t)$是状态，$u(t)$是输入。
 
 定义状态为$x = [q^T \, \dot{q}^T]^T$，我们可以写出隐式形式
 \begin{equation}
-    \begin{bmatrix} I & 0 \\ 0 & M(q) \end{bmatrix} \dot{x} = \begin{bmatrix} 0 & I \\ 0 & -N(q, \dot{q}) \end{bmatrix} x + \begin{bmatrix} 0 \\ I \end{bmatrix} \tau + \begin{bmatrix} 0 \\ I \end{bmatrix} \tau_d
+    M(q)\frac{d\dot{q}}{dt} = -N(q, \dot{q}) + \tau - \tau_d
 \end{equation}
 其中$\tau$是臂控制力矩，由控制器提供，$\tau_d$是干扰力矩。我们说这是一种隐式形式，因为左侧的系数矩阵意味着$\ddot{q}$不是以右侧的显式形式给出的。
 
