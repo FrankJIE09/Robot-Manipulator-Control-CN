@@ -208,9 +208,9 @@
 \begin{equation}
 \left\{
 \begin{aligned}
-        a_{i0} &= q_{ik}, & a_{i1} &= v_i/t_b, & a_{i2} &= -v_i/(2t_b) \\
-        b_{i0} &= q_{ik} + v_it_b/2, & b_{i1} &= v_i \\
-        c_{i0} &= q_{i,k+1} - v_it_f^2/(2t_b), & c_{i1} &= v_it_f/t_b, & c_{i2} &= -v_i/(2t_b)
+        a_{i0} &= q_{ik}, & a_{i1} &= 0, & a_{i2} &= v_i/(2t_b) \\
+        b_{i0} &= q_{ik} - v_it_b/2, & b_{i1} &= v_i \\
+        c_{i0} &= q_{i,k+1} + v_it_f^2/(2t_b), & c_{i1} &= -v_it_f/t_b, & c_{i2} &= v_i/(2t_b)
 \end{aligned}
 \right.
 \end{equation}
@@ -762,11 +762,11 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 
 使用经典控制中的Mason定理，发现设定点跟踪的闭环传递函数为（参见习题）
 \begin{equation}
-    \frac{\Theta_i}{\Theta_{di}} = \frac{k_ps + k_p}{Js^3 + (B + k_v)s^2 + k_vs + k_p}
+    \frac{\Theta_i}{\Theta_{di}} = \frac{k_vs + k_p}{Js^2 + (B + k_v)s + k_p}
 \end{equation}
 具有闭环特征多项式
 \begin{equation}
-    \Delta_c(s) = Js^3 + (B + k_v)s^2 + k_vs + k_p
+    \Delta_c(s) = Js^2 + (B + k_v)s + k_p
 \end{equation}
 可以选择PD增益以获得合适的自然频率和阻尼比，正如我们所见。
 
@@ -800,7 +800,7 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 
 现在设定点跟踪$\ddot{\theta}_d = 0$的传递函数为
 \begin{equation}
-    \frac{\Theta_i}{\Theta_{di}} = \frac{k_is + k_ps + k_i}{Js^3 + (B + k_v)s^2 + k_ps + k_i}
+    \frac{\Theta_i}{\Theta_{di}} = \frac{k_vs^2 + k_ps + k_i}{Js^3 + (B + k_v)s^2 + k_ps + k_i}
 \end{equation}
 具有闭环特征多项式
 \begin{equation}
@@ -952,7 +952,7 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 \begin{examplebox}[示例4.5-2：带抗饱和补偿的数字PI控制器]
 采样周期为$T$秒的一般数字PI控制器由下式给出
 \begin{equation}
-    u_k = u_{k-1} + k_p e_k + \frac{k_p T}{T_I} \sum_{i=0}^{k} e_i
+    u_k = k_p e_k + \frac{k_p T}{T_I} \sum_{i=0}^{k} e_i
 \end{equation}
 
 我们使用改进的匹配极零点(MPZ)方法对连续PI控制器进行采样，在积分器中获得$T$秒的延迟以允许计算时间。比例增益为$k_p$，重置时间为$T_I$；两者在设计阶段都是固定的。跟踪误差为$e_k$。
@@ -964,7 +964,7 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 
 这是传递函数形式。用于实现的相应差分方程形式为
 \begin{equation}
-    u_k = u_{k-1} + k_p e_k + \frac{k_p T}{T_I} e_k
+    u_k = u_{k-1} + k_p(e_k - e_{k-1}) + \frac{k_p T}{T_I} e_k
 \end{equation}
 
 由于自回归多项式$R=1-z^{-1}$在$z=1$处有根，使其处于边缘稳定，因此该控制器将经历饱和问题。因此，当$u_k$受限时，积分器将继续积分，"饱和"超出饱和水平。
@@ -984,7 +984,7 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 
 如果$\alpha=1$，我们获得特殊情况，称为位置形式，没有抗饱和补偿。如果$\alpha=0$，我们获得死拍抗饱和补偿
 \begin{equation}
-    u_k = u_{k-1} + k_p e_k + \frac{k_p T}{T_I} e_k + (u_{k-1} - u_{k-1}^{sat})
+    u_k = u_{k-1} + k_p(e_k - e_{k-1}) + \frac{k_p T}{T_I} e_k + (u_{k-1} - u_{k-1}^{sat})
 \end{equation}
 
 具有相应的差分方程实现。如果$u_k$未饱和，这相当于通过将(10)右侧的第二和第三项加到$u_{k-1}$来更新工厂控制。这些项因此不过是$u_k - u_{k-1}$。因此，$\alpha=0$的补偿器称为PI控制器的速度形式。
