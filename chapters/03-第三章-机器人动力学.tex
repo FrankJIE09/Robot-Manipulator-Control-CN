@@ -180,7 +180,7 @@ L = K - P = \frac{1}{2}m_1r^2\dot{\theta}^2 + \frac{1}{2}m_2(\dot{r}^2 + r^2\dot
 \begin{align}
 \frac{\partial L}{\partial \dot{q}} &= \begin{bmatrix} (m_1+m_2)r^2\dot{\theta} \\ m_2\dot{r} \end{bmatrix} \\
 \frac{d}{dt}\frac{\partial L}{\partial \dot{q}} &= \begin{bmatrix} (m_1+m_2)r^2\ddot{\theta} + 2(m_1+m_2)r\dot{r}\dot{\theta} \\ m_2\ddot{r} \end{bmatrix} \\
-\frac{\partial L}{\partial q} &= \begin{bmatrix} -(m_1+m_2)gr\cos\theta + (m_1+m_2)r\dot{\theta}^2 \\ (m_1+m_2)\dot{\theta}^2r - (m_1+m_2)g\sin\theta \end{bmatrix}
+\frac{\partial L}{\partial q} &= \begin{bmatrix} -(m_1+m_2)gr\cos\theta \\ (m_1+m_2)r\dot{\theta}^2 - (m_1+m_2)g\sin\theta \end{bmatrix}
 \end{align}
 
 因此，(3.2.14)表明机械臂动力学方程为
@@ -351,8 +351,9 @@ M_i = \int_{\text{link }i}{^ir} \, {^ir}^T dm
 
 我们可以将连杆$i$的动能写为
 \begin{equation}
-K_i = \frac{1}{2}\sum_{j=1}^{i}\sum_{k=1}^{i}\text{trace}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)\dot{q}_j\dot{q}_k = \frac{1}{2}q^T M(q) \dot{q}
+K_i = \frac{1}{2}\sum_{j=1}^{i}\sum_{k=1}^{i}\text{trace}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)\dot{q}_j\dot{q}_k
 \end{equation}
+而机械臂总动能为$K = \sum_{i=1}^{n}K_i$；\emph{不可}用$\frac{1}{2}q^{T}M\dot{q}$或把单杆$K_i$与$\frac{1}{2}\dot{q}^{T}M\dot{q}$等同（后者是总动能，$M$由$(m_{jk})$完全求和定出，见(3.2.29)）。
 
 让我们继续寻找机械臂总动能之前简要讨论伪惯量矩阵。令
 \begin{equation}
@@ -432,11 +433,7 @@ P = \sum_{i=1}^{n}P_i = -\sum_{i=1}^{n}m_i g^T T_i {^ir_i}
 \end{equation}
 注意$P$仅取决于关节变量$q$，而不取决于关节速度$\dot{q}$。
 
-注意$-m_i g^T T_i$是连杆$i$伪惯量矩阵$M_i$的最后一列，我们可以写出
-\begin{equation}
-P = -\sum_{i=1}^{n}m_i g^T T_i {^ir_i}
-\end{equation}
-其中$e_4$是$4 \times 4$单位矩阵的最后一列（即$e_4 = [0 \ 0 \ 0 \ 1]^T$）。
+用连杆$i$的伪惯量矩阵$M_i$与$e_4 = [0\ 0\ 0\ 1]^T$，也可写成$P = -\sum_{i=1}^{n} g^T T_i (M_i e_4)$，与上式在常规定义下等价。
 
 \textbf{拉格朗日方程}
 
@@ -673,7 +670,7 @@ v_b = \sup_{q} ||V_v(q)||
 \begin{equation}
 (A \otimes B)^T = A^T \otimes B^T
 \end{equation}
-对任何矩阵$A$和$B$成立。注意：$(A \otimes B)^T = A^T \otimes B^T$不成立。
+对实矩阵$A$、$B$成立（克罗内克积的标准性质）。
 
 现在我们可以使用这些各种恒等式来证明
 \begin{equation}
@@ -1086,9 +1083,9 @@ x = \begin{bmatrix} q \\ p \end{bmatrix}
 \end{equation}
 我们看到机械臂动力学可以表示为
 \begin{equation}
-\dot{x} = \begin{bmatrix} 0 & I_n \\ 0 & -V_m M^{-1} \end{bmatrix}x + \begin{bmatrix} 0 \\ I_n \end{bmatrix}u - \begin{bmatrix} 0 \\ G \end{bmatrix}
+\dot{x} = \begin{bmatrix} 0 & M^{-1}(q) \\ 0 & -V_m M^{-1} \end{bmatrix}x + \begin{bmatrix} 0 \\ I_n \end{bmatrix}u - \begin{bmatrix} 0 \\ G \end{bmatrix}
 \end{equation}
-其中控制输入定义为
+其中$V_m$将$\dot{q}=M^{-1}p$代入原$V_m(q,\dot{q})$。控制输入定义为
 \begin{equation}
 u = \tau
 \end{equation}
