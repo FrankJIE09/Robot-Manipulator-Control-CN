@@ -96,27 +96,19 @@ f(\bm{x}) = \bm{W}^T \sigma(\bm{V}^T \bm{x}) + \varepsilon
 
 \textbf{克服NLIP问题}。多层神经网络在权重$\bm{V}$方面是非线性的，因此产生保证闭环反馈系统中稳定性和有界权重的权重调整算法直到几年前才被发现。如果采取正确和严格的方法，NLIP问题很容易克服。一种方法是以下对泰勒级数的适当使用~\cite{lewis1996}。
 
-定义函数估计误差
-\begin{equation}\label{eq:8.2.8}
-\tilde{f} = f - \hat{f} = f - \hat{\bm{W}}^T \sigma(\hat{\bm{V}}^T \bm{x})
-\end{equation}
-权重估计误差
-\begin{equation}\label{eq:8.2.9}
-\tilde{\bm{W}} = \bm{W} - \hat{\bm{W}}, \quad \tilde{\bm{V}} = \bm{V} - \hat{\bm{V}}
-\end{equation}
-和隐层输出误差
-\begin{equation}\label{eq:8.2.10}
-\tilde{\sigma} = \sigma - \hat{\sigma} = \sigma(\bm{V}^T \bm{x}) - \sigma(\hat{\bm{V}}^T \bm{x})
-\end{equation}
+定义函数估计误差、权重估计误差和隐层输出误差
+\begin{align}
+\tilde{f} &= f - \hat{f} = f - \hat{\bm{W}}^T \sigma(\hat{\bm{V}}^T \bm{x}) \label{eq:8.2.8} \\
+\tilde{\bm{W}} &= \bm{W} - \hat{\bm{W}}, \quad \tilde{\bm{V}} = \bm{V} - \hat{\bm{V}} \label{eq:8.2.9} \\
+\tilde{\sigma} &= \sigma - \hat{\sigma} = \sigma(\bm{V}^T \bm{x}) - \sigma(\hat{\bm{V}}^T \bm{x}) \label{eq:8.2.10}
+\end{align}
 
 对于任何$\bm{z}$，可以写出泰勒级数
-\begin{equation}\label{eq:8.2.11}
-\sigma(\bm{z}) = \sigma(\hat{\bm{z}}) + \sigma'(\hat{\bm{z}})\tilde{\bm{z}} + O(\tilde{\bm{z}})^2
-\end{equation}
-其中$\sigma'$是雅可比矩阵，最后一项表示$\tilde{\bm{z}}^2$阶的项。因此
-\begin{equation}\label{eq:8.2.12}
-\tilde{\sigma} = \sigma'(\hat{\bm{V}}^T \bm{x})\tilde{\bm{V}}^T \bm{x} + O(\tilde{\bm{V}}^T \bm{x})^2
-\end{equation}
+\begin{align}
+\sigma(\bm{z}) &= \sigma(\hat{\bm{z}}) + \sigma'(\hat{\bm{z}})\tilde{\bm{z}} + O(\tilde{\bm{z}})^2 \label{eq:8.2.11} \\
+\intertext{其中$\sigma'$是雅可比矩阵，最后一项表示$\tilde{\bm{z}}^2$阶的项。因此}
+\tilde{\sigma} &= \sigma'(\hat{\bm{V}}^T \bm{x})\tilde{\bm{V}}^T \bm{x} + O(\tilde{\bm{V}}^T \bm{x})^2 \label{eq:8.2.12}
+\end{align}
 
 这个关键方程允许将函数估计误差写成
 \begin{equation}\label{eq:8.2.13}
@@ -317,7 +309,7 @@ M\dot{\bm{r}} = -(V_m + K_v)\bm{r} + \tilde{\bm{W}}^T\phi(\bm{x}) + \bm{\tau}_d 
 
 设期望轨迹$\bm{q}_d(t)$被$\bm{q}_B$所界，初始跟踪误差$\bm{r}(0)$在$S_r$中。设神经网络重构误差界$\varepsilon_N$和扰动界$d_B$是常数。假设理想神经网络目标权重被$W_B$所界，如式~\eqref{eq:8.4.3}。设机器人手臂的控制输入由式~\eqref{eq:8.4.1}给出，$\bm{v}(t)=0$，增益满足
 \begin{equation}\label{eq:8.4.cond1}
-K_{v\min} > \frac{(W_B + \frac{\varepsilon_N + d_B}{\|\phi\|})^2}{4}\|
+K_{v\min} > \frac{(W_B + \frac{\varepsilon_N + d_B}{\|\phi\|})^2}{4}
 \end{equation}
 
 设权重调整为
@@ -330,25 +322,15 @@ K_{v\min} > \frac{(W_B + \frac{\varepsilon_N + d_B}{\|\phi\|})^2}{4}\|
 
 让神经网络逼近性质~\eqref{eq:8.2.15}对于式~\eqref{eq:8.3.5}中给出的函数$\bm{f}(\bm{x})$在紧集$\|\bm{x}\| \leq \bm{b}_x$上具有给定精度$\varepsilon_N$，其中$\bm{b}_x > \bm{q}_B$。设$\bm{r}(0) \in S_r$。那么在时刻0逼近性质成立。
 
-定义Lyapunov函数候选
-\begin{equation}\label{eq:8.4.lyap3}
-L = \frac{1}{2}\bm{r}^T M(\bm{q})\bm{r} + \frac{1}{2}\text{tr}\{\tilde{\bm{W}}^T \bm{F}^{-1} \tilde{\bm{W}}\}
-\end{equation}
-
-求导得
-\begin{equation}\label{eq:8.4.deriv4}
-\dot{L} = \bm{r}^T M \dot{\bm{r}} + \frac{1}{2}\bm{r}^T \dot{M} \bm{r} + \text{tr}\{\tilde{\bm{W}}^T \bm{F}^{-1} \dot{\tilde{\bm{W}}}\}
-\end{equation}
-
-代入式~\eqref{eq:8.4.2}得
-\begin{equation}\label{eq:8.4.subst5}
-\dot{L} = -\bm{r}^T (V_m + K_v)\bm{r} + \frac{1}{2}\bm{r}^T \dot{M} \bm{r} + \text{tr}\{\tilde{\bm{W}}^T(\bm{F}^{-1}\dot{\tilde{\bm{W}}} + \phi\bm{r}^T)\} + \bm{r}^T(\bm{\tau}_d + \varepsilon)
-\end{equation}
-
-然后，使用调整规则~\eqref{eq:8.4.cond2}得
-\begin{equation}\label{eq:8.4.tune6}
-\dot{L} = -\bm{r}^T K_v \bm{r} + \kappa \|\bm{r}\| \text{tr}\{\tilde{\bm{W}}^T(\bm{W} - \tilde{\bm{W}})\} + \bm{r}^T(\bm{\tau}_d + \varepsilon)
-\end{equation}
+定义Lyapunov函数候选并求导
+\begin{align}
+L &= \frac{1}{2}\bm{r}^T M(\bm{q})\bm{r} + \frac{1}{2}\text{tr}\{\tilde{\bm{W}}^T \bm{F}^{-1} \tilde{\bm{W}}\} \label{eq:8.4.lyap3} \\
+\dot{L} &= \bm{r}^T M \dot{\bm{r}} + \frac{1}{2}\bm{r}^T \dot{M} \bm{r} + \text{tr}\{\tilde{\bm{W}}^T \bm{F}^{-1} \dot{\tilde{\bm{W}}}\} \label{eq:8.4.deriv4} \\
+\intertext{代入式~\eqref{eq:8.4.2}得}
+\dot{L} &= -\bm{r}^T (V_m + K_v)\bm{r} + \frac{1}{2}\bm{r}^T \dot{M} \bm{r} + \text{tr}\{\tilde{\bm{W}}^T(\bm{F}^{-1}\dot{\tilde{\bm{W}}} + \phi\bm{r}^T)\} + \bm{r}^T(\bm{\tau}_d + \varepsilon) \label{eq:8.4.subst5} \\
+\intertext{然后，使用调整规则~\eqref{eq:8.4.cond2}得}
+\dot{L} &= -\bm{r}^T K_v \bm{r} + \kappa \|\bm{r}\| \text{tr}\{\tilde{\bm{W}}^T(\bm{W} - \tilde{\bm{W}})\} + \bm{r}^T(\bm{\tau}_d + \varepsilon) \label{eq:8.4.tune6}
+\end{align}
 
 由于
 \begin{align}
@@ -408,13 +390,11 @@ M\dot{\bm{r}} = -(V_m + K_v)\bm{r} + \tilde{\bm{W}}^T\hat{\sigma}'\hat{\bm{V}}^T
 \end{equation}
 
 定义
-\begin{equation}\label{eq:8.5.4}
-\bm{Z} \equiv \begin{bmatrix} \bm{W} & 0 \\ 0 & \bm{V} \end{bmatrix}, \quad \hat{\bm{Z}} \equiv \begin{bmatrix} \hat{\bm{W}} & 0 \\ 0 & \hat{\bm{V}} \end{bmatrix}, \quad \tilde{\bm{Z}} \equiv \bm{Z} - \hat{\bm{Z}}
-\end{equation}
-和$\bm{Z}$、$\hat{\bm{Z}}$等价。不难证明
-\begin{equation}\label{eq:8.5.5}
-\|\bm{w}\| \leq C_0 + C_1\|\tilde{\bm{Z}}\|_F + C_2\|\tilde{\bm{Z}}\|_F\|\bm{r}\|
-\end{equation}
+\begin{align}
+\bm{Z} &\equiv \begin{bmatrix} \bm{W} & 0 \\ 0 & \bm{V} \end{bmatrix}, \quad \hat{\bm{Z}} \equiv \begin{bmatrix} \hat{\bm{W}} & 0 \\ 0 & \hat{\bm{V}} \end{bmatrix}, \quad \tilde{\bm{Z}} \equiv \bm{Z} - \hat{\bm{Z}} \label{eq:8.5.4} \\
+\intertext{和$\bm{Z}$、$\hat{\bm{Z}}$等价。不难证明}
+\|\bm{w}\| &\leq C_0 + C_1\|\tilde{\bm{Z}}\|_F + C_2\|\tilde{\bm{Z}}\|_F\|\bm{r}\| \label{eq:8.5.5}
+\end{align}
 其中$C_i$是已知正常数。
 
 假设理想权重有界，使得
@@ -429,7 +409,7 @@ M\dot{\bm{r}} = -(V_m + K_v)\bm{r} + \tilde{\bm{W}}^T\hat{\sigma}'\hat{\bm{V}}^T
 
 设期望轨迹$\bm{q}_d(t)$被$\bm{q}_B$所界，初始跟踪误差$\bm{r}(0)$在$S_r$中。设理想目标神经网络权重被已知$Z_B$所界。取机器人动力学~\eqref{eq:8.3.1}的控制输入为式~\eqref{eq:8.5.1}，PD增益满足
 \begin{equation}\label{eq:8.5.cond1}
-K_{v\min} > \frac{(C_0 + C_1 Z_B + C_2 Z_B^2/4)(C_3 + Z_B)}{4}\|
+K_{v\min} > \frac{(C_0 + C_1 Z_B + C_2 Z_B^2/4)(C_3 + Z_B)}{4}
 \end{equation}
 其中$C_3$在证明中定义。设鲁棒化项为
 \begin{equation}\label{eq:8.5.cond2}
@@ -445,7 +425,7 @@ K_z > C_2
 \dot{\hat{\bm{W}}} = \bm{F}\hat{\sigma}'\hat{\bm{V}}^T\bm{x}\bm{r}^T - \bm{F}\hat{\sigma}'\tilde{\bm{V}}^T\bm{x}\bm{r}^T - \kappa\|\bm{r}\|\bm{F}\hat{\bm{W}}
 \end{equation}
 \begin{equation}\label{eq:8.5.cond5}
-\dot{\hat{\bm{V}}} = \bm{G}\bm{x}(\hat{\sigma}'^T\hat{\bm{W}}\bm{r})^T - \kappa\|\bm{r}\|\bm{G}\hat{\bm{V}}
+\dot{\hat{\bm{V}}} = \bm{G}\bm{x}(\hat{\bm{W}}^T\hat{\sigma}')^T\bm{r} - \kappa\|\bm{r}\|\bm{G}\hat{\bm{V}}
 \end{equation}
 其中任意常数矩阵$\bm{F}=\bm{F}^T>0$，$\bm{G}=\bm{G}^T>0$，$\kappa>0$是小标量设计参数。那么滤波跟踪误差$\bm{r}(t)$和神经网络权重估计$\hat{\bm{V}}$、$\hat{\bm{W}}$是UUB的，界分别由式~\eqref{eq:8.5.bound10}和\eqref{eq:8.5.bound11}具体给出。而且，通过增加式~\eqref{eq:8.5.1}中的增益$K_v$，跟踪误差可以保持任意小。
 
@@ -453,21 +433,16 @@ K_z > C_2
 
 让神经网络逼近性质~\eqref{eq:8.2.5}对于式~\eqref{eq:8.3.5}中给出的函数$\bm{f}(\bm{x})$在紧集$\|\bm{x}\| \leq \bm{b}_x$上具有给定精度$\varepsilon_N$，其中$\bm{b}_x > \bm{q}_B$。设$\bm{r}(0) \in S_r$。那么在时刻0逼近性质成立。
 
-定义Lyapunov函数候选
-\begin{equation}\label{eq:8.5.lyap6}
-L = \frac{1}{2}\bm{r}^T M(\bm{q})\bm{r} + \frac{1}{2}\text{tr}\{\tilde{\bm{W}}^T \bm{F}^{-1} \tilde{\bm{W}}\} + \frac{1}{2}\text{tr}\{\tilde{\bm{V}}^T \bm{G}^{-1} \tilde{\bm{V}}\}
-\end{equation}
-
-求导得
-\begin{equation}\label{eq:8.5.deriv7}
-\dot{L} = \bm{r}^T M \dot{\bm{r}} + \frac{1}{2}\bm{r}^T \dot{M} \bm{r} + \text{tr}\{\tilde{\bm{W}}^T \bm{F}^{-1} \dot{\tilde{\bm{W}}}\} + \text{tr}\{\tilde{\bm{V}}^T \bm{G}^{-1} \dot{\tilde{\bm{V}}}\}
-\end{equation}
-
-从误差系统~\eqref{eq:8.5.2}代入得
+定义Lyapunov函数候选并求导
 \begin{align}
-\dot{L} &= -\bm{r}^T K_v \bm{r} + \frac{1}{2}\bm{r}^T (\dot{M} - 2V_m)\bm{r} - \bm{r}^T\bm{v} + \bm{r}^T(\bm{w} + \bm{\tau}_d) \nonumber \\
-&\quad + \text{tr}\{\tilde{\bm{W}}^T(\bm{F}^{-1}\dot{\hat{\bm{W}}} + \hat{\sigma}\bm{r}^T - \hat{\sigma}'\hat{\bm{V}}^T\bm{x}\bm{r}^T)\} \nonumber \\
-&\quad + \text{tr}\{\tilde{\bm{V}}^T(\bm{G}^{-1}\dot{\hat{\bm{V}}} + \bm{x}\bm{r}^T\hat{\bm{W}}^T\hat{\sigma}')\} \label{eq:8.5.subst8}
+L &= \frac{1}{2}\bm{r}^T M(\bm{q})\bm{r} + \frac{1}{2}\text{tr}\{\tilde{\bm{W}}^T \bm{F}^{-1} \tilde{\bm{W}}\} + \frac{1}{2}\text{tr}\{\tilde{\bm{V}}^T \bm{G}^{-1} \tilde{\bm{V}}\} \label{eq:8.5.lyap6} \\
+\dot{L} &= \bm{r}^T M \dot{\bm{r}} + \frac{1}{2}\bm{r}^T \dot{M} \bm{r} + \text{tr}\{\tilde{\bm{W}}^T \bm{F}^{-1} \dot{\tilde{\bm{W}}}\} + \text{tr}\{\tilde{\bm{V}}^T \bm{G}^{-1} \dot{\tilde{\bm{V}}}\} \label{eq:8.5.deriv7} \\
+\intertext{从误差系统~\eqref{eq:8.5.2}代入得}
+\begin{split}
+\dot{L} &= -\bm{r}^T K_v \bm{r} + \frac{1}{2}\bm{r}^T (\dot{M} - 2V_m)\bm{r} - \bm{r}^T\bm{v} + \bm{r}^T(\bm{w} + \bm{\tau}_d) \\
+&\quad + \text{tr}\{\tilde{\bm{W}}^T(\bm{F}^{-1}\dot{\hat{\bm{W}}} + \hat{\sigma}\bm{r}^T - \hat{\sigma}'\hat{\bm{V}}^T\bm{x}\bm{r}^T)\} \\
+&\quad + \text{tr}\{\tilde{\bm{V}}^T(\bm{G}^{-1}\dot{\hat{\bm{V}}} + \bm{x}\bm{r}^T\hat{\bm{W}}^T\hat{\sigma}')\}
+\end{split} \label{eq:8.5.subst8}
 \end{align}
 
 调整规则给出
@@ -513,7 +488,7 @@ $\dot{L}$在花括号中的项为正时是负的。定义$C_3 = Z_B + C_1/\kappa
 
 \textbf{直接反向传播权重调整}。反向传播算法（通常以离散时间形式）在文献中被无数次提出用于闭环控制。可以证明，如果神经网络逼近误差$\varepsilon$为零，扰动$\bm{\tau}_d(t)$为零，且泰勒级数~\eqref{eq:8.2.12}中没有高阶项，那么直接反向传播算法
 \begin{equation}\label{eq:8.5.7}
-\dot{\hat{\bm{W}}} = \bm{F}\hat{\sigma}'\hat{\bm{V}}^T\bm{x}\bm{r}^T, \quad \dot{\hat{\bm{V}}} = \bm{G}\bm{x}(\hat{\sigma}'^T\hat{\bm{W}}\bm{r})^T
+\dot{\hat{\bm{W}}} = \bm{F}\hat{\sigma}'\hat{\bm{V}}^T\bm{x}\bm{r}^T, \quad \dot{\hat{\bm{V}}} = \bm{G}\bm{x}(\hat{\bm{W}}^T\hat{\sigma}')^T\bm{r}
 \end{equation}
 可以用于闭环控制代替式~\eqref{eq:8.5.cond4}、~\eqref{eq:8.5.cond5}。需要使用PE来证明使用直接反向传播时神经网络权重是有界的。提到的条件非常严格，在实践中不会发生；它们本质上要求机器人手臂是线性的（例如单连杆）。而且，在神经网络中不容易保证PE条件。
 
@@ -586,7 +561,7 @@ L = \frac{1}{2}\bm{r}^T M(\bm{q})\bm{r}
 
 相对于$\bm{W}$、$\bm{V}$的动力学为
 \begin{equation}
-\dot{\tilde{\bm{W}}} = -\bm{F}\hat{\sigma}'\hat{\bm{V}}^T\bm{x}\bm{r}^T, \quad \dot{\tilde{\bm{V}}} = -\bm{G}\bm{x}(\hat{\sigma}'^T\hat{\bm{W}}\bm{r})^T
+\dot{\tilde{\bm{W}}} = -\bm{F}\hat{\sigma}'\hat{\bm{V}}^T\bm{x}\bm{r}^T, \quad \dot{\tilde{\bm{V}}} = -\bm{G}\bm{x}(\hat{\bm{W}}^T\hat{\sigma}')^T\bm{r}
 \end{equation}
 
 1. 选择非负函数
@@ -608,7 +583,7 @@ L = \frac{1}{2}\text{tr}\{\tilde{\bm{V}}^T \bm{G}^{-1} \tilde{\bm{V}}\}
 
 并沿轨迹(2)评估得
 \begin{equation}
-\dot{L} = \text{tr}\{\tilde{\bm{V}}^T \bm{G}^{-1} \dot{\tilde{\bm{V}}}\} = -\text{tr}\{\tilde{\bm{V}}^T \bm{x}\bm{r}^T\hat{\bm{W}}^T\hat{\sigma}'\} = \langle \bm{r}, \hat{\bm{W}}^T\hat{\sigma}'\hat{\bm{V}}^T\bm{x} \rangle
+\dot{L} = \text{tr}\{\tilde{\bm{V}}^T \bm{G}^{-1} \dot{\tilde{\bm{V}}}\} = -\text{tr}\{\tilde{\bm{V}}^T \bm{x}(\hat{\bm{W}}^T\hat{\sigma}')^T\bm{r}\} = \langle \bm{r}, \hat{\bm{W}}^T\hat{\sigma}'\hat{\bm{V}}^T\bm{x} \rangle
 \end{equation}
 
 这是功率形式。
@@ -628,7 +603,7 @@ L = \frac{1}{2}\text{tr}\{\tilde{\bm{V}}^T \bm{G}^{-1} \tilde{\bm{V}}\}
 使用定理8.5.1中的调整算法，相对于$\bm{W}$、$\bm{V}$的动力学由下式给出
 \begin{align}
 \dot{\tilde{\bm{W}}} &= -\bm{F}\hat{\sigma}'\hat{\bm{V}}^T\bm{x}\bm{r}^T + \bm{F}\hat{\sigma}'\tilde{\bm{V}}^T\bm{x}\bm{r}^T + \kappa\|\bm{r}\|\bm{F}\hat{\bm{W}} \\
-\dot{\tilde{\bm{V}}} &= -\bm{G}\bm{x}\bm{r}^T\hat{\bm{W}}^T\hat{\sigma}' + \kappa\|\bm{r}\|\bm{G}\hat{\bm{V}}
+\dot{\tilde{\bm{V}}} &= -\bm{G}\bm{x}(\hat{\bm{W}}^T\hat{\sigma}')^T\bm{r} + \kappa\|\bm{r}\|\bm{G}\hat{\bm{V}}
 \end{align}
 
 1. 选择非负函数

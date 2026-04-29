@@ -39,16 +39,18 @@
 
 对于连续系统的时间响应仿真，Runge-Kutta积分器工作得很好。在图B.1.1中展示了程序 TRESP，它使用四阶 Runge-Kutta 子程序实现第3.3节讨论的仿真过程。它以状态变量形式积分线性或非线性系统：
 
-\begin{equation}
+\begin{equation}\label{eq:B.1}
 \dot{x} = f(x, u, t)
+\tag{B.1}
 \end{equation}
 
 在第2.4节中，我们展示了如何将机器人动力学转换为这种形式。注意，MATLAB 的函数 ode23 和 ode45 是自适应步长的 Runge-Kutta 积分器，它们需要相同形式的动力学方程。
 
 TRESP 需要一个子程序 F(time, x, xp)，它从当前状态 $x(t)$ 和控制输入 $u(t)$ 计算 $\dot{x}$（记为 xp，或 "x prime"）。控制 $u(t)$ 和任何形式的输出
 
-\begin{equation}
+\begin{equation}\label{eq:B.2}
 y = h(x, u, t)
+\tag{B.2}
 \end{equation}
 
 被放入 COMMON 存储区（例如，$u(t)$ 可以在 F(time, x, xp) 外部计算，而 $y(t)$ 在 TRESP 中需要用于绘图）。在本书各章节的示例中给出了使用 TRESP 的示例。

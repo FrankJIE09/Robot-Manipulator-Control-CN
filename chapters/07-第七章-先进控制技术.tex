@@ -214,13 +214,10 @@ k_v > \zeta_3 + \frac{1}{2}
 \textbf{示例7.2--1：二连杆机械臂的DCAL}
 
 我们希望为图6.2.1中给出的二连杆机械臂设计和仿真表7.2.1中给出的DCAL。（该机器人臂的动力学在第3章中给出。）假设摩擦可忽略不计且连杆长度精确知道为每根1米长，DCAL可以写成
-\begin{equation}
-\tau_1 = Y_{d11}\hat{\varphi}_1 + Y_{d12}\hat{\varphi}_2 + k_v r_1 + k_p e_1 + k_a \|e\|^2 r_1
-\end{equation}
-和
-\begin{equation}
-\tau_2 = Y_{d21}\hat{\varphi}_1 + Y_{d22}\hat{\varphi}_2 + k_v r_2 + k_p e_2 + k_a \|e\|^2 r_2
-\end{equation}
+\begin{align}
+\tau_1 &= Y_{d11}\hat{\varphi}_1 + Y_{d12}\hat{\varphi}_2 + k_v r_1 + k_p e_1 + k_a \|e\|^2 r_1, \\
+\tau_2 &= Y_{d21}\hat{\varphi}_1 + Y_{d22}\hat{\varphi}_2 + k_v r_2 + k_p e_2 + k_a \|e\|^2 r_2
+\end{align}
 
 在控制扭矩的表达式中，回归矩阵$Y_d(\cdot)$由
 \begin{equation}
@@ -243,13 +240,10 @@ Y_{d22} = \ddot{q}_{d1} + \dot{e}_1 + \ddot{q}_{d2} + \dot{e}_2
 \hat{\varphi} = \begin{bmatrix} \hat{m}_1 \\ \hat{m}_2 \end{bmatrix}
 \end{equation*}
 带有自适应更新规则
-\begin{equation}
-\dot{\hat{m}}_1 = \gamma_1(Y_{d11}r_1 + Y_{d21}r_2)
-\end{equation}
-和
-\begin{equation}
-\dot{\hat{m}}_2 = \gamma_2(Y_{d12}r_1 + Y_{d22}r_2)
-\end{equation}
+\begin{align}
+\dot{\hat{m}}_1 &= \gamma_1(Y_{d11}r_1 + Y_{d21}r_2), \\
+\dot{\hat{m}}_2 &= \gamma_2(Y_{d12}r_1 + Y_{d22}r_2)
+\end{align}
 
 对于$m_1=0.8$ kg和$m_2=2.3$ kg，DCAL在以下条件下进行了仿真
 \begin{equation*}
@@ -428,22 +422,16 @@ G(s) = (sI + I)^{-1}
 \textbf{示例7.2--2：二连杆机械臂的RCL}
 
 我们希望为图6.2.1中给出的二连杆机械臂设计和仿真表7.2.2中给出的RCL。（该机器人臂的动力学在第3章中给出。）从表7.2.2，RCL可以写成
-\begin{equation}
-\tau_1 = \hat{u}_{d1} + k_v r_1 + k_p e_1 + k_a\|e\|^2r_1
-\end{equation}
-和
-\begin{equation}
-\tau_2 = \hat{u}_{d2} + k_v r_2 + k_p e_2 + k_a\|e\|^2r_2
-\end{equation}
+\begin{align}
+\tau_1 &= \hat{u}_{d1} + k_v r_1 + k_p e_1 + k_a\|e\|^2r_1, \\
+\tau_2 &= \hat{u}_{d2} + k_v r_2 + k_p e_2 + k_a\|e\|^2r_2
+\end{align}
 
 按照表7.2.2给出的公式制定学习更新规则得到
-\begin{equation}
-\hat{u}_{d1}(t) = \hat{u}_{d1}(t-T) + k_L r_1
-\end{equation}
-和
-\begin{equation}
-\hat{u}_{d2}(t) = \hat{u}_{d2}(t-T) + k_L r_2
-\end{equation}
+\begin{align}
+\hat{u}_{d1}(t) &= \hat{u}_{d1}(t-T) + k_L r_1, \\
+\hat{u}_{d2}(t) &= \hat{u}_{d2}(t-T) + k_L r_2
+\end{align}
 
 对于$m_1=0.8$ kg，$m_2=2.3$ kg，连杆长度为1 m，RCL在以下条件下进行了仿真
 \begin{equation*}
@@ -637,13 +625,10 @@ T_d = \begin{bmatrix} 0.5\sin t \\ 0.2\cos t \end{bmatrix}
 添加到二连杆机器人模型中的相应位置。
 
 我们现在可以使用表7.3.1来制定自适应鲁棒控制器为
-\begin{equation}
-\tau_1 = k_v r_1 + \frac{r_1\hat{\rho}^2}{\hat{\rho}\|r_1\| + \varepsilon}
-\end{equation}
-和
-\begin{equation}
-\tau_2 = k_v r_2 + \frac{r_2\hat{\rho}^2}{\hat{\rho}\|r_2\| + \varepsilon}
-\end{equation}
+\begin{align}
+\tau_1 &= k_v r_1 + \frac{r_1\hat{\rho}^2}{\hat{\rho}\|r_1\| + \varepsilon}, \\
+\tau_2 &= k_v r_2 + \frac{r_2\hat{\rho}^2}{\hat{\rho}\|r_2\| + \varepsilon}
+\end{align}
 
 在上面控制扭矩的表达式中，边界函数$\hat{\rho}$由
 \begin{equation}
@@ -679,10 +664,10 @@ q_{d1} = \sin t, \quad q_{d2} = \cos t, \quad \hat{\delta}_0(0) = 0, \quad \hat{
 
 RLED机器人的模型[Tarn等1991]采用
 \begin{equation}\label{eq:7.4.1}
-\dot{e} = A_0 e + B\eta_E
+M(q)\ddot{q} + N(q,\dot{q}) = K_T I
 \end{equation}
 \begin{equation}\label{eq:7.4.2}
-\dot{\eta}_E = J^{-1}K_T I - \dot{u}_L
+L_a\dot{I} + R(q,\dot{q}) = u_E
 \end{equation}
 其中
 \begin{equation}\label{eq:7.4.3}
@@ -743,17 +728,17 @@ A_L = \begin{bmatrix} -I_{n \times n} & I_{n \times n} \\ -K_{Lp} & -K_{Lv} \end
 
 为了设计$\eta_E$的控制律，我们必须首先建立其动态特性。从式\eqref{eq:7.4.12}，$\eta_E$关于时间的导数为
 \begin{equation}\label{eq:7.4.13}
-\dot{\eta}_E = \bar{M}^{-1}(q)\dot{u}_L - \dot{u}_L
+\dot{\eta}_E = \bar{M}^{-1}(q)\dot{u}_L - \ddot{q}
 \end{equation}
 
-为了获得$\eta_E$的动态特性，我们从式\eqref{eq:7.4.2}代入$\dot{I}$到式\eqref{eq:7.4.13}得到
+为了获得$\eta_E$的动态特性，我们从式\eqref{eq:7.4.1}代入$\ddot{q}$到式\eqref{eq:7.4.13}得到
 \begin{equation}\label{eq:7.4.14}
-\dot{\eta}_E = J^{-1}K_T I - \dot{u}_L
+\dot{\eta}_E = \bar{M}^{-1}(q)[\dot{u}_L - K_T\dot{I}]
 \end{equation}
 
 我们现在可以使用式\eqref{eq:7.4.14}设计输入$u_E$的控制律以迫使$\eta_E$趋近于零。$\eta_E$应该趋近于零的事实推动了校正控制律
 \begin{equation}\label{eq:7.4.15}
-u_E = L_a K_T^{-1}J(\ddot{u}_L + K_{Ep}\eta_E) + K_T^{-1}JR(\dot{q},I) + u_L
+u_E = L_a K_T^{-1}(\ddot{u}_L + K_{Ep}\eta_E) + R(\dot{q},I)
 \end{equation}
 其中$K_{Ep}$定义为$n \times n$正定对角矩阵。将式\eqref{eq:7.4.15}代入式\eqref{eq:7.4.14}得到
 \begin{equation}\label{eq:7.4.16}
@@ -829,38 +814,47 @@ Q = \begin{bmatrix} \lambda_{\min}\{Q_L\} & -\frac{1}{2\sqrt{m_1}} \\ -\frac{1}{
 
 在式\eqref{eq:7.4.26}中代入$\ddot{q}$后，$\dot{u}_L$将仅取决于$q$、$\dot{q}$和$I$的测量。在控制输入$u_E$处实现的实际控制可以通过进行适当的代入找到。也就是说，式\eqref{eq:7.4.15}给出的校正控制可以写成
 \begin{equation}\label{eq:7.4.27}
-u_E = L_a K_T^{-1}J(\ddot{u}_L + K_{Ep}\eta_E) + K_T^{-1}JR(\dot{q},I) + u_L
+u_E = L_a K_T^{-1}(\ddot{u}_L + K_{Ep}\eta_E) + R(\dot{q},I)
 \end{equation}
 其中$\dot{u}_L$将由式\eqref{eq:7.4.26}给出。
 
 在仔细检查式\eqref{eq:7.4.26}中给出的$\dot{u}_L$和$\ddot{u}_L$的函数依赖性后，现在很明显为什么我们假设期望轨迹和连杆动力学足够平滑。具体而言，从式\eqref{eq:7.4.26}我们可以看到，校正控制器需要期望轨迹的第一、第二和第三时间导数有界，同时需要连杆动力学的第一导数存在。对期望轨迹和连杆动力学的这些假设确保控制输入保持有界。
 
-上面推导的校正控制器总结在表7.4.1中，并在图7.4.1中描绘。我们现在提出一个示例来说明如何使用表7.4.1为RLED机器人设计校正控制器。
+上面推导的校正控制器总结在表7.4.1中，并在图7.4.1中描绘。
+
+\textbf{表7.4.1}\quad RLED校正控制器
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{控制律} & $u_E = L_a K_T^{-1}(\ddot{u}_L + K_{Ep}\eta_E) + R(\dot{q},I)$ \\
+\hline
+\textbf{连杆控制器} & $u_L = \bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + N(q,\dot{q})$ \\
+\hline
+\textbf{扰动定义} & $\eta_E = \bar{M}^{-1}(q)(u_L - K_T I)$ \\
+\hline
+\end{tabular}
+\end{center}
+
+其中$\ddot{u}_L$通过微分$u_L$并从式\eqref{eq:7.4.1}代入$\ddot{q}$获得。
+
+我们现在提出一个示例来说明如何使用表7.4.1为RLED机器人设计校正控制器。
 
 \textbf{示例7.4--1：单连杆RLED机械臂的校正控制器}
 
 我们希望使用表7.4.1为图7.4.2中给出的单连杆电机驱动机器人臂设计和仿真校正控制器。系统的动力学采用
-\begin{equation}
-\bar{m}\ddot{q} + f_d \dot{q} + mgL \sin q = K_T I
-\end{equation}
-和
-\begin{equation}
-L_a \dot{I} + RI + k_b \dot{q} = u_E
-\end{equation}
+\begin{align}
+\bar{m}\ddot{q} + f_d \dot{q} + mgL \sin q &= K_T I, \\
+L_a \dot{I} + RI + k_b \dot{q} &= u_E
+\end{align}
 其中$m=1$kg，$K_T=2$ N/A，$k_b=0.3$ V-S，$f_d=3$ kg-m/s，$L=1$ m，$L_a=0.1$ H，$R=5\ \Omega$，$g$是重力系数，$J=0.2$ kg-m$^2$，$I$是电机电流，$u_E$是电机输入电压。
 
 假设式(1)和(2)给出的模型精确知道，我们可以使用表7.4.1来制定校正控制器
-\begin{equation}
-u_E = \frac{L_a}{K_T}(\ddot{u}_L + K_{Ep}\eta_E) + \frac{R}{K_T}(\dot{u}_L - u_L) + \frac{k_b}{K_T}\dot{q} + u_L
-\end{equation}
-其中
-\begin{equation}
-u_L = \bar{m}(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + f_d \dot{q} + mgL \sin q
-\end{equation}
-其中$\ddot{u}_L$从式(1)中找到为
-\begin{equation}
-\ddot{u}_L = \frac{1}{\bar{m}}(\ddot{u}_L + K_{Ep}\eta_E)
-\end{equation}
+\begin{align}
+u_E &= \frac{L_a}{K_T}(\ddot{u}_L + K_{Ep}\eta_E) + RI + k_b\dot{q}, \\
+u_L &= \bar{m}(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + f_d \dot{q} + mgL \sin q
+\end{align}
+而$\ddot{u}_L$通过对$u_L$求导并从式(1)代入$\ddot{q}$得到
 
 校正控制器在以下条件下进行了仿真：控制参数、初始条件和期望轨迹由
 \begin{equation*}
@@ -1028,46 +1022,51 @@ u_F = J\bar{M}^{-1}(q)[\dot{u}_L + K_{Fv}\eta_F + \bar{M}(q)K_{Fp}\eta_F + \dot{
 
 在仔细检查式\eqref{eq:7.4.50}和\eqref{eq:7.4.53}中给出的$\dot{u}_L$和$\ddot{u}_L$的函数依赖性后，很明显为什么我们假设期望轨迹和连杆动力学足够平滑。具体而言，从式\eqref{eq:7.4.50}和\eqref{eq:7.4.53}我们可以看到，式\eqref{eq:7.4.39}中给出的校正控制器将需要期望轨迹的第一、第二、第三和第四时间导数有界，同时需要连杆动力学的第一和第二导数存在。对期望轨迹和连杆动力学的这些假设确保控制输入保持有界。
 
-上面推导的校正控制器总结在表7.4.2中，并在图7.4.4中描绘。我们现在提出一个示例来说明如何使用表7.4.2为RLFJ机器人设计校正控制器。
+上面推导的校正控制器总结在表7.4.2中，并在图7.4.4中描绘。
+
+\textbf{表7.4.2}\quad RLFJ校正控制器
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{控制律} & $u_F = J\bar{M}^{-1}(q)[\ddot{u}_L + K_{Fv}\dot{\eta}_F + \bar{M}(q)K_{Fp}\eta_F + \dot{\bar{M}}^{-1}(q)\bar{M}(q)\eta_F] + B_m(q_m,\dot{q}_m)$ \\
+\hline
+\textbf{连杆控制器} & $u_L = \bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + N(q,\dot{q})$ \\
+\hline
+\textbf{扰动定义} & $\eta_F = \bar{M}^{-1}(q)[u_L - K(q_m - q)]$ \\
+\hline
+\end{tabular}
+\end{center}
+
+其中$\dot{u}_L$和$\ddot{u}_L$通过微分$u_L$并从式\eqref{eq:7.4.28}代入$\ddot{q}$获得。
+
+我们现在提出一个示例来说明如何使用表7.4.2为RLFJ机器人设计校正控制器。
 
 \textbf{示例7.4--2：单连杆RLFJ机械臂的校正控制器}
 
 我们希望使用表7.4.2为图7.4.5中给出的单连杆柔性关节机器人臂设计和仿真校正控制器。系统的动力学采用
-\begin{equation}
-\bar{m}\ddot{q} + f_d \dot{q} + mgL \sin q = K(q_m - q)
-\end{equation}
-和
-\begin{equation}
-J\ddot{q}_m + B\dot{q}_m + K(q_m - q) = u_F
-\end{equation}
+\begin{align}
+\bar{m}\ddot{q} + f_d \dot{q} + mgL \sin q &= K(q_m - q), \\
+J\ddot{q}_m + B\dot{q}_m + K(q_m - q) &= u_F
+\end{align}
 其中$m=1$ kg，$K=10$ N，$B=5$ kg-m/s，$f_d=3$ kg-m/s，$L=1$ m，$g$是重力系数，$J=0.2$ kg-m$^2$，$q_m$是以弧度测量的电机位移，$u_F$是输入扭矩。
 
 假设式(1)和(2)给出的模型精确知道，我们可以使用表7.4.2来制定校正控制器
-\begin{equation}
-u_F = J\bar{m}^{-1}[\ddot{u}_L + K_{Fv}\eta_F + \bar{m}K_{Fp}\eta_F] + B\dot{q}_m
-\end{equation}
-其中
-\begin{equation}
-\eta_F = \bar{m}^{-1}(u_L - K(q_m - q))
-\end{equation}
-其中$\dot{u}_L$从式(1)中找到为
-\begin{equation}
-\dot{u}_L = \bar{m}(\dddot{q}_d + K_{Lv}\ddot{e} + K_{Lp}\dot{e}) + f_d\ddot{q} + mgL\cos q \cdot \dot{q}
-\end{equation}
-$\ddot{q}$从式(1)中找到为
-\begin{equation}
-\ddot{q} = \frac{1}{\bar{m}}[K(q_m - q) - f_d \dot{q} - mgL \sin q]
-\end{equation}
+\begin{align}
+u_F &= J\bar{m}^{-1}[\ddot{u}_L + K_{Fv}\dot{\eta}_F + \bar{m}K_{Fp}\eta_F] + B\dot{q}_m, \\
+\eta_F &= \bar{m}^{-1}(u_L - K(q_m - q))
+\end{align}
+而$\dot{\eta}_F$可以通过对$\eta_F$求导得到。其中$\dot{u}_L$从式(1)中找到为
+\begin{align}
+\dot{u}_L &= \bar{m}(\dddot{q}_d + K_{Lv}\ddot{e} + K_{Lp}\dot{e}) + f_d\ddot{q} + mgL\cos q \cdot \dot{q}, \\
+\ddot{q} &= \frac{1}{\bar{m}}[K(q_m - q) - f_d \dot{q} - mgL \sin q]
+\end{align}
 
 为获得式(3)中给出的$\ddot{u}_L$的表达式，我们将式(5)代入式(4)得到
-\begin{equation}
-\dot{u}_L = \bar{m}(\dddot{q}_d + K_{Lv}\ddot{e} + K_{Lp}\dot{e}) + f_d\frac{1}{\bar{m}}[K(q_m - q) - f_d \dot{q} - mgL \sin q] + mgL\cos q \cdot \dot{q}
-\end{equation}
-
-对式(6)关于时间求导得到
-\begin{equation}
-\ddot{u}_L = \bar{m}(q_d^{(4)} + K_{Lv}\dddot{e} + K_{Lp}\ddot{e}) + f_d\ddot{q} + mgL(\cos q \cdot \ddot{q} - \sin q \cdot \dot{q}^2)
-\end{equation}
+\begin{align}
+\dot{u}_L &= \bar{m}(\dddot{q}_d + K_{Lv}\ddot{e} + K_{Lp}\dot{e}) + f_d\frac{1}{\bar{m}}[K(q_m - q) - f_d \dot{q} - mgL \sin q] + mgL\cos q \cdot \dot{q}, \\
+\ddot{u}_L &= \bar{m}(q_d^{(4)} + K_{Lv}\dddot{e} + K_{Lp}\ddot{e}) + f_d\ddot{q} + mgL(\cos q \cdot \ddot{q} - \sin q \cdot \dot{q}^2)
+\end{align}
 其中$\ddot{q}$从式(5)中找到。
 
 校正控制器在以下条件下进行了仿真：控制参数、初始条件和期望轨迹由

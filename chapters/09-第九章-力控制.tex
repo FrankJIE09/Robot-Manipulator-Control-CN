@@ -72,28 +72,28 @@ m\ddot{x} = \tau - f
 m\ddot{x} + k_v\dot{x} + k_p x + k_e(x - x_e) = k_p x_d
 \end{equation}
 这可以用图9.2.4所示的框图表示。从图9.2.4我们知道闭环系统是稳定的，因为我们已经定义常数$m$、$k_v$、$k_p$和$k_e$为正数。也就是说，我们可以证明传递函数
-\[
-\frac{s}{k_p}
-\]
+\begin{equation}\label{eq:9.2.transfer}
+H(s) = \frac{1}{ms^2 + k_v s + (k_p + k_e)}
+\end{equation}
 的极点在开左半$s$平面。
 
 为了研究式(\ref{eq:9.2.3})给出的PD控制如何控制施加在环境上的力，我们检查系统在稳态条件下的情况。因为$x_d$和$x_e$是常数，可以从式(\ref{eq:9.2.4})找到$x$的拉普拉斯变换为
 \begin{equation}\label{eq:9.2.5}
-x(s) = \frac{k_p x_d + k_e x_e}{ms^2 + k_v s + k_p + k_e}
+x(s) = \frac{k_p x_d + k_e x_e}{s(ms^2 + k_v s + (k_p + k_e))}
 \end{equation}
-因此，稳态机械臂位置（即$x_{ss}$）可以很容易地证明为
+因此，稳态机械臂位置（即$\bar{x}$）可以很容易地证明为
 \begin{equation}\label{eq:9.2.6}
-x_{ss} = \frac{k_p x_d + k_e x_e}{k_p + k_e}
+\bar{x} = \lim_{s \to 0} s\,x(s) = \frac{k_p x_d + k_e x_e}{k_p + k_e}
 \end{equation}
 
-现在可以使用稳态机械臂位置来计算施加在环境上的稳态力（即$f$）。具体来说，将式(\ref{eq:9.2.6})代入式(\ref{eq:9.2.1})，稳态力由下式给出：
+现在可以使用稳态机械臂位置来计算施加在环境上的稳态力（即$\bar{f}$）。具体来说，将式(\ref{eq:9.2.6})代入式(\ref{eq:9.2.1})，稳态力由下式给出：
 \begin{equation}\label{eq:9.2.7}
-f_{ss} = \frac{k_p k_e}{k_p + k_e}(x_d - x_e)
+\bar{f} = \frac{k_p k_e(x_d - x_e)}{k_p + k_e}
 \end{equation}
 
 正如人们所预期的，环境弹簧常数通常被认为很大，因为在大多数机器人力控制应用中，机器人推动的是几乎刚性的表面。因此，如果我们假设$k_e \gg k_p$，我们可以将式(\ref{eq:9.2.7})中的稳态力近似为
 \begin{equation}\label{eq:9.2.8}
-f_{ss} \approx k_p(x_d - x_e)
+\bar{f} \approx k_p(x_d - x_e)
 \end{equation}
 
 从上面的讨论中，我们可以看到式(\ref{eq:9.2.3})给出的位置控制策略确实会对环境施加一个力。具体来说，这个力是通过命令一个稍微进入接触面内部的期望轨迹而产生的。在试图消除位置误差时，位置控制器在表面上施加了一个稳态力。从式(\ref{eq:9.2.8})给出的近似稳态力来看，位置增益（即$k_p$）可以被认为是代表机械臂的期望``刚度''。也就是说，机械臂可以被可视化为一个弹簧，弹簧常数为$k_p$，对环境施加力。因此，``刚度控制''这个术语经常与式(\ref{eq:9.2.3})给出的PD控制相关联，因为机械臂的刚度可以通过调整$k_p$来设置。
@@ -120,7 +120,7 @@ J(q) = \begin{bmatrix} I & 0 \\ 0 & T \end{bmatrix} \frac{\partial h(q)}{\partia
 
 使用任务空间坐标概念，我们现在检查如何修改机器人方程以用于力控制目的。如果机械臂的末端执行器与环境接触，末端执行器和环境之间将存在力相互作用。如果相互作用力在关节空间中测量，机械臂动力学方程可以写成
 \begin{equation}\label{eq:9.2.12}
-M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) = \tau - \tau_e
+\tau = M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) + \tau_e
 \end{equation}
 其中$\tau_e$是关节空间坐标中的$n \times 1$向量，表示施加在环境上的力。式(\ref{eq:9.2.12})给出的动力学方程是有意义的，因为如果机械臂不运动（即$\dot{q} = \ddot{q} = 0$），则式(\ref{eq:9.2.12})简化为
 \begin{equation}\label{eq:9.2.13}
@@ -130,7 +130,7 @@ G(q) = \tau - \tau_e
 
 关节空间表示施加在环境上的力不是机器人文献中的标准符号；相反，机器人机械臂方程通常由下式给出
 \begin{equation}\label{eq:9.2.14}
-M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) + J^T(q)f = \tau
+\tau = M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) + J^T(q)f
 \end{equation}
 其中$f$是任务空间中的接触力和力矩的$n \times 1$向量。
 
@@ -152,13 +152,13 @@ M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) + J^T(q)f = \tau
 
 我们希望找到图9.2.5中所示笛卡尔机械臂系统（即两个关节都是棱柱形）的机械臂动力学，并将施加在表面上的力分解为法向力和切向力。首先，当机器人不受表面约束时，可以轻松确定动力学部分。在移除表面和相互作用力$f_1$和$f_2$后，机械臂动力学可以表示为
 \begin{equation}
-M\ddot{q} + F(q) = \tau
+\tau = M\ddot{q} + G + F(\dot{q})
 \end{equation}
 其中
 \[
-M = \begin{bmatrix} m_1 & 0 \\ 0 & m_2 \end{bmatrix}, \quad q = \begin{bmatrix} q_1 \\ q_2 \end{bmatrix}, \quad \tau = \begin{bmatrix} \tau_1 \\ \tau_2 \end{bmatrix}
+M = \begin{bmatrix} m_1 & 0 \\ 0 & m_1 + m_2 \end{bmatrix}, \quad q = \begin{bmatrix} q_1 \\ q_2 \end{bmatrix}, \quad \tau = \begin{bmatrix} \tau_1 \\ \tau_2 \end{bmatrix}, \quad G = \begin{bmatrix} (m_1+m_2)g \\ 0 \end{bmatrix}
 \]
-$F(q)$是$2 \times 1$向量$\begin{bmatrix} \dot{q}_1 \\ \dot{q}_2 \end{bmatrix}$，它模拟了如第2章所讨论的摩擦。
+$F(\dot{q})$是$2 \times 1$向量$\begin{bmatrix} F_1(\dot{q}_1) \\ F_2(\dot{q}_2) \end{bmatrix}$，它模拟了如第2章所讨论的摩擦。
 
 为了考虑相互作用力，让$x$为由下式定义的$2 \times 1$任务空间向量
 \begin{equation}
@@ -285,44 +285,39 @@ M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + F(\dot{q}) + J^T(q)K_e(x - x_e) = J^T(q)
 
 为了分析式(\ref{eq:9.2.19})给出的系统的稳定性，我们利用类李雅普诺夫函数
 \begin{equation}\label{eq:9.2.20}
-V = \frac{1}{2}\dot{q}^T M(q)\dot{q} + \frac{1}{2}(x_d - x)^T K_p(x_d - x) + \frac{1}{2}(x_e - x)^T K_e(x_e - x)
+V = \frac{1}{2}\dot{q}^T M(q)\dot{q} + \frac{1}{2}\tilde{x}^T K_p \tilde{x} + \frac{1}{2}(x - x_e)^T K_e(x - x_e)
 \end{equation}
-将式(\ref{eq:9.2.20})关于时间微分并利用式(\ref{eq:9.2.10})得到
+其中$\tilde{x} = x_d - x$是任务空间跟踪误差。将式(\ref{eq:9.2.20})关于时间微分并利用式(\ref{eq:9.2.10})得到
 \begin{equation}\label{eq:9.2.21}
-\dot{V} = \dot{q}^T M(q)\ddot{q} + \frac{1}{2}\dot{q}^T \dot{M}(q)\dot{q} - \dot{x}^T K_p(x_d - x) + \dot{x}^T K_e(x_e - x)
+\dot{V} = \dot{q}^T M(q)\ddot{q} + \frac{1}{2}\dot{q}^T \dot{M}(q)\dot{q} - \dot{x}^T K_p \tilde{x} + \dot{x}^T K_e(x - x_e)
 \end{equation}
-注意，在式(\ref{eq:9.2.21})中，我们使用了$x_e$和$x_d$是常数的事实，并且标量函数或对角矩阵的转置等于该函数或矩阵。将式(\ref{eq:9.2.19})代入式(\ref{eq:9.2.21})并利用式(\ref{eq:9.2.10})得到
+注意，在式(\ref{eq:9.2.21})中，我们使用了$x_e$和$x_d$是常数的事实，并且标量函数或对角矩阵的转置等于该函数或矩阵。将式(\ref{eq:9.2.19})代入式(\ref{eq:9.2.21})并利用式(\ref{eq:9.2.10})以及斜对称性质（见第2章）得到
 \begin{equation}\label{eq:9.2.22}
 \dot{V} = -\dot{q}^T F(\dot{q}) - \dot{q}^T J^T(q)K_v J(q)\dot{q}
 \end{equation}
-
-将斜对称性质（见第2章）应用于式(\ref{eq:9.2.22})得到
-\begin{equation}\label{eq:9.2.23}
-\dot{V} = -\dot{q}^T F(\dot{q}) - \dot{q}^T J^T(q)K_v J(q)\dot{q}
-\end{equation}
 它是非正的。由于矩阵$J(q)$以及因此$J^T(q)K_v J(q)$是非奇异的，$\dot{V}$只能在$\dot{q} = 0$且因此$\ddot{q} = 0$的轨迹上保持为零（见第1章的拉萨尔定理）。将$\dot{q} = 0$和$\ddot{q} = 0$代入式(\ref{eq:9.2.19})并利用式(\ref{eq:9.2.10})得到
-\begin{equation}\label{eq:9.2.24}
-J^T(q)K_e(x - x_e) = J^T(q)K_p(x_d - x)
+\begin{equation}\label{eq:9.2.23}
+J^T(q)K_e(x - x_e) = J^T(q)K_p \tilde{x}
 \end{equation}
 或等价地
-\begin{equation}\label{eq:9.2.25}
+\begin{equation}\label{eq:9.2.24}
 x_{iss} = \frac{K_{pi}x_{di} + K_{ei}x_{ei}}{K_{pi} + K_{ei}}
 \end{equation}
 其中下标$i$用于表示向量$x$、$x_d$、$x_e$的第$i$个分量以及矩阵$K_p$和$K_e$的第$i$个对角元素。
 
-上面的稳定性分析可以解释为意味着当任务空间坐标由式(\ref{eq:9.2.25})给出时，机器人机械臂将停止移动。也就是说，末端执行器的最终位置或稳态位置由式(\ref{eq:9.2.25})给出，这在单自由度情况下等价于由式(\ref{eq:9.2.6})给出。为了获得施加在环境上的稳态力的第$i$个分量，我们将式(\ref{eq:9.2.25})代入式(\ref{eq:9.2.17})的第$i$个分量，得到
-\begin{equation}\label{eq:9.2.26}
+上面的稳定性分析可以解释为意味着当任务空间坐标由式(\ref{eq:9.2.24})给出时，机器人机械臂将停止移动。也就是说，末端执行器的最终位置或稳态位置由式(\ref{eq:9.2.24})给出，这在单自由度情况下等价于由式(\ref{eq:9.2.6})给出。为了获得施加在环境上的稳态力的第$i$个分量，我们将式(\ref{eq:9.2.24})代入式(\ref{eq:9.2.17})的第$i$个分量，得到
+\begin{equation}\label{eq:9.2.25}
 f_{iss} = \frac{K_{pi}K_{ei}}{K_{pi} + K_{ei}}(x_{di} - x_{ei})
 \end{equation}
 
-因此末端执行器施加在环境上的稳态力由式(\ref{eq:9.2.26})给出，这在单自由度情况下等价于由式(\ref{eq:9.2.7})给出。如在单自由度情况下一样，我们假设对于要力控制的任务空间方向，$K_{ei}$远大于$K_{pi}$。也就是说，式(\ref{eq:9.2.26})中的稳态力可以近似为
-\begin{equation}\label{eq:9.2.27}
+因此末端执行器施加在环境上的稳态力由式(\ref{eq:9.2.25})给出，这在单自由度情况下等价于由式(\ref{eq:9.2.7})给出。如在单自由度情况下一样，我们假设对于要力控制的任务空间方向，$K_{ei}$远大于$K_{pi}$。也就是说，式(\ref{eq:9.2.25})中的稳态力可以近似为
+\begin{equation}\label{eq:9.2.26}
 f_{iss} \approx K_{pi}(x_{di} - x_{ei})
 \end{equation}
 因此，$K_{pi}$可以被解释为在这些任务空间方向上指定机械臂的刚度。
 
-如果机械臂在任务空间方向上不受约束，则相应的刚度常数$K_{ei}$等于零。将$K_{ei} = 0$代入式(\ref{eq:9.2.25})得到
-\begin{equation}\label{eq:9.2.28}
+如果机械臂在任务空间方向上不受约束，则相应的刚度常数$K_{ei}$等于零。将$K_{ei} = 0$代入式(\ref{eq:9.2.24})得到
+\begin{equation}\label{eq:9.2.27}
 x_{iss} = x_{di}
 \end{equation}
 这意味着对于不受约束的任务空间方向，我们获得了设定点控制；因此，在稳态下达到期望的位置设定点。刚度控制器以及相应的稳定性结果都在表9.2.1中总结。
@@ -343,15 +338,11 @@ v = \frac{1}{\sqrt{2}}(q_1 + q_2) = 0
 \tau = J^T(-K_v\dot{x} + K_p\tilde{x}) + G
 \end{equation}
 其中$\tau$、$J$、$G$和$x$如示例9.2.1所定义，$u_d$定义为期望法向位置，增益矩阵$K_v$和$K_p$取为$K_v = k_v I$和$K_p = k_p I$。对于这个示例，我们选择$k_v = k_p = 10$，这将保证$k_p \ll k_e$，如刚度控制公式所要求的那样。为了满足控制目标$f_{d1} = 2$ N，我们利用式(\ref{eq:9.2.27})来确定期望法向位置。具体来说，将$f_{d1}$、$k_e$和$u_e$的值代入
-\begin{equation}
-f_{d1} = k_p(u_d - u_e)
-\end{equation}
-得到
-\[
-2 = 10(u_d - \frac{1}{\sqrt{2}})
-\]
-\[
-u_d = 0.3414\]  
+\begin{align}
+f_{d1} &= k_p(u_d - u_e) \\
+2 &= 10\left(u_d - \frac{1}{\sqrt{2}}\right) \\
+u_d &= 0.3414
+\end{align}
 
 图9.2.7所示的机械臂系统（图9.2.5）的刚度控制器(3)的仿真结果表明，期望的切向位置和法向力在约4秒内达到。
 
@@ -382,26 +373,26 @@ J = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
 
 为了为机械臂系统设计位置/力控制器，我们必须首先确定式(\ref{eq:9.3.1})给出的任务空间公式的动力学方程。使用这个任务空间公式并忽略关节摩擦，可以证明机械臂动力学为
 \begin{equation}\label{eq:9.3.2}
-M\ddot{q} + G + f = \tau
+\tau = M\ddot{q} + G + f
 \end{equation}
 其中$\tau$、$M$、$G$和$f$如示例9.2.1所定义。式(\ref{eq:9.3.2})表示的矩阵形式中的两个动力学方程是
 \begin{equation}\label{eq:9.3.3}
-m_1\ddot{q}_1 + m_1g + f_1 = \tau_1
+\tau_1 = m_1\ddot{q}_1 + m_1g + f_1
 \end{equation}
 和
 \begin{equation}\label{eq:9.3.4}
-m_2\ddot{q}_2 + f_2 = \tau_2
+\tau_2 = (m_1 + m_2)\ddot{q}_2 + (m_1 + m_2)g + f_2
 \end{equation}
 
 在制定混合位置/力控制器时，我们为式(\ref{eq:9.3.3})和式(\ref{eq:9.3.4})给出的动力学设计了单独的控制器。如图9.3.1所示，沿任务空间方向$q_2$的位置应该受位置控制；因此，我们应该使用式(\ref{eq:9.3.4})来设计位置控制器。[这很明显，因为式(\ref{eq:9.3.3})给出的动力学不包含任务空间变量$q_2$。]
 
 因为我们正在设计一个位置控制器来跟踪期望轨迹，我们将定义``切向空间''跟踪误差为
 \begin{equation}\label{eq:9.3.5}
-e = q_{d2} - q_2
+\tilde{x} = q_{d2} - q_2
 \end{equation}
 其中$q_{d2}$表示沿表面或切向表面的期望位置轨迹。位置控制器将是计算力矩控制器（见第3章）
 \begin{equation}\label{eq:9.3.6}
-\tau_2 = m_2(a_M + k_{Tv}\dot{e} + k_{Tp}e) + f_2
+\tau_2 = (m_1 + m_2)(a_M + k_{Tv}\dot{\tilde{x}} + k_{Tp}\tilde{x}) + (m_1 + m_2)g + f_2
 \end{equation}
 其中
 \begin{equation}\label{eq:9.3.7}
@@ -409,12 +400,12 @@ a_M = \ddot{q}_{d2}
 \end{equation}
 $k_{Tv}$和$k_{Tp}$是正控制增益。将式(\ref{eq:9.3.6})代入式(\ref{eq:9.3.4})得到位置跟踪误差系统
 \begin{equation}\label{eq:9.3.8}
-\ddot{e} + k_{Tv}\dot{e} + k_{Tp}e = 0
+\ddot{\tilde{x}} + k_{Tv}\dot{\tilde{x}} + k_{Tp}\tilde{x} = 0
 \end{equation}
 
 利用$k_{Tv}$和$k_{Tp}$是正数的事实，我们可以对式(\ref{eq:9.3.8})应用标准线性控制结果，得到
 \[
-\lim_{t \to \infty} e = 0
+\lim_{t \to \infty} \tilde{x} = 0
 \]
 因此，式(\ref{eq:9.3.6})给出的控制器保证了渐近位置跟踪。注意，位置控制器需要测量关节位置、关节速度和表面摩擦力；因此，从实现的角度来看，位置控制器中需要力测量。
 
@@ -433,29 +424,31 @@ f_1 = k_e(q_1 - q_e)
 
 我们现在可以使用式(\ref{eq:9.3.11})给出的力动力学方程来设计一个力控制器来跟踪期望的力轨迹。首先，定义力跟踪误差为
 \begin{equation}\label{eq:9.3.12}
-e_f = f_{d1} - f_1
+\tilde{f} = f_{d1} - f_1
 \end{equation}
 其中$f_{d1}$表示要施加在环境上的期望法向力。与位置控制器类似，力控制器将是计算力矩控制器
 \begin{equation}\label{eq:9.3.13}
-\tau_1 = m_1g + \frac{m_1}{k_e}(a_N + k_{Nv}\dot{e}_f + k_{Np}e_f) + f_1
+\tau_1 = m_1g + \frac{m_1}{k_e}a_N + f_1
 \end{equation}
 其中
 \begin{equation}\label{eq:9.3.14}
-a_N = \ddot{f}_{d1}
+a_N = \ddot{f}_{d1} + k_{Nv}\dot{\tilde{f}} + k_{Np}\tilde{f}
 \end{equation}
 $k_{Nv}$和$k_{Np}$是正控制增益。将式(\ref{eq:9.3.13})代入式(\ref{eq:9.3.11})得到力跟踪误差系统
 \begin{equation}\label{eq:9.3.15}
-\ddot{e}_f + k_{Nv}\dot{e}_f + k_{Np}e_f = 0
+\ddot{\tilde{f}} + k_{Nv}\dot{\tilde{f}} + k_{Np}\tilde{f} = 0
 \end{equation}
 利用式(\ref{eq:9.3.15})中$k_{Nv}$和$k_{Np}$是正数的事实，得到
 \[
-\lim_{t \to \infty} e_f = 0
+\lim_{t \to \infty} \tilde{f} = 0
 \]
 因此，式(\ref{eq:9.3.13})给出的控制器保证了渐近力跟踪。重要的是要认识到力控制器需要测量法向力及其导数。因为力导数通常不用于测量，所以由式(\ref{eq:9.3.9})制造，即
 \begin{equation}\label{eq:9.3.16}
 \dot{f}_1 = k_e\dot{q}_1
 \end{equation}
 因此，环境刚度和法向任务空间速度用于模拟力的导数。
+
+式(\ref{eq:9.3.6})给出的位置控制器和式(\ref{eq:9.3.13})给出的力控制器构成了完整的混合位置/力控制器。这将在下一小节中推广到$N$连杆机械臂。
 
 %-------------------------------------------
 \subsection{$N$连杆机械臂的混合位置/力控制}
@@ -476,9 +469,9 @@ x = h(q)
 \ddot{q} = J^{-1}(q)(\ddot{x} - \dot{J}(q)\dot{q})
 \end{equation}
 
-将式(\ref{eq:9.3.19})代入式(\ref{eq:9.2.14})得到
+将式(\ref{eq:9.3.19})代入式(\ref{eq:9.2.14})并重新排列，我们可以证明机器人动力学可以写成形式
 \begin{equation}\label{eq:9.3.20}
-\ddot{x} = J(q)M^{-1}(q)(\tau - V_m(q, \dot{q})\dot{q} - G(q) - F(\dot{q})) + \dot{J}(q)\dot{q} - J(q)M^{-1}(q)J^T(q)f
+\tau = M(q)J^{-1}(q)(\ddot{x} - \dot{J}(q)\dot{q}) + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) + J^T(q)f
 \end{equation}
 
 式(\ref{eq:9.3.20})给出的动力学对应的反馈线性化控制由下式给出
@@ -535,20 +528,20 @@ f_{Nj} = k_{ej}(x_{Nj} - x_{ej})
 
 为了反馈控制的目的，我们定义力跟踪误差为
 \begin{equation}\label{eq:9.3.31}
-e_{fj} = f_{Ndj} - f_{Nj}
+\tilde{f}_{Nj} = f_{Ndj} - f_{Nj}
 \end{equation}
 其中$f_{Ndj}$表示要垂直施加在环境上的期望力的第$j$个分量。如上一节所示，相应的线性控制器由下式给出
 \begin{equation}\label{eq:9.3.32}
-a_{Nj} = \frac{1}{k_{ej}}(\ddot{f}_{Ndj} + k_{Nvj}\dot{e}_{fj} + k_{Npj}e_{fj})
+a_{Nj} = \frac{1}{k_{ej}}(\ddot{f}_{Ndj} + k_{Nvj}\dot{\tilde{f}}_{Nj} + k_{Npj}\tilde{f}_{Nj})
 \end{equation}
 $k_{Nvj}$和$k_{Npj}$是第$j$个正控制增益。将式(\ref{eq:9.3.32})代入式(\ref{eq:9.3.30})得到力跟踪误差系统
 \begin{equation}\label{eq:9.3.33}
-\ddot{e}_{fj} + k_{Nvj}\dot{e}_{fj} + k_{Npj}e_{fj} = 0
+\ddot{\tilde{f}}_{Nj} + k_{Nvj}\dot{\tilde{f}}_{Nj} + k_{Npj}\tilde{f}_{Nj} = 0
 \end{equation}
 
 利用式(\ref{eq:9.3.33})中$k_{Nvj}$和$k_{Npj}$是正数的事实，得到
 \[
-\lim_{t \to \infty} e_{fj} = 0
+\lim_{t \to \infty} \tilde{f}_{Nj} = 0
 \]
 因此，保证了渐近力跟踪。
 
@@ -852,45 +845,45 @@ M^* = \Sigma^T M \Sigma, \quad N^* = \Sigma^T N
 
 在介绍降维状态位置/力控制器之前，我们给出一些关于位置/力跟踪问题的定义。首先，约束位置跟踪误差定义为
 \begin{equation}\label{eq:9.5.14}
-e = x_d - x
+\tilde{x} = x_d - x
 \end{equation}
 我们假设期望的约束空间轨迹及其前两个导数，分别用$x_d$、$\dot{x}_d$和$\ddot{x}_d$表示，都是有界函数。我们还假设期望的力乘数轨迹$\lambda_d$是一个已知的界函数，由此定义了相应的力乘数跟踪误差变量
 \begin{equation}\label{eq:9.5.15}
-e_\lambda = \lambda_d - \lambda
+\tilde{\lambda} = \lambda_d - \lambda
 \end{equation}
 
 降维状态位置/力控制器是一个反馈线性化控制器；因此，需要精确了解机器人动力学。降维状态控制器[McClamroch and Wang 1988]是
 \begin{equation}\label{eq:9.5.16}
-\tau = M\Sigma(\ddot{x}_d + K_v\dot{e} + K_p e) + N + A^T(\lambda_d + K_f e_\lambda)
+\tau = M\Sigma(\ddot{x}_d + K_v\dot{\tilde{x}} + K_p \tilde{x}) + N + A^T(\lambda_d + K_f \tilde{\lambda})
 \end{equation}
 其中$K_v$和$K_p$是对角、正定的$(n - p) \times (n - p)$矩阵，$K_f$是对角、正定的$p \times p$矩阵。
 
 为了确定位置误差和力跟踪误差的稳定性类型，我们将式(\ref{eq:9.5.16})代入式(\ref{eq:9.5.12})得到
 \begin{equation}\label{eq:9.5.17}
-M\Sigma(\ddot{e} + K_v\dot{e} + K_p e) + A^T(e_\lambda + K_f e_\lambda) = 0
+M\Sigma(\ddot{\tilde{x}} + K_v\dot{\tilde{x}} + K_p \tilde{x}) + A^T(\tilde{\lambda} + K_f \tilde{\lambda}) = 0
 \end{equation}
 
 用$\Sigma^T$前乘式(\ref{eq:9.5.17})得到
 \begin{equation}\label{eq:9.5.18}
-M^*(\ddot{e} + K_v\dot{e} + K_p e) = 0
+M^*(\ddot{\tilde{x}} + K_v\dot{\tilde{x}} + K_p \tilde{x}) = 0
 \end{equation}
 作为式(\ref{eq:9.5.8})的结果。因为$\Sigma^T(x)$在约束空间运动中包含$n - p$个独立列，$M(x)$是一个正定对称矩阵，$M^*$是一个正定对称矩阵。因此，我们可以用$M^{*-1}$前乘式(\ref{eq:9.5.18})得到
 \begin{equation}\label{eq:9.5.19}
-\ddot{e} + K_v\dot{e} + K_p e = 0
+\ddot{\tilde{x}} + K_v\dot{\tilde{x}} + K_p \tilde{x} = 0
 \end{equation}
 
 因为$K_v$和$K_p$是对角正定矩阵，可以对式(\ref{eq:9.5.19})应用标准线性控制论证，得到
 \begin{equation}\label{eq:9.5.20}
-\lim_{t \to \infty} e = 0
+\lim_{t \to \infty} \tilde{x} = 0
 \end{equation}
 
 为了获得力跟踪误差的稳定性结果，我们将式(\ref{eq:9.5.20})代入式(\ref{eq:9.5.17})得到
 \begin{equation}\label{eq:9.5.21}
-A^T(I + K_f)e_\lambda = 0
+A^T(I + K_f)\tilde{\lambda} = 0
 \end{equation}
 其中式(\ref{eq:9.5.21})中的$I$是$p \times p$单位矩阵。因为$A^T(x)$的$p$列被假定为线性独立的，复合矩阵$(I + K_f)$是一个正定对角矩阵，我们可以将式(\ref{eq:9.5.21})写成
 \begin{equation}\label{eq:9.5.22}
-\lim_{t \to \infty} e_\lambda = 0
+\lim_{t \to \infty} \tilde{\lambda} = 0
 \end{equation}
 
 如式(\ref{eq:9.5.20})和式(\ref{eq:9.5.22})所阐述的，式(\ref{eq:9.5.16})给出的降维状态位置/力控制器对约束位置误差和力跟踪误差都产生了渐近稳定性结果。降维状态位置/力控制策略在表9.5.1中总结。

@@ -552,21 +552,13 @@ void main(int argc, char *argv[])
 
 这是如何创建自定义伺服控制的一个很好的示例。它还演示了操控器模型函数和数学库的使用。虚拟墙壁是操控器工作空间中的虚拟平面，一旦操控器移动到墙壁中就会产生反作用力。给定具有平面方程的平面（使用齐次坐标）：
 
-\begin{equation}
-n^T \cdot x + d_0 = 0
-\end{equation}
+\begin{align}
+n^T \cdot x + d_0 &= 0 \\
+d &= n^T \cdot x_{EndEffector} + d_0 \\
+\tau &= J^T \cdot (-K_d \cdot \dot{x} - K_p \cdot n \cdot d)
+\end{align}
 
-其中$n$是平面的法向量，$d_0$是距原点的距离。如果$x_{EndEffector}$是当前末端执行器位置，则
-
-\begin{equation}
-d = n^T \cdot x_{EndEffector} + d_0
-\end{equation}
-
-使用控制律
-
-\begin{equation}
-\tau = J^T \cdot (-K_d \cdot \dot{x} - K_p \cdot n \cdot d)
-\end{equation}
+其中，$n$是平面的法向量，$d_0$是距原点的距离；$x_{EndEffector}$是当前末端执行器位置；式(10.3)为控制律。
 
 创建了一个阻止机器人移动到墙壁中的关节力矩。
 

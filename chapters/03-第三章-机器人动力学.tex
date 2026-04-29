@@ -160,33 +160,30 @@ q = \begin{bmatrix} \theta \\ r \end{bmatrix}, \quad \dot{q} = \begin{bmatrix} \
 
 \textbf{a. 动能和势能}
 
-由于角运动$\dot{\theta}$和线运动$\dot{r}$产生的总动能为
-\begin{equation}
-K = \frac{1}{2}m_1r^2\dot{\theta}^2 + \frac{1}{2}m_2(\dot{r}^2 + r^2\dot{\theta}^2)
-\end{equation}
-势能为
-\begin{equation}
-P = m_1gr\sin\theta + m_2gr\sin\theta
-\end{equation}
+由于角运动$\dot{\theta}$和线运动$\dot{r}$产生的总动能和势能为
+\begin{align}
+K &= \frac{1}{2}mr^2\dot{\theta}^2 + \frac{1}{2}m\dot{r}^2 \\
+P &= mgr\sin\theta
+\end{align}
 
 \textbf{b. 拉格朗日方程}
 
 拉格朗日量为
 \begin{equation}
-L = K - P = \frac{1}{2}m_1r^2\dot{\theta}^2 + \frac{1}{2}m_2(\dot{r}^2 + r^2\dot{\theta}^2) - m_1gr\sin\theta - m_2gr\sin\theta
+L = K - P = \frac{1}{2}mr^2\dot{\theta}^2 + \frac{1}{2}m\dot{r}^2 - mgr\sin\theta
 \end{equation}
 
 现在我们得到
 \begin{align}
-\frac{\partial L}{\partial \dot{q}} &= \begin{bmatrix} (m_1+m_2)r^2\dot{\theta} \\ m_2\dot{r} \end{bmatrix} \\
-\frac{d}{dt}\frac{\partial L}{\partial \dot{q}} &= \begin{bmatrix} (m_1+m_2)r^2\ddot{\theta} + 2(m_1+m_2)r\dot{r}\dot{\theta} \\ m_2\ddot{r} \end{bmatrix} \\
-\frac{\partial L}{\partial q} &= \begin{bmatrix} -(m_1+m_2)gr\cos\theta \\ (m_1+m_2)r\dot{\theta}^2 - (m_1+m_2)g\sin\theta \end{bmatrix}
+\frac{\partial L}{\partial \dot{q}} &= \begin{bmatrix} mr^2\dot{\theta} \\ m\dot{r} \end{bmatrix} \\
+\frac{d}{dt}\frac{\partial L}{\partial \dot{q}} &= \begin{bmatrix} mr^2\ddot{\theta} + 2mr\dot{r}\dot{\theta} \\ m\ddot{r} \end{bmatrix} \\
+\frac{\partial L}{\partial q} &= \begin{bmatrix} -mgr\cos\theta \\ mr\dot{\theta}^2 - mg\sin\theta \end{bmatrix}
 \end{align}
 
 因此，(3.2.14)表明机械臂动力学方程为
 \begin{align}
-(m_1+m_2)r^2\ddot{\theta} + 2(m_1+m_2)r\dot{r}\dot{\theta} + (m_1+m_2)gr\cos\theta &= n \\
-m_2\ddot{r} - (m_1+m_2)r\dot{\theta}^2 + (m_1+m_2)g\sin\theta &= f
+mr^2\ddot{\theta} + 2mr\dot{r}\dot{\theta} + mgr\cos\theta &= n \\
+m\ddot{r} - mr\dot{\theta}^2 + mg\sin\theta &= f
 \end{align}
 
 这是一组耦合的非线性微分方程，描述了给定控制输入扭矩$n(t)$和力$f(t)$时的运动$q(t) = [\theta(t) \ r(t)]^T$。我们将在第四章展示如何通过计算机仿真确定给定控制输入$n(t)$和$f(t)$时的$q(t)$。
@@ -197,7 +194,7 @@ m_2\ddot{r} - (m_1+m_2)r\dot{\theta}^2 + (m_1+m_2)g\sin\theta &= f
 
 通过使用向量，机械臂方程可以写成方便的形式。事实上，注意
 \begin{equation}
-\begin{bmatrix} (m_1+m_2)r^2 & 0 \\ 0 & m_2 \end{bmatrix} \begin{bmatrix} \ddot{\theta} \\ \ddot{r} \end{bmatrix} + \begin{bmatrix} 2(m_1+m_2)r\dot{r}\dot{\theta} \\ -(m_1+m_2)r\dot{\theta}^2 \end{bmatrix} + \begin{bmatrix} (m_1+m_2)gr\cos\theta \\ (m_1+m_2)g\sin\theta \end{bmatrix} = \begin{bmatrix} n \\ f \end{bmatrix}
+\begin{bmatrix} mr^2 & 0 \\ 0 & m \end{bmatrix} \begin{bmatrix} \ddot{\theta} \\ \ddot{r} \end{bmatrix} + \begin{bmatrix} 2mr\dot{r}\dot{\theta} \\ -mr\dot{\theta}^2 \end{bmatrix} + \begin{bmatrix} mgr\cos\theta \\ mg\sin\theta \end{bmatrix} = \begin{bmatrix} n \\ f \end{bmatrix}
 \end{equation}
 
 我们将此向量方程符号化为
@@ -240,15 +237,11 @@ y_2 &= a_1\sin\theta_1 + a_2\sin(\theta_1+\theta_2) \\
 v_2^2 = \dot{x}_2^2 + \dot{y}_2^2 = a_1^2\dot{\theta}_1^2 + a_2^2(\dot{\theta}_1+\dot{\theta}_2)^2 + 2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\dot{\theta}_1\cos\theta_2
 \end{equation}
 
-因此，连杆2的动能为
-\begin{equation}
-K_2 = \frac{1}{2}m_2v_2^2 = \frac{1}{2}m_2a_1^2\dot{\theta}_1^2 + \frac{1}{2}m_2a_2^2(\dot{\theta}_1+\dot{\theta}_2)^2 + m_2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\dot{\theta}_1\cos\theta_2
-\end{equation}
-
-连杆2的势能为
-\begin{equation}
-P_2 = m_2gy_2 = m_2g[a_1\sin\theta_1 + a_2\sin(\theta_1+\theta_2)]
-\end{equation}
+因此，连杆2的动能和势能为
+\begin{align}
+K_2 &= \frac{1}{2}m_2v_2^2 = \frac{1}{2}m_2a_1^2\dot{\theta}_1^2 + \frac{1}{2}m_2a_2^2(\dot{\theta}_1+\dot{\theta}_2)^2 + m_2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\dot{\theta}_1\cos\theta_2 \\
+P_2 &= m_2gy_2 = m_2g[a_1\sin\theta_1 + a_2\sin(\theta_1+\theta_2)]
+\end{align}
 
 \textbf{b. 拉格朗日方程}
 
@@ -303,7 +296,7 @@ q = [\theta \ h \ r]^T
 
 证明机械臂动力学由下式给出
 \begin{equation}
-\begin{bmatrix} J+m_1r^2+m_2r^2 & 0 & 0 \\ 0 & m_1+m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix} \begin{bmatrix} \ddot{\theta} \\ \ddot{h} \\ \ddot{r} \end{bmatrix} + \begin{bmatrix} 2(m_1+m_2)r\dot{r}\dot{\theta} \\ 0 \\ -(m_1+m_2)r\dot{\theta}^2 \end{bmatrix} + \begin{bmatrix} 0 \\ (m_1+m_2)g \\ 0 \end{bmatrix} = \begin{bmatrix} n \\ f_h \\ f_r \end{bmatrix}
+\begin{bmatrix} J+m_2r^2 & 0 & 0 \\ 0 & m_1+m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix} \begin{bmatrix} \ddot{\theta} \\ \ddot{h} \\ \ddot{r} \end{bmatrix} + \begin{bmatrix} 2(m_1+m_2)r\dot{r}\dot{\theta} \\ 0 \\ -(m_1+m_2)r\dot{\theta}^2 \end{bmatrix} + \begin{bmatrix} 0 \\ (m_1+m_2)g \\ 0 \end{bmatrix} = \begin{bmatrix} n \\ f_h \\ f_r \end{bmatrix}
 \end{equation}
 其中$J$是基座连杆的惯量，力向量为
 \begin{equation}
@@ -388,16 +381,12 @@ M_i = \begin{bmatrix} \frac{1}{2}(-I_{xx}+I_{yy}+I_{zz}) & I_{xy} & I_{xz} & mx_
 
 回到我们的推导，机械臂总动能可以写为
 \begin{equation}
-K = \sum_{i=1}^{n}K_i = \frac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=1}^{i}\text{trace}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)\dot{q}_j\dot{q}_k
+K = \sum_{i=1}^{n}K_i = \frac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{n}\sum_{k=1}^{n}\text{trace}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)\dot{q}_j\dot{q}_k
 \end{equation}
 
 由于矩阵和的迹是各个迹的和，我们可以交换求和和迹算子得到
 \begin{equation}
 K = \frac{1}{2}\sum_{j=1}^{n}\sum_{k=1}^{n}m_{jk}\dot{q}_j\dot{q}_k = \frac{1}{2}\dot{q}^T M(q) \dot{q}
-\end{equation}
-或
-\begin{equation}
-K = \frac{1}{2}\dot{q}^T M(q) \dot{q}
 \end{equation}
 其中$n \times n$机械臂惯量矩阵$M(q)$的元素定义为
 \begin{equation}
@@ -458,7 +447,7 @@ M(q)\ddot{q} + \dot{M}(q)\dot{q} - \frac{1}{2}\frac{\partial}{\partial q}(\dot{q
 
 定义科里奥利/向心向量
 \begin{equation}
-V(q,\dot{q}) = \dot{M}(q)\dot{q} - \frac{1}{2}\frac{\partial}{\partial q}(\dot{q}^T M(q)\dot{q})
+V(q,\dot{q}) = \dot{M}(q)\dot{q} - \frac{1}{2}(I_n \otimes \dot{q}^T)\frac{\partial M}{\partial q}\dot{q} = \left[\dot{M}(q) - \frac{1}{2}U(q)\right]\dot{q}
 \end{equation}
 和重力向量
 \begin{equation}
@@ -679,12 +668,12 @@ V_m(q,\dot{q}) = V_{m1}(q) + V_{v1}(q)(I_n \otimes \dot{q}) = V_{m2}(q) - V_{v2}
 
 因此
 \begin{equation}
-V(q,\dot{q}) = V_m(q)\dot{q} = V_{m1}(q,\dot{q})\dot{q} = V_{m2}(q,\dot{q})\dot{q}
+V(q,\dot{q}) = V_m(q,\dot{q})\dot{q} = V_{m1}(q,\dot{q})\dot{q} = V_{m2}(q,\dot{q})\dot{q}
 \end{equation}
 其中
 \begin{align}
-V_{m1}(q) &= \frac{1}{2}[\dot{M}(q) + U^T(q)] \\
-V_{m2}(q) &= \frac{1}{2}[\dot{M}(q) + U(q)]
+V_{m1}(q,\dot{q}) &= \frac{1}{2}[\dot{M}(q) + U^T(q)] \\
+V_{m2}(q,\dot{q}) &= \frac{1}{2}[\dot{M}(q) + U(q)]
 \end{align}
 注意，一般来说，$V_{m1} \neq V_{m2}$。
 
@@ -695,7 +684,7 @@ M(q)\ddot{q} + V_m(q)\dot{q} + G(q) = \tau
 
 在这一点上，我们可以证明一个恒等式，它在构建高级控制方案时非常有用。我们称之为斜对称性质；它表明$M(q)$的导数和科里奥利向量以非常特殊的方式相关。事实上，
 \begin{equation}
-\dot{M} - 2V_m = -(\dot{M} - 2V_m)^T
+\dot{M} - 2V_{m2} = -(\dot{M} - 2V_{m1})^T
 \end{equation}
 
 由于矩阵减去其转置总是斜对称的，这是一个重要的恒等式。如果使用$V_{m1}$代替$V_{m2}$，这也成立。
@@ -710,11 +699,11 @@ S(q,\dot{q}) \equiv \dot{M}(q) - 2V_m(q,\dot{q})
 \end{equation}
 是斜对称的，因此对所有$x \in R^n$，$x^T S x = 0$。确实，根据(3.3.13)和(3.3.27)，我们可以定义
 \begin{equation}
-V_m(q,\dot{q}) = \frac{1}{2}[\dot{M}(q) - U^T(q)]
+V_m(q,\dot{q}) = \frac{1}{2}[\dot{M}(q) + U^T(q)]
 \end{equation}
 因为那么斜对称矩阵只不过是
 \begin{equation}
-S = \dot{M} - 2V_m = U - U^T
+S = \dot{M} - 2V_m = -(U - U^T)
 \end{equation}
 
 这个$V_m$是在几个现代自适应和鲁棒控制算法中使用的标准定义，也是我们在本书其余部分要使用的定义。因此，我们将机械臂方程写为
@@ -880,7 +869,7 @@ $M(q)$的诱导1-范数是最大绝对列和。在确定这个范数的界限时
 ||M(q)||_1 = |(m_1+m_2)a_1^2 + m_2a_2^2 + 2m_2a_1a_2\cos\theta_2| + |m_2a_2^2 + m_2a_1a_2\cos\theta_2|
 \end{equation}
 
-这被下式上界限制
+这被上界
 \begin{equation}
 m_2 = (m_1+m_2)a_1^2 + 2m_2a_2^2 + 3m_2a_1a_2
 \end{equation}
@@ -888,6 +877,7 @@ m_2 = (m_1+m_2)a_1^2 + 2m_2a_2^2 + 3m_2a_1a_2
 \begin{equation}
 m_1 = (m_1+m_2)a_1^2 + m_2a_2^2 - 2m_2a_1a_2
 \end{equation}
+限制。
 
 由于机械臂是旋转的，且$\cos\theta_2$上下有界，$M_2$和$M_1$是常数。重要的是要注意，如果机械臂是旋转/平移（RP）的，因此关节变量为$(\theta_1, a_2)$，界限是$q$的函数。
 
@@ -923,14 +913,14 @@ S = \begin{bmatrix} 0 & -m_2a_1a_2(2\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 \
 
 对称矩阵$V_1(q)$、$V_2(q)$：
 \begin{align}
-V_1(q) &= \begin{bmatrix} 0 & -m_2a_1a_2\sin\theta_2 \\ -m_2a_1a_2\sin\theta_2 & -m_2a_1a_2\sin\theta_2 \end{bmatrix} \\
-V_2(q) &= \begin{bmatrix} m_2a_1a_2\sin\theta_2 & 0 \\ 0 & 0 \end{bmatrix}
+V_1(q) &= \begin{bmatrix} -m_2a_1a_2\sin\theta_2 & -m_2a_1a_2\sin\theta_2 \\ -m_2a_1a_2\sin\theta_2 & 0 \end{bmatrix} \\
+V_2(q) &= \begin{bmatrix} 0 & -m_2a_1a_2\sin\theta_2 \\ -m_2a_1a_2\sin\theta_2 & -m_2a_1a_2\sin\theta_2 \end{bmatrix}
 \end{align}
 
 位置/速度分解矩阵：
 \begin{align}
-V_p(q) &= \begin{bmatrix} 0 & -m_2a_1a_2(2\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 \\ m_2a_1a_2\dot{\theta}_1\sin\theta_2 & 0 \end{bmatrix} \\
-V_v(\dot{q}) &= \begin{bmatrix} -m_2a_1a_2\dot{\theta}_2\sin\theta_2 & -m_2a_1a_2\dot{\theta}_2\sin\theta_2 \\ 0 & 0 \end{bmatrix}
+V_p(q) &= \begin{bmatrix} -m_2a_1a_2\dot{\theta}_2\sin\theta_2 & -m_2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 \\ m_2a_1a_2\dot{\theta}_1\sin\theta_2 & 0 \end{bmatrix} \\
+V_v(\dot{q}) &= \begin{bmatrix} 0 & -m_2a_1a_2\dot{\theta}_1\sin\theta_2 \\ -m_2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 & 0 \end{bmatrix}
 \end{align}
 
 \textbf{d. 机器人函数参数矩阵$W$}
@@ -947,23 +937,26 @@ V_v(\dot{q}) &= \begin{bmatrix} -m_2a_1a_2\dot{\theta}_2\sin\theta_2 & -m_2a_1a_
 \end{equation}
 第二质量$m_2$包括负载的质量。这个和摩擦系数通常是未知的。因此，选择
 \begin{equation}
-\phi = \begin{bmatrix} m_1a_1^2 + m_2a_1^2 \\ m_2a_2^2 \\ m_2a_1a_2 \\ m_1a_1 + m_2a_1 \\ m_2a_2 \\ v_1 \\ v_2 \\ k_1 \\ k_2 \end{bmatrix}
+\phi = \begin{bmatrix} m_1 \\ m_2 \\ m_1a_1 + m_2a_1 \\ m_2a_2 \\ m_1a_1^2 + m_2a_1^2 \\ m_2a_2^2 \\ m_2a_1a_2 \\ v_1 \\ v_2 \\ k_1 \\ k_2 \end{bmatrix}
 \end{equation}
 
 那么已知机器人函数的矩阵$W(q,\dot{q},\ddot{q})$变为
 \begin{equation}
-W = \begin{bmatrix} w_{11} & w_{12} & w_{13} & w_{14} & w_{15} & \dot{\theta}_1 & \text{sgn}(\dot{\theta}_1) & 0 & 0 \\ 0 & w_{22} & w_{23} & 0 & w_{25} & 0 & 0 & \dot{\theta}_2 & \text{sgn}(\dot{\theta}_2) \end{bmatrix}
+W = \begin{bmatrix} w_{11} & w_{12} & w_{13} & w_{14} & w_{15} & w_{16} & w_{17} & \dot{\theta}_1 & \text{sgn}(\dot{\theta}_1) & 0 & 0 \\ 0 & w_{22} & 0 & w_{24} & 0 & w_{26} & w_{27} & 0 & 0 & \dot{\theta}_2 & \text{sgn}(\dot{\theta}_2) \end{bmatrix}
 \end{equation}
 其中
 \begin{align}
 w_{11} &= \ddot{\theta}_1 \\
 w_{12} &= \ddot{\theta}_1 + \ddot{\theta}_2 \\
-w_{13} &= (2\ddot{\theta}_1 + \ddot{\theta}_2)\cos\theta_2 - (2\dot{\theta}_1\dot{\theta}_2 + \dot{\theta}_2^2)\sin\theta_2 \\
-w_{14} &= g\cos\theta_1 \\
-w_{15} &= g\cos(\theta_1 + \theta_2) \\
+w_{13} &= g\cos\theta_1 \\
+w_{14} &= g\cos(\theta_1 + \theta_2) \\
+w_{15} &= a_1^2\ddot{\theta}_1 \\
+w_{16} &= a_2^2(\ddot{\theta}_1 + \ddot{\theta}_2) \\
+w_{17} &= (2\ddot{\theta}_1 + \ddot{\theta}_2)a_1a_2\cos\theta_2 - (2\dot{\theta}_1\dot{\theta}_2 + \dot{\theta}_2^2)a_1a_2\sin\theta_2 \\
 w_{22} &= \ddot{\theta}_1 + \ddot{\theta}_2 \\
-w_{23} &= \ddot{\theta}_1\cos\theta_2 + \dot{\theta}_1^2\sin\theta_2 \\
-w_{25} &= g\cos(\theta_1 + \theta_2)
+w_{24} &= g\cos(\theta_1 + \theta_2) \\
+w_{26} &= a_2^2(\ddot{\theta}_1 + \ddot{\theta}_2) \\
+w_{27} &= \ddot{\theta}_1 a_1a_2\cos\theta_2 + \dot{\theta}_1^2 a_1a_2\sin\theta_2
 \end{align}
 
 读者应该验证，有了这些定义，动力学可以表示为$\tau = W\phi$。矩阵$W$由测量的关节位置及其速度和加速度计算得出。
@@ -978,7 +971,7 @@ M(q)\ddot{q} + V_m(q,\dot{q})\dot{q} + G(q) = \tau
 \begin{equation}
 \dot{K} = \frac{1}{2}\dot{q}^T\dot{M}\dot{q} + \dot{q}^T M\ddot{q}
 \end{equation}
-因此(3.3.63)产生
+因此(3.3.62)产生
 \begin{equation}
 \dot{K} = \frac{1}{2}\dot{q}^T(\dot{M} - 2V_m)\dot{q} + \dot{q}^T(\tau - G)
 \end{equation}
@@ -996,7 +989,7 @@ K(t) - K(0) = \int_0^t \dot{q}^T(\tau - G) dt - \frac{1}{2}\int_0^t \dot{q}^T S 
 
 这个分析不包括摩擦项。无论$f(\dot{q})$的形式如何，一个合理的假设是摩擦是耗散的，因此$f_i(x)$仅位于第一和第三象限。这等价于
 \begin{equation}
-\dot{q}^T F(\dot{q}) \geq 0
+\dot{q}^T F(\dot{q}) \geq -\gamma^2
 \end{equation}
 
 在这一假设下，摩擦不会破坏机械臂的无源性。然后可以简单地修改(3.3.63)设计的控制器以包含摩擦[Slotine 1988]。摩擦的耗散性质允许人们将系统的带宽增加到经典极限之外。
@@ -1073,7 +1066,7 @@ H(q,p) = K(q,p) + P(q)
 \end{equation}
 可以表示为（见习题）
 \begin{equation}
-\dot{p} = -V_m(q,\dot{q})\dot{q} - G(q) + \tau
+\dot{p} = -V_m^T(q,\dot{q})\dot{q} - G(q) + \tau
 \end{equation}
 其中$G(q)$是重力向量，$\otimes$是克罗内克积（见第3.3节）。
 
@@ -1204,7 +1197,7 @@ x = \begin{bmatrix} y \\ \dot{y} \end{bmatrix}
 \tau = M J^{-1} (u - \dot{J}\dot{q} + \ddot{s}) + N + J^{-1} w
 \end{equation}
 
-正如我们将在第4章看到的，反馈线性化提供了一种强大的控制设计技术。事实上，如果我们选择$u(t)$使得(3.4.34)稳定（例如，一种可能性是PD反馈$u = -K_v \dot{y} - K_p y$），那么由(3.4.36)定义的控制输入扭矩$\tau(t)$使机器人臂以$y(t)$变为零的方式移动。
+正如我们将在第4章看到的，反馈线性化提供了一种强大的控制设计技术。事实上，如果我们选择$u(t)$使得(3.4.35)稳定（例如，一种可能性是PD反馈$u = -K_v \dot{y} - K_p y$），那么由(3.4.37)定义的控制输入扭矩$\tau(t)$使机器人臂以$y(t)$变为零的方式移动。
 
 在特殊情况$y(t) = q(t)$，那么$J = I$，(3.4.34)简化为线性位置/速度形式(3.4.22)。
 
@@ -1325,25 +1318,22 @@ $\phi$是机械臂参数向量。
 
 \textbf{例3.5-1：三连杆圆柱形机械臂的笛卡尔动力学}
 
-让我们展示如何将例3.2.3中找到的关节空间动力学转换为笛卡尔动力学。从例A.3-1，机械臂雅可比矩阵为
-\begin{equation}
-J = \begin{bmatrix} -r\sin\theta & 0 & \cos\theta \\ r\cos\theta & 0 & \sin\theta \\ 0 & 1 & 0 \end{bmatrix}
-\end{equation}
-因此其逆为
-\begin{equation}
-J^{-1} = \begin{bmatrix} -\frac{\sin\theta}{r} & \frac{\cos\theta}{r} & 0 \\ 0 & 0 & 1 \\ \cos\theta & \sin\theta & 0 \end{bmatrix}
-\end{equation}
+让我们展示如何将例3.2.3中找到的关节空间动力学转换为笛卡尔动力学。从例A.3-1，机械臂雅可比矩阵及其逆为
+\begin{align}
+J &= \begin{bmatrix} -r\sin\theta & 0 & \cos\theta \\ r\cos\theta & 0 & \sin\theta \\ 0 & 1 & 0 \end{bmatrix} \\
+J^{-1} &= \begin{bmatrix} -\frac{\sin\theta}{r} & \frac{\cos\theta}{r} & 0 \\ 0 & 0 & 1 \\ \cos\theta & \sin\theta & 0 \end{bmatrix}
+\end{align}
 
 从例3.2.3，机械臂惯量矩阵为
 \begin{equation}
-M = \begin{bmatrix} J + m_1r^2 + m_2r^2 & 0 & 0 \\ 0 & m_1 + m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix}
+M = \begin{bmatrix} J + m_2r^2 & 0 & 0 \\ 0 & m_1 + m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix}
 \end{equation}
 
 应用(3.5.11)得到（验证！）
 \begin{equation}
-M' = \begin{bmatrix} \frac{J+m_1r^2+m_2r^2}{r^2} & 0 & 0 \\ 0 & m_1+m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix}
+M' = \begin{bmatrix} \frac{J+m_2r^2}{r^2} & 0 & 0 \\ 0 & m_1+m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix}
 \end{equation}
-其中$J' = \frac{J}{r^2} + m_1 + m_2$。
+其中$J' = \frac{J}{r^2} + m_2$。
 
 以类似的方式，可以计算$N'$。
 
@@ -1488,37 +1478,35 @@ L\frac{di}{dt} + Ri + K_b\omega_m = u
 其中$i(t)$、$u(t)$分别是电枢电流和电压。反电动势为$e_b = K_b\omega_m$。
 
 柔性轴施加的相互作用力由下式给出$f = b(\omega_m - \omega_L) + k(\theta_m - \theta_L)$，其中轴阻尼和弹簧常数分别表示为$b$和$k$。因此运动方程可以写为
-\begin{equation}
-J_m\dot{\omega}_m + b_m\omega_m + b(\omega_m - \omega_L) + k(\theta_m - \theta_L) = K_T i
-\end{equation}
-\begin{equation}
-J_L\dot{\omega}_L - b(\omega_m - \omega_L) - k(\theta_m - \theta_L) = 0
-\end{equation}
+\begin{align}
+J_m\dot{\omega}_m + b_m\omega_m + b(\omega_m - \omega_L) + k(\theta_m - \theta_L) &= K_T i \\
+J_L\dot{\omega}_L - b(\omega_m - \omega_L) - k(\theta_m - \theta_L) &= 0
+\end{align}
 其中下标$m$和$L$分别指电机参数和负载参数。假设负载惯量$J_L$是常数。其余符号的定义可以从前面的文本中推断。
 
 为了将这些方程放入状态空间形式，将状态定义为
 \begin{equation}
-x = \begin{bmatrix} \theta_L \\ \theta_m \\ \omega_L \\ \omega_m \\ i \end{bmatrix}
+x = \begin{bmatrix} i \\ \theta_m \\ \omega_m \\ \theta_L \\ \omega_L \end{bmatrix}
 \end{equation}
 其中$\omega_m$、$\omega_L$是电机和负载的角速度。那么
 \begin{equation}
-\dot{x} = \begin{bmatrix} 0 & 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 1 & 0 \\ -\frac{k}{J_L} & \frac{k}{J_L} & -\frac{b}{J_L} & \frac{b}{J_L} & 0 \\ \frac{k}{J_m} & -\frac{k}{J_m} & \frac{b}{J_m} & -\frac{(b+b_m)}{J_m} & \frac{K_T}{J_m} \\ 0 & 0 & 0 & -\frac{K_b}{L} & -\frac{R}{L} \end{bmatrix}x + \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ \frac{1}{L} \end{bmatrix}u
+\dot{x} = \begin{bmatrix} -\frac{R}{L} & 0 & -\frac{k'_m}{L} & 0 & 0 \\ 0 & 0 & 1 & 0 & 0 \\ \frac{k_m}{J_m} & -\frac{k}{J_m} & -\frac{(b+b_m)}{J_m} & \frac{k}{J_m} & \frac{b}{J_m} \\ 0 & 0 & 0 & 0 & 1 \\ 0 & \frac{k}{J_L} & \frac{b}{J_L} & -\frac{k}{J_L} & -\frac{b}{J_L} \end{bmatrix}x + \begin{bmatrix} \frac{1}{L} \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}u
 \end{equation}
 
 \textbf{a. 刚性耦合轴}
 
 如果耦合轴没有柔性，$\omega_m = \omega_L = \omega$，状态方程简化为（见习题）
 \begin{equation}
-\dot{x} = \begin{bmatrix} 0 & 1 & 0 \\ 0 & -\frac{(b_m+b_L)}{J} & \frac{K_T}{J} \\ 0 & -\frac{K_b}{L} & -\frac{R}{L} \end{bmatrix}x + \begin{bmatrix} 0 \\ 0 \\ \frac{1}{L} \end{bmatrix}u
+\dot{x} = \begin{bmatrix} -\frac{R}{L} & -\frac{K_b}{L} \\ \frac{K_T}{J} & -\frac{b_m}{J} \end{bmatrix}x + \begin{bmatrix} \frac{1}{L} \\ 0 \end{bmatrix}u
 \end{equation}
 其中$x = [i \ \omega]^T$，$J = J_m + J_L$。将输出定义为电机速度得到
 \begin{equation}
-y = \begin{bmatrix} 0 & 0 & 1 \end{bmatrix}x
+y = \begin{bmatrix} 0 & 1 \end{bmatrix}x
 \end{equation}
 
 传递函数计算为
 \begin{equation}
-H(s) = \frac{K_T}{(Ls+R)[(J_m+J_L)s+(b_m+b_L)] + K_T K_b}
+H(s) = \frac{K_T}{(Ls+R)(Js+b_m) + K_T K_b}
 \end{equation}
 
 使用参数值$J_m = J_L = 0.1$ kg-m$^2$，$L = 0.5$ H，$b_m = 0.2$ N-m/rad/s，和$R = 5$ $\Omega$得到
@@ -1532,12 +1520,10 @@ H(s) = \frac{20}{(s+2.3)(s+8.7)}
 \textbf{b. 非常柔性的耦合轴}
 
 对应于非常柔性轴的耦合轴参数$k = 2$ N-m/rad和$b = 0.2$ N-m/rad/s。使用这些值，可以使用PC-MATLAB等软件获得两个传递函数
-\begin{equation}
-H_m(s) = \frac{20s(s^2+3s+44)}{(s+10)[(s+3.4)^2+5.6^2]}
-\end{equation}
-\begin{equation}
-H_L(s) = \frac{40(s+10)}{(s+10)[(s+3.4)^2+5.6^2]}
-\end{equation}
+\begin{align}
+H_m(s) &= \frac{20s(s^2+3s+44)}{(s+10)[(s+3.4)^2+5.6^2]} \\
+H_L(s) &= \frac{40(s+10)}{(s+10)[(s+3.4)^2+5.6^2]}
+\end{align}
 
 轴柔性模式有极点$s = -3.4 \pm j5.6$，因此阻尼比为$\zeta = 0.52$，自然频率为$\omega = 6.55$ rad/s。注意系统是边际稳定的，有一个极点在$s = 0$。由于极零点抵消，它是BIBO稳定的。
 

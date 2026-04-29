@@ -63,7 +63,7 @@ e = \begin{bmatrix} e \\ \dot{e} \end{bmatrix} = \begin{bmatrix} q_d - q \\ \dot
 然而，我们可以假设 $q$ 和 $\dot{q}$ 的测量 $p$ 和 $\dot{p}$ 受到有界噪声的污染，即：
 
 \begin{equation}\label{eq:5.1.3}
-\|w_i\| \leq c_i
+p = q + w_i, \quad \dot{p} = \dot{q} + w_{i+1}
 \end{equation}
 
 其中 $\|w_i\| \leq c_i$。
@@ -150,16 +150,20 @@ $\Delta M = M - \hat{M}$，$\Delta N = N - \hat{N}$，因此 $\eta$ 在 $\hat{M}
 
 在使用这种方法时，通常对旋转关节机器人做出合理的假设(\ref{eq:5.2.9})--(\ref{eq:5.2.11})[Spong and Vidyasagar 1987]。在下文中，$\mu_1$、$\mu_2$、$a$、$\alpha_0$、$\alpha_1$ 和 $\alpha_2$ 是依赖于不确定性大小的非负有限常数。
 
+\begin{equation}\label{eq:5.2.8}
+\frac{1}{\mu_2} \leq \|M^{-1}\| \leq \frac{1}{\mu_1}, \quad \mu_1 \neq 0
+\end{equation}
+
 \begin{equation}\label{eq:5.2.9}
-\mu_1 I \leq M^{-1}(q) \leq \mu_2 I
+\|\Delta\| \leq \alpha \leq 1
 \end{equation}
 
 \begin{equation}\label{eq:5.2.10}
-\|M^{-1}\Delta M\| \leq a \leq 1
+\|\delta\| \leq \beta_0 + \beta_1\|e\| + \beta_2\|e\|^2
 \end{equation}
 
 \begin{equation}\label{eq:5.2.11}
-\|\eta\| \leq \alpha_0 + \alpha_1\|e\| + \alpha_2\|e\|^2
+\|\ddot{q}_d\| \leq c
 \end{equation}
 
 回顾不等式(\ref{eq:5.2.8})在第3.3节中引入，并注意上述不等式中使用的范数可以是 $\infty$ 范数或 2 范数，取决于应用。还注意，对于具有棱柱关节的机器人，边界 $\mu_i$ 和 $\alpha_i$ 是 $q$ 的标量函数，并且 $\mu_1 \approx \mu_2$ 使得 $a = (\mu_2 - \mu_1)/(\mu_2 + \mu_1)$ [Spong and Vidyasagar 1987]。最后，(\ref{eq:5.2.10})是第3.3节讨论的科里奥利和向心项性质的结果。
@@ -184,34 +188,27 @@ u = -K_p e - K_v \dot{e}
 
 使用李雅普诺夫稳定性概念设计的鲁棒控制器有很多，选择李雅普诺夫函数候选和设计增益 $K$ 以确保李雅普诺夫函数候选沿式(\ref{eq:5.2.13})轨迹下降的方法也有很多种。然而，为了减少渐近轨迹误差，可能需要过大的增益（参见例4.4.3）。因此，我们选择使用被动性定理和增益矩阵 $K$ 的选择，使闭环系统的线性部分成为严格正实（SPR）系统。如第2.11节所述，可以选择一个输出使闭环系统成为SPR系统；因此允许对 $M(q)$ 的知识存在较大的被动不确定性。事实上，可以使用状态反馈控制器来定义适当的输出 $Ke$，使得输入-输出闭环线性系统 $K(sI - A + BK)^{-1}B$ 是严格正实的（SPR）。考虑以下闭环线性系统：
 
-\begin{equation}
-\dot{e} = (A - BK)e + B\eta
-\end{equation}
-
-\begin{equation}
-z = Ke
-\end{equation}
-
-\begin{equation}\label{eq:5.2.14}
-r = K\dot{e} = Ke + Ke
-\end{equation}
+\begin{align}
+\dot{e} &= \begin{bmatrix} 0 & I \\ -K_p & -K_v \end{bmatrix} e + \begin{bmatrix} 0 \\ I \end{bmatrix} u \label{eq:5.2.14} \\
+y &= \begin{bmatrix} K_p & K_v \end{bmatrix} \begin{bmatrix} e \\ \dot{e} \end{bmatrix} = Ke
+\end{align}
 
 然后可以使用定理2.11.5证明，如果以下条件成立，则该系统是SPR的：
 
 \begin{equation}\label{eq:5.2.15}
-K_v = 2aI, \quad K_p = 4a^2I
+K_v^2 > K_p
 \end{equation}
 
-选择
+其中选择
 
 \begin{equation}\label{eq:5.2.16}
-\Lambda = 2aI
+Q = \begin{bmatrix} 2K_p^2 & 0 \\ 0 & 2K_v^2 - 2K_p \end{bmatrix}
 \end{equation}
 
 使得
 
 \begin{equation}\label{eq:5.2.17}
-r = \dot{e} + \Lambda e
+P = \begin{bmatrix} 2K_p K_v & K_p \\ K_p & K_v \end{bmatrix}
 \end{equation}
 
 是以下李雅普诺夫方程的正定解
@@ -223,7 +220,7 @@ A_c^T P + PA_c = -Q
 和
 
 \begin{equation}\label{eq:5.2.19}
-K = B^T P
+K = B^T P = \begin{bmatrix} K_v^2/a & K_v \end{bmatrix}, \quad a > 1
 \end{equation}
 
 下一个定理给出了轨迹误差一致有界的充分条件。
@@ -232,59 +229,61 @@ K = B^T P
 定理 5.2--1：如果满足以下条件，式(\ref{eq:5.2.13})给出的闭环系统将是一致有界的：
 
 \begin{equation}
-\hat{M} \geq \mu_2 I
+e(0) = \dot{e}(0) = 0
 \end{equation}
 
 和
 
 \begin{equation}
-K_v = 2aI, \quad K_p = 4aI
+a > 1 + \frac{1}{\mu_1}[\beta_1 + 2(\beta_2\beta_0 + \beta_2(\mu_1 + \mu_2)c)^{\frac{1}{2}}]
 \end{equation}
+
+其中 $K_v = 2aI$ 和 $K_p = 4aI$。
 \end{theorem}
 
 \begin{proof}
 考虑式(\ref{eq:5.2.8})给出的闭环系统，使用控制器(\ref{eq:5.2.12})，并选择以下李雅普诺夫函数候选：
 
 \begin{equation}
-V = e^T P e + \frac{1}{2}e^T K_v e + \delta(e)
+V = \frac{1}{2}e^T P e + \int_0^t y^T(\sigma)\Delta y(\sigma) d\sigma
 \end{equation}
 
-其中 $\delta(e)$ 是对应于SPR系统(\ref{eq:5.2.14})的李雅普诺夫函数。那么如果 $\hat{M} \geq 0$，我们有 $V > 0$。当 $\hat{M} \geq \mu_2 I$ 时满足此条件。然后微分得到
+其中 $\frac{1}{2}e^T P e$ 是对应于SPR系统(\ref{eq:5.2.14})的李雅普诺夫函数。那么如果 $\Delta \geq 0$，我们有 $V > 0$。当 $\hat{M} \geq \mu_2 I$ 时满足此条件。然后微分得到
 
 \begin{equation}
-\dot{V} = -e^T Q e + 2\delta^T(e)\eta + e^T K_v \dot{e}
+\dot{V} = -\frac{1}{2}e^T P e + eK(M^{-1}\delta - \Delta\ddot{q}_d)
 \end{equation}
 
 为了保证 $\dot{V} < 0$，回忆边界(\ref{eq:5.2.8})--(\ref{eq:5.2.11})，并写出
 
 \begin{equation}
-\dot{V} \leq -\lambda_{\min}(Q)\|e\|^2 + 2\alpha_0\|e\| + 2\alpha_1\|e\|^2 + 2\alpha_2\|e\|^3
+\dot{V} \leq -\frac{q_1}{2}\|e\|^2 + \frac{k}{\mu_1}[\beta_2\|e\|^3 + \beta_1\|e\|^2 + (\beta_0 + (\mu_2 + \mu_1)c)\|e\|]
 \end{equation}
 
-其中 $\alpha_i$ 是常数。注意可以从(3)中提出因子 $\|e\|$而不影响方程的符号确定性。然后如果满足以下条件，误差的均匀有界性就得到保证：
+其中 $q_1 = \lambda_{\min}(Q) = 2(a-1)k$，$(a-1)I < K_p = kI$，$K_v = 2aI < K_p = 4aI < K_v^2$。注意可以从(3)中提出因子 $\|e\|$而不影响方程的符号确定性。误差的均匀有界性然后使用引理2.10.3和定理2.10.3得到保证，如果
 
 \begin{equation}
-\lambda_{\min}(Q) > 2\alpha_1 + 2\alpha_2\|e\|
+k\beta_2\|e\|^2 + \left(k\beta_1 - \mu_1\frac{q_1}{2}\right)\|e\| + k[\beta_0 + (\mu_1 + \mu_2)c] < 0
 \end{equation}
 
 这可以通过以下条件保证：
 
 \begin{equation}
-a > \alpha_1 + \alpha_2\|e\|
+q_1 > 2\frac{k}{\mu_1}[\beta_1 + 2(\beta_2\beta_0 + \beta_2(\mu_1 + \mu_2)c)^{1/2}]
 \end{equation}
 
 或
 
 \begin{equation}
-K_v > 2(\alpha_1 + \alpha_2\|e\|)I, \quad K_p > 4(\alpha_1 + \alpha_2\|e\|)^2 I
+a > 1 + \frac{1}{\mu_1}[\beta_1 + 2(\beta_2\beta_0 + \beta_2(\mu_1 + \mu_2)c)^{1/2}]
 \end{equation}
 
-误差将被一个随着 $a$ 增大而趋于零的项所限制（有关详细信息，请参见定理2.10.3及其在[Dawson et al. 1990]中的证明）。这一分析允许 $\Delta M$ 任意大，只要 $\hat{M} \geq \mu_2 I$，如下例所示。事实上，如果 $N$ 是已知的，由于在这种情况下 $\Delta N = 0$，从被动性定理可以确保全局渐近稳定性。控制器总结在表5.2.1中。
+误差将被一个随着 $a$ 增大而趋于零的项所限制（有关详细信息，请参见定理2.10.3及其在[Dawson et al. 1990]中的证明）。这一分析允许 $\Delta$ 任意大，只要 $\hat{M} \geq \mu_2 I$，如下例所示。事实上，如果 $N$ 是已知的，由于在这种情况下 $\delta = 0$，从被动性定理可以确保全局渐近稳定性。控制器总结在表5.2.1中。
 
-研究(\ref{eq:5.2.12})并尝试理解其各项的贡献是有启发性的。以下选择将有助于满足(\ref{eq:5.2.12})：
+研究(6)并尝试理解其各项的贡献是有启发性的。以下选择将有助于满足(6)：
 \begin{enumerate}
     \item 对应于大 $a$ 的大增益 $K_p$ 和 $K_v$。
-    \item 对 $N$ 的良好了解，这转化为小的 $\alpha_i$。
+    \item 对 $N$ 的良好了解，这转化为小的 $\beta_i$。
     \item 大的 $\mu_1$ 或大的惯性矩阵 $M(q)$。
     \item 具有小 $c$ 的轨迹，即小的期望加速度 $\ddot{q}_d$。
 \end{enumerate}
@@ -317,19 +316,19 @@ q_d = \begin{bmatrix} \sin t \\ \cos t \end{bmatrix}
 然后 $\ddot{q}_d = \begin{bmatrix} -\sin t \\ -\cos t \end{bmatrix}$。可以证明
 
 \begin{equation}
-\mu_1 = 0.5, \quad \mu_2 = 3.5
+\mu_1 = 0.1, \quad \mu_2 = 6
 \end{equation}
 
-让 $\Delta M = 0$ 然后
+让 $\hat{N} = 0$ 然后
 
 \begin{equation}
-\alpha_0 = 9.8, \quad \alpha_1 = 0, \quad \alpha_2 = 0
+\|\delta\| \leq \sqrt{10}\|e\|^2 + 2\sqrt{10}\|e\| + \sqrt{10}
 \end{equation}
 
 或
 
 \begin{equation}
-\|\eta\| \leq 9.8
+\beta_0 = \sqrt{10}, \quad \beta_1 = 2\sqrt{10}, \quad \beta_2 = \sqrt{10}
 \end{equation}
 
 然后使用 $\hat{M} = 6I$ 和 $a = 172$ 来满足(\ref{eq:5.2.12})。事实上，这些值将导致比实际需要的更大的控制器增益。相反，假设我们让 $\hat{M} = 6I$，$\hat{N} = 0$，并且
@@ -347,6 +346,32 @@ K_p = 225I, \quad K_v = 30I
 注意，至少最初，高增益情况需要更大的扭矩（比较图5.2.2c和5.2.3c），但误差幅值的大小通过消耗更多努力而大大降低。
 \end{example}
 
+\textbf{表5.2.1}\quad 静态控制器，李雅普诺夫设计
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|l|}{\textbf{假设：}} \\
+\hline
+$\dfrac{1}{\mu_2} \leq \|M^{-1}\| \leq \dfrac{1}{\mu_1}, \quad \mu_i \neq 0$ & \\
+$\|\Delta\| \leq a \leq 1$ & \\
+$\|\delta\| \leq \beta_0 + \beta_1\|e\| + \beta_2\|e\|^2$ & \\
+$\|\ddot{q}_d\| \leq c$ & \\
+$e(0) = \dot{e}(0) = 0$ & \\
+\hline
+\multicolumn{2}{|l|}{\textbf{控制器：}} \\
+\hline
+$\tau = \hat{M}(\ddot{q}_d + 2a\dot{e} + 4ae) + \hat{N}$ & \\
+$\hat{M} > \mu_2 I$ & \\
+$a > 1 + \dfrac{1}{\mu_1}\left[\beta_1 + 2(\beta_2\beta_0 + \beta_2(\mu_1 + \mu_2)c)^{\frac{1}{2}}\right]$ & \\
+\hline
+\multicolumn{2}{|l|}{\textbf{性能：}} \\
+\hline
+\multicolumn{2}{|p{10cm}|}{保证$e$和$\dot{e}$的李雅普诺夫稳定性。当$a$增大时，误差趋于零。} \\
+\hline
+\end{tabular}
+\end{center}
+
 这些静态控制器的一致有界性还有其他证明。特别是，[Dawson et al. 1990]中的结果提供了用控制器增益表示的 $e$ 界限的显式表达式。为了简洁起见并展示不同的设计，我们选择在本节中限制我们的发展到一个控制器。
 
 如第4.4节所讨论的，即使使用精确的计算力矩控制器，如果存在干扰，也可能存在残余的稳态误差。解决这个问题的常见方法（并且可以消除恒定干扰）是引入积分反馈，如第4.4节所做。这样的控制器可以再次在鲁棒控制器框架中使用，如果避免积分器饱和问题，将导致类似的改进（参见第4.4节）。
@@ -362,7 +387,7 @@ K_p = 225I, \quad K_v = 30I
 这些控制器具有与第4.4节和前一节中描述的相同的结构。不同之处在于这里我们使用输入-输出概念而不是李雅普诺夫理论暗示的状态空间方法来显示误差的稳定性。在[Craig 1988]中，使用静态控制器展示了误差信号的有界性。(\ref{eq:5.2.8})--(\ref{eq:5.2.10})中使用的范数然后是 $L_\infty$ 范数。该控制器的开发始于假设(\ref{eq:5.2.8})、(\ref{eq:5.2.9})和(\ref{eq:5.2.10})到
 
 \begin{equation}\label{eq:5.2.20}
-\|\eta\| \leq \alpha_0 + \alpha_1\|\dot{e}\| + \alpha_2\|\dot{e}\|^2
+\|\delta\| \leq \beta_0 + \beta_1\|\dot{e}\| + \beta_2\|\dot{e}\|^2
 \end{equation}
 
 的修改。这个假设是合理的，因为 $N$ 由重力和速度相关项组成，可以独立于位置误差 $e$ 进行限制[参见(\ref{eq:5.1.1})]。我们还假设 $\ddot{q}_d = 0$。让我们然后选择状态反馈控制器(\ref{eq:5.2.12})，这里为了方便重复：
@@ -380,37 +405,38 @@ u = -K_p e - K_v \dot{e}
 该方程的框图描述在图5.2.4中给出。考虑从 $\eta$（作为独立输入）到 $e$ 的传递函数：
 
 \begin{equation}\label{eq:5.2.23}
-E(s) = P_{11}(s)\eta(s) + P_{12}(s)\dot{\eta}(s)
+\begin{bmatrix} E(s) \\ sE(s) \end{bmatrix} = \begin{bmatrix} (s^2 + sK_v + K_p)^{-1} \\ s(s^2 + sK_v + K_p)^{-1} \end{bmatrix} \eta(s) = \begin{bmatrix} P_{11}(s) \\ P_{12}(s) \end{bmatrix}
 \end{equation}
 
 或
 
 \begin{equation}\label{eq:5.2.24}
-E(s) = \frac{1}{s^2 + K_v s + K_p}\eta(s)
+E(s) = P_1(s)\eta(s)
 \end{equation}
 
-可以看出，$K_v$ 和 $K_p$ 都是对角矩阵，$K_v = 2\sqrt{K_p}$，在每个关节实现临界阻尼响应[参见(4.4.22)、(4.4.30)和(3.3.32)]。$P_{11}(s)$ 和 $P_{12}(s)$ 的无限算子增益是（参见引理2.5.2和例2.5.8）：
+可以看出，$K_v$ 和 $K_p$ 都是对角矩阵，$K_v^2 = 4K_p$，在每个关节实现临界阻尼响应[参见(4.4.22)、(4.4.30)和(3.3.32)]。$P_{11}(s)$ 和 $P_{12}(s)$ 的无限算子增益是（参见引理2.5.2和例2.5.8）：
 
 \begin{equation}\label{eq:5.2.25}
-\|P_{11}\|_\infty = \frac{1}{\lambda_{\min}^2(K_p)}, \quad \|P_{12}\|_\infty = \frac{1}{\lambda_{\min}(K_p)}
+\gamma_\infty(P_{11}) \equiv \gamma_{11} = \frac{1}{k_p}, \quad \gamma_\infty(P_{12}) \equiv \gamma_{12} = \frac{4}{ek_v}
 \end{equation}
 
 其中
 
 \begin{equation}\label{eq:5.2.26}
-\eta = M^{-1}[\Delta M \ddot{q}_d + \Delta N] + w_1 + M^{-1}\tau_d
+k_p = \max\{K_{pi}\}, \quad k_v = \max\{K_{vi}\}, \quad e = 2.71828
 \end{equation}
 
 然后考虑以下不等式：
 
-\begin{equation}
-\|e\|_\infty \leq \|P_{11}\|_\infty\|\eta\|_\infty + \|P_{12}\|_\infty\|\dot{\eta}\|_\infty
-\end{equation}
+\begin{align}
+\|e\|_{T\infty} &\leq \gamma_{11}\|\eta\|_{T\infty} \\
+\|\dot{e}\|_{T\infty} &\leq \gamma_{12}\|\eta\|_{T\infty}
+\end{align}
 
 使用(\ref{eq:5.2.8})--(\ref{eq:5.2.11})，我们有
 
 \begin{equation}\label{eq:5.2.27}
-\|\eta\|_\infty \leq \alpha_0 + \alpha_1\|e\|_\infty + \alpha_2\|e\|_\infty^2
+\|\eta\|_{T\infty} \leq ac + ak_p\|e\|_{T\infty} + ak_v\|\dot{e}\|_{T\infty} + \frac{\beta_0}{\mu_1} + \frac{\beta_1}{\mu_1}\|\dot{e}\|_{T\infty} + \frac{\beta_2}{\mu_1}\|\dot{e}\|_{T\infty}^2
 \end{equation}
 
 以下定理给出了与定理\ref{thm:5.2.1}平行的误差有界性的充分条件。
@@ -419,19 +445,19 @@ E(s) = \frac{1}{s^2 + K_v s + K_p}\eta(s)
 定理 5.2--2：假设
 
 \begin{equation}
-\hat{M} \geq \mu_1 I
+e(0) = \dot{e}(0) = 0
 \end{equation}
 
 和
 
 \begin{equation}
-K_v = 2\sqrt{K_p}
+\gamma_{12}\left(ak_v + \frac{\beta_1}{\mu_1}\right) = \frac{4a}{e} + \frac{4\beta_1}{e\mu_1 k_v} < 1
 \end{equation}
 
-那么如果满足以下条件，误差的 $L_\infty$ 稳定性就得到保证：
+那么误差的 $L_\infty$ 稳定性就得到保证，如果
 
 \begin{equation}
-\frac{a}{\mu_1} < 1
+1 - \gamma_{11}ak_p - \gamma_{12}\left(ak_v + \frac{\beta_1}{\mu_1}\right) - 2\gamma_{12}\left[\left(a\|\ddot{q}_d\| + \frac{\beta_0}{\mu_1}\right)\frac{\beta_2}{\mu_1}\right]^{\frac{1}{2}} > 0
 \end{equation}
 \end{theorem}
 
@@ -441,19 +467,19 @@ K_v = 2\sqrt{K_p}
 注意(2)简化为
 
 \begin{equation}
-\frac{a}{\mu_1} < 1
+1 - a\left(1 + \frac{4}{e}\right) - \frac{4\beta_1}{\mu_1 e k_v} - 2\frac{4}{e k_v}\left[\left(a\|\ddot{q}_d\| + \frac{\beta_0}{\mu_1}\right)\frac{\beta_2}{\mu_1}\right]^{\frac{1}{2}} > 0
 \end{equation}
 
 并进一步简化为
 
 \begin{equation}\label{eq:5.2.28}
-\frac{\mu_2 - \mu_1}{\mu_2 + \mu_1} < 1
+k_v = \frac{4\beta_1 - 8[(a\mu_1 c + \beta_0)\beta_2]^{\frac{1}{2}}}{\mu_1 e[1 - a(1 + \frac{4}{e})]}
 \end{equation}
 
 让我们研究上述不等式以确定各项的影响。以下观察有助于满足(\ref{eq:5.2.28})。
 \begin{enumerate}
     \item 大的 $k_v$ 有助于满足稳定性条件。注意：这也意味着大的 $k_p$。
-    \item 对 $N$ 的良好了解，这将转化为小的 $\alpha_i$。
+    \item 对 $N$ 的良好了解，这将转化为小的 $\beta_i$。
     \item 大的 $\mu_1$ 或大的惯性矩阵 $M(q)$。
     \item 具有小 $\ddot{q}_d$ 的轨迹。
     \item 其惯性矩阵 $M(q)$ 在其工作空间中变化不大的机器人（即 $\mu_1 \approx \mu_2$），使得 $a$ 很小。注意，小的 $a$ 需要至少在(\ref{eq:5.2.28})中满足 $a < 1$。这将转化为严重的要求，即矩阵 $\hat{M}$ 应在机器人的所有配置中接近惯性矩阵 $M(q)$。
@@ -468,16 +494,16 @@ K_v = 2\sqrt{K_p}
 例 5.2--2：考虑非线性控制器(\ref{eq:5.2.6})，其中
 
 \begin{equation}
-\hat{M} = \begin{bmatrix} 6 & 1 \\ 1 & 2 \end{bmatrix}, \quad \hat{N} = 0
+\hat{M} = \frac{M(q)}{4}, \quad \hat{N} = 0
 \end{equation}
 
 因此，
 
 \begin{equation}
-\|M^{-1}\Delta M\|_\infty \leq a = 0.72
+a = \frac{1}{4}
 \end{equation}
 
-如果 $k_v > 720$，则满足条件(1)。这当然是一个大界限，可以通过选择更好的 $\hat{M}$ 来改进。对于 $k_p = 225$ 和 $k_v = 30$ 的闭环行为仿真如图5.2.5所示。误差幅值比使用可比较控制努力的例5.2.1的PD控制器所实现的误差要小得多。这种改进是以了解式(1)中的惯性矩阵 $M(q)$ 为代价的。
+条件(1)在 $k_v > 720$ 时满足。这当然是一个大界限，可以通过选择更好的 $\hat{N}$ 来改进。对于 $k_p = 225$ 和 $k_v = 30$ 的闭环行为仿真如图5.2.5所示。误差幅值比使用可比较控制努力的例5.2.1的PD控制器所实现的误差要小得多。这种改进是以了解式(1)中的惯性矩阵 $M(q)$ 为代价的。
 \end{example}
 
 \subsubsection{动态控制器}
@@ -491,13 +517,13 @@ K_v = 2\sqrt{K_p}
 在[Spong and Vidyasagar 1987]中，使用因式分解方法设计了一类动态线性补偿器 $C(s)$，由稳定传递矩阵 $Q(s)$ 参数化，保证线性系统(\ref{eq:5.2.9})的解 $e(t)$ 是有界的。实际的因式分解方法设计超出了本书的范围，但适用于机器人学的方法论的相当一般的代表性在例5.2.3中给出。在[Spong and Vidyasagar 1987]中，实际上假设 $\Delta N$ 的界限是线性的[即，在式\ref{eq:5.2.10}中 $\alpha_2 = 0$]，然后找到了标称植物的所有 $L_\infty$ 稳定补偿器的族。虽然[Spong and Vidyasagar 1987]中处理了噪声测量的情况，但为了简单起见，我们将自己限制在无噪声情况下。让我们首先回忆系统(\ref{eq:5.2.16})，同时抑制 $s$ 依赖性，
 
 \begin{equation}\label{eq:5.2.30}
-\ddot{e} = u - M^{-1}[\Delta M u - \Delta N] - w_1 - M^{-1}\tau_d
+\ddot{e} = u - M^{-1}[\Delta M u + \Delta N] - w_1 - M^{-1}\tau_d
 \end{equation}
 
 并定义
 
 \begin{equation}\label{eq:5.2.31}
-u = M^{-1}[\Delta M u - \Delta N] - w_1 - M^{-1}\tau_d
+\eta = M^{-1}[\Delta M u + \Delta N] + w_1 + M^{-1}\tau_d
 \end{equation}
 
 令 $P_i$、$i = 1, 2$ 的算子增益由下式给出
@@ -516,6 +542,12 @@ u = M^{-1}[\Delta M u - \Delta N] - w_1 - M^{-1}\tau_d
 
 \begin{theorem}\label{thm:5.2.3}
 定理 5.2--3：如果满足以下条件，闭环系统(\ref{eq:5.2.30})的BIBO稳定性将得到保证：
+
+\begin{equation}
+\ddot{q}_d = 0
+\end{equation}
+
+和
 
 \begin{equation}
 \gamma_1\gamma_2 < 1
@@ -566,13 +598,15 @@ G_v(s) = N(s)D^{-1}(s) = \tilde{D}^{-1}(s)\tilde{N}(s)
 其中 $N(s)$、$D(s)$、$\tilde{N}(s)$ 和 $\tilde{D}(s)$ 是稳定有理函数的矩阵。然后我们可以找到
 
 \begin{equation}
-N(s) = \tilde{N}(s) = \frac{1}{(s+1)^2}\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+N(s) = \tilde{N}(s) = \frac{1}{(s+1)^2}\begin{bmatrix} I \\ sI \end{bmatrix}
 \end{equation}
 
-和
+\begin{equation}
+D(s) = \frac{s^2}{(s+1)^2}I = \tilde{D}(s)
+\end{equation}
 
 \begin{equation}
-D(s) = \frac{s^2}{(s+1)^2}\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} = \tilde{D}(s)
+\tilde{D}(s) = \frac{1}{(s+1)^2}\begin{bmatrix} (s^2+2s)I & -2I \\ -sI & (s^2+1)I \end{bmatrix}
 \end{equation}
 
 接下来我们求解Bezout恒等式[Vidyasagar 1985]对于 $X(s)$ 和 $Y(s)$，它们也是稳定有理函数，
@@ -584,49 +618,44 @@ Y(s)D(s) + X(s)N(s) = I
 得到
 
 \begin{equation}
-X(s) = \frac{2s+1}{(s+1)^2}\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}, \quad Y(s) = \frac{(s+1)^2}{(s+1)^2}\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+X(s) = \frac{1}{(s+1)^2}\begin{bmatrix} (1+2s)I & (2+4s)I \end{bmatrix}, \quad Y(s) = \frac{s^2+4s+2}{(s+1)^2}I
 \end{equation}
 
 然后所有稳定控制器由下式给出
 
 \begin{equation}
-C(s) = [Y(s) - Q(s)\tilde{N}(s)]^{-1}[X(s) + Q(s)\tilde{D}(s)]
+C(s) = -[Y(s) - Q(s)\tilde{N}(s)]^{-1}[X(s) + Q(s)\tilde{D}(s)]
 \end{equation}
 
 其中 $Q(s)$ 是稳定有理函数，否则是任意的。一个选择当然是让 $Q(s) = 0$，这导致"中心解"[Vidyasagar 1985]
 
 \begin{equation}
-C(s) = Y^{-1}(s)X(s) = \frac{2s+1}{(s+1)^2}\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+C(s) = \frac{2s+1}{s^2+4s+2}\begin{bmatrix} I & 2I \end{bmatrix}
 \end{equation}
 
 还可以选择 $Q(s)$ 来满足所需的性能。特别是，[Spong and Vidyasagar 1987]中提出了以下 $Q(s)$ 的选择：
 
 \begin{equation}
-Q(s) = \frac{k}{s(s+1)}\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+Q(s) = \begin{bmatrix} 2I & \dfrac{4k+(k+2)s}{s+k}I \end{bmatrix}, \quad k=1,2,3,\ldots
 \end{equation}
 
 这导致以下控制器：
 
 \begin{equation}
-C(s) = \frac{(2s+1)(s+1) + k}{s(s+1)}\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
-\end{equation}
-
-或
-
-\begin{equation}
-u = C(s)e
+C(s) = \begin{bmatrix} C_1(s) & C_2(s) \end{bmatrix}
 \end{equation}
 
 其中
 
-\begin{equation}
-\dot{x} = -x + ke
-\end{equation}
+\begin{align}
+C_1(s) &= -\frac{2s^3+(k+4)s^2+(2k+1)s+k}{s^2(s+2)}I \\
+C_2(s) &= -\frac{(k+2)s^3+4(k+1)s^2+5ks+2k}{s^2(s+2)}I
+\end{align}
 
 和
 
 \begin{equation}
-u = (2 + k)x + (1 + 2k)e
+u = C_1(s)e + C_2(s)\dot{e}
 \end{equation}
 
 随着 $k$ 的增加，控制器的干扰抑制性能增强，但代价是如从 $C(s)$ 表达式中看到的更高增益。该控制器对于 $k = 225$ 的仿真如图5.2.6所示。以下观察是有序的：轨迹误差比以前任何控制器都小，而扭矩努力是可比较的。此外，控制器的复杂性是可接受的，因为机器人的动力学没有用于实现控制。
@@ -638,7 +667,7 @@ u = (2 + k)x + (1 + 2k)e
 定理 5.2--4：如果满足以下条件，式(\ref{eq:5.2.30})的误差系统是 $L_\infty$ 有界的：
 
 \begin{equation}
-\ddot{q}_d = 0
+\ddot{q}_d = 0, \quad \alpha_2 = 0
 \end{equation}
 
 和
@@ -664,17 +693,17 @@ u = (2 + k)x + (1 + 2k)e
 另一方面，假设 $\ddot{q}_d = 0$ 和 $\alpha_2 = 0$，如果满足以下条件，则[Becker and Grimm 1988]中证明了 $e$ 的 $L_2$ 稳定性：
 
 \begin{equation}\label{eq:5.2.36}
-\gamma_1\gamma_2 < 1 - a
+\gamma_1\gamma_2 < \frac{1-a}{1+a}
 \end{equation}
 
 其中 $\gamma_i$ 如引理2.5.2中所示。该控制器总结在表5.2.4中。
 \end{proof}
 
 \begin{example}[动态一自由度设计]
-例 5.2--4：使用与例5.2.3相同的线性控制器，但假设 $N$ 中的二次速度项是已知的，使得 $\alpha_2 = 0$；即
+例 5.2--4：使用与例5.2.3相同的线性控制器，但假设 $N$ 中的二次速度项是已知的，使得 $\beta_2 = 0$；即
 
 \begin{equation}
-\|\eta\| \leq \alpha_0 + \alpha_1\|e\|
+\tau = \hat{M}(\ddot{q}_d - u) + V_m(q, \dot{q})\dot{q}.
 \end{equation}
 
 结果显示在图5.2.7中，参数 $k = 150$。它们与图5.2.6中例5.2.3的结果看起来并没有显著不同。这是由于速度项在此特定应用中的贡献确实可以忽略不计。然而，这些项在更快的轨迹中将做出更重要的贡献。
@@ -709,7 +738,7 @@ u = s^2K_1v + K_2(K_1v - q)
 q = K_1v
 \end{equation}
 
-并且闭环误差系统(\ref{eq:5.2.13})将是 $L_\infty$ 稳定的。
+并且闭环误差系统将是 $L_\infty$ 稳定的。
 \end{theorem}
 
 \begin{proof}
@@ -769,7 +798,7 @@ K_2(s) = \frac{a_1 s + \omega_2}{s(s + b_2) + b_1}\begin{bmatrix} 1 & 0 \\ 0 & 1
 其中 $r = F^{-1}(s)e$。将式(\ref{eq:5.3.1})代入式(\ref{eq:5.1.1})并假设无摩擦[即 $F(\dot{q}) = 0$]，我们得到
 
 \begin{equation}\label{eq:5.3.2}
-M(q)\dot{r} + V_m(q, \dot{q})r + K_r r = 0
+M(q)\dot{r} + V_m(q, \dot{q})r + K_r r = u_2
 \end{equation}
 
 然后可以证明 $e$ 和 $\dot{q}$ 都是渐近稳定的。事实上，选择以下李雅普诺夫函数：
@@ -793,10 +822,10 @@ V = \frac{1}{2}r^T M(q)r + \frac{1}{2}e^T K_p e
 因此，$r$ 是渐近稳定的，可用于证明 $e$ 和 $\dot{e}$ 都是渐近稳定的[Slotine 1988]。这种方法用于自适应控制文献中设计无源控制器[Ortega and Spong 1988]，但当 $M$、$V_m$ 和 $G$ 不完全已知时，其在鲁棒控制器设计中的修改并不明显。这种修改将在变结构设计中给出，但首先，我们呈现一个简单的控制器来说明无源补偿器的鲁棒性。
 
 \begin{theorem}\label{thm:5.3.1}
-定理 5.3--1：考虑控制律(1)
+定理 5.3--1：考虑控制律
 
 \begin{equation}
-\tau = M(q)\ddot{q}_d + V_m(q, \dot{q})\dot{q}_d + G(q) + K_p e + K_v \dot{e} + u_2
+\tau = M(q)\dot{r} + V_m(q, \dot{q})r + G(q) + K_r r + u_2
 \end{equation}
 
 其中 $F(s)$ 是SPR传递函数，由设计者选择，外部输入 $u_2$ 在 $L_2$ 范数中有界。则 $\dot{q}$ 是渐近稳定的，$e$ 是李雅普诺夫稳定的。
@@ -978,23 +1007,12 @@ k_i \geq \|\Delta M(q)\ddot{q}_r + \Delta V_m(q, \dot{q})\dot{q}_r + \Delta G(q)
 \begin{theorem}\label{thm:5.3.3}
 定理 5.3--3：如果输入扭矩由下式给出，则误差 $e$ 和 $\dot{e}$ 是渐近稳定的
 
-\begin{equation}
-\tau = \hat{M}(q)\ddot{q}_r + \hat{V}_m(q, \dot{q})\dot{q}_r + \hat{G}(q) + K \text{sgn}(s)
-\end{equation}
-
-其中
-
-\begin{equation}
-s = \dot{e} + \Lambda e
-\end{equation}
-
-\begin{equation}
-\ddot{q}_r = \ddot{q}_d - \Lambda \dot{e}
-\end{equation}
-
-\begin{equation}
-K = \text{diag}(k_1, k_2, \ldots, k_n)
-\end{equation}
+\begin{align}
+\tau &= \hat{M}(q)\ddot{q}_r + \hat{V}_m(q, \dot{q})\dot{q}_r + \hat{G}(q) + K \text{sgn}(s) \\
+s &= \dot{e} + \Lambda e \\
+\ddot{q}_r &= \ddot{q}_d - \Lambda \dot{e} \\
+K &= \text{diag}(k_1, k_2, \ldots, k_n)
+\end{align}
 \end{theorem}
 
 \begin{proof}
@@ -1054,11 +1072,11 @@ Z(q, \dot{q}) = N(q, \dot{q}) + \tau_d
 因此，$Z(q, \dot{q})$ 是一个表示摩擦、重力和有界扭矩干扰的 $n$ 维向量。本节中引入的控制器是鲁棒的，因为它们是基于不确定性界限而不是参数实际值设计的。需要以下界限，可以在物理上证明。式(\ref{eq:5.3.11})中的 $\beta_i$ 是正标量常数，轨迹误差 $e$ 如前所定义。
 
 \begin{equation}\label{eq:5.3.10}
-\|Z(q, \dot{q})\| \leq \beta_0 + \beta_1\|e\| + \beta_2\|e\|^2
+\|Z(q, \dot{q})\| \leq \beta_0 + \beta_1\|\dot{e}\| + \beta_2\|\dot{e}\|^2
 \end{equation}
 
 \begin{equation}\label{eq:5.3.11}
-\|Z(q, \dot{q}) - Z(q, \dot{q}_d)\| \leq \beta_3 + \beta_4\|e\| + \beta_5\|e\|^2
+\|Z(q, \dot{q}) - Z(q, \dot{q}_d)\| \leq \beta_3 + \beta_4\|e\| + \beta_5\|\dot{e}\|^2
 \end{equation}
 
 该类的一个代表在[Spong et al. 1987]中开发，如下所示。
@@ -1066,29 +1084,13 @@ Z(q, \dot{q}) = N(q, \dot{q}) + \tau_d
 \begin{theorem}\label{thm:5.3.4}
 定理 5.3--4：使用控制器，轨迹误差 $e$ 是一致最终有界（UUB）的
 
-\begin{equation}
-\tau = \hat{M}(q)\ddot{q}_d + \hat{V}_m(q, \dot{q})\dot{q}_d + \hat{G}(q) + K_v \dot{e} + K_p e + v_r
-\end{equation}
-
-其中
-
-\begin{equation}
-v_r = \frac{\beta_0 + \beta_1\|e\| + \beta_2\|e\|^2}{1 - a}\text{sgn}(e)
-\end{equation}
-
-和
-
-\begin{equation}
-\|v_r\| \leq \frac{\beta_0 + \beta_1\|e\| + \beta_2\|e\|^2}{1 - a}
-\end{equation}
-
-\begin{equation}
-a = \|\hat{M}^{-1}M - I\|
-\end{equation}
-
-\begin{equation}
-\hat{M} \geq \mu_0 I
-\end{equation}
+\begin{align}
+\tau &= \hat{M}(q)(\ddot{q}_d + K_v \dot{e} + K_p e) + \hat{N}(q, \dot{q}) + v_r \\
+v_r &= \frac{\beta_0 + \beta_1\|\dot{e}\| + \beta_2\|\dot{e}\|^2}{1 - a}\text{sgn}(\dot{e}) \\
+\|v_r\| &\leq \frac{\beta_0 + \beta_1\|\dot{e}\| + \beta_2\|\dot{e}\|^2}{1 - a} \\
+a &= \|\hat{M}^{-1}M - I\| \\
+\hat{M} &\geq \mu_0 I
+\end{align}
 \end{theorem}
 
 \begin{proof}
@@ -1119,7 +1121,7 @@ Q = \begin{bmatrix} K_p & 0 \\ 0 & M(q) \end{bmatrix}
 P = \begin{bmatrix} K_p + \frac{1}{2}K_v & \frac{1}{2}M(q) \\ \frac{1}{2}M(q) & M(q) \end{bmatrix}
 \end{equation}
 
-因此，式(\ref{eq:5.3.14})中 $P$ 的表达式可以用于式(2)中 $v_r$ 的表达式。该设计总结在表5.3.4中。
+因此，式(\ref{eq:5.3.14})中 $P$ 的表达式可以用于 $v_r$ 的表达式。该设计总结在表5.3.4中。
 
 \begin{example}[饱和控制器 1]
 例 5.3--5：在仿真该控制器时选择了以下设计参数：
@@ -1142,23 +1144,13 @@ K_p = 50I, \quad K_v = 25I, \quad e(0) = \dot{e}(0) = 0
 \begin{theorem}\label{thm:5.3.5}
 定理 5.3--5：使用控制器，轨迹误差 $e$ 是一致最终有界（UUB）的
 
-\begin{equation}
-\tau = \hat{M}(q)\ddot{q}_r + \hat{V}_m(q, \dot{q})\dot{q}_r + \hat{G}(q) + K_v s + K_p e + v_r
-\end{equation}
+\begin{align}
+\tau &= \hat{M}(q)\ddot{q}_r + \hat{V}_m(q, \dot{q})\dot{q}_r + \hat{G}(q) + K_v s + v_r \\
+s &= \dot{e} + \Lambda e, \quad \dot{q}_r = \dot{q}_d - \Lambda e \\
+v_r &= \frac{\varepsilon_0 + \varepsilon_1\|s\| + \varepsilon_2\|s\|^2}{1 - a}\text{sgn}(s)
+\end{align}
 
-其中
-
-\begin{equation}
-s = \dot{e} + \Lambda e, \quad \dot{q}_r = \dot{q}_d - \Lambda e
-\end{equation}
-
-和
-
-\begin{equation}
-v_r = \frac{\beta_0 + \beta_1\|s\| + \beta_2\|s\|^2}{1 - a}\text{sgn}(s)
-\end{equation}
-
-其中 $\beta_i$ 是正标量。
+其中 $\varepsilon_i$ 是正标量。
 \end{theorem}
 
 \begin{proof}
@@ -1179,7 +1171,7 @@ V = \frac{1}{2}s^T M(q)s + e^T K_p e
 注意 $p$ 不再包含伺服增益，因此可以调整 $K_p$ 和 $K_v$ 而不会影响辅助控制 $v_r$。如[Dawson et al. 1990]中所示，如果初始误差 $e(0) = 0$ 并通过选择 $K_v = 2K_p = k_v I$，则跟踪误差可以由以下限制，这显示了控制参数对跟踪误差的直接影响：
 
 \begin{equation}\label{eq:5.3.15}
-\|e\| \leq \frac{\beta_0}{k_v}
+\|e\| \leq \frac{\varepsilon_0}{k_v}
 \end{equation}
 
 最后，注意如果 $e(0) = \dot{e}(0) = 0$，可以推断 $e(t)$ 的一致有界性。该控制器在表5.3.5中给出。
@@ -1257,21 +1249,11 @@ K_p = \omega_n^2 I, \quad K_v = 2\zeta\omega_n I
 
 解耦设计替代方案非常有用，如果控制工程师可以在早期阶段访问或修改机器人设计。然而，更合理的假设是机器人在控制律实际实施之前已经构建以满足许多机械要求。因此，动力学重新设计很困难，如果不是不可能的话。虚拟机器人概念作为另一种鲁棒设计方法论提出[Gu and Loh 1988]。该方法的开发描述如下。考虑由下式给出的机器人输出函数
 
-\begin{equation}\label{eq:5.4.1}
-y = f(q)
-\end{equation}
-
-使得
-
-\begin{equation}\label{eq:5.4.2}
-\dot{y} = J(q)\dot{q}
-\end{equation}
-
-和
-
-\begin{equation}\label{eq:5.4.3}
-\ddot{y} = J(q)\ddot{q} + \dot{J}(q)\dot{q}
-\end{equation}
+\begin{align}
+y &= f(q) \label{eq:5.4.1} \\
+\dot{y} &= J(q)\dot{q} \label{eq:5.4.2} \\
+\ddot{y} &= J(q)\ddot{q} + \dot{J}(q)\dot{q} \label{eq:5.4.3}
+\end{align}
 
 广义输出 $y$ 可以表示机器人末端执行器的坐标或轨迹关节误差 $q_d - q$。虚拟机器人概念试图通过控制一个"虚拟"机器人来简化实际机器人的控制律设计，该机器人接近实际机器人。该控制器的选择被证明实现了关节位置由向量 $y$ 的分量描述的虚拟机器人的全局稳定性。
 
@@ -1283,13 +1265,10 @@ M(q) = \hat{M}(q) + \tilde{M}(q)
 
 然后使用控制器
 
-\begin{equation}\label{eq:5.4.5}
-\tau = \hat{M}(q)\nu + N(q, \dot{q})
-\end{equation}
-
-\begin{equation}\label{eq:5.4.6}
-\nu = \ddot{y}_d + K_v \dot{e}_y + K_p e_y
-\end{equation}
+\begin{align}
+\tau &= \hat{M}(q)\nu + N(q, \dot{q}) \label{eq:5.4.5} \\
+\nu &= \ddot{y}_d + K_v \dot{e}_y + K_p e_y \label{eq:5.4.6}
+\end{align}
 
 由于 $\tilde{M}(q)$ 是未知的，然而，实际的 $\hat{M}$ 不可用。然后产生的控制器更简单，可以应用于物理机器人以导致可接受的，如果不是最优的行为。
 
@@ -1302,6 +1281,8 @@ M(q) = \hat{M}(q) + \tilde{M}(q)
 \|M^{-1}\tilde{M}\| \leq a < 1
 \end{equation}
 
+和
+
 \begin{equation}
 \ddot{y}_d = 0
 \end{equation}
@@ -1309,7 +1290,7 @@ M(q) = \hat{M}(q) + \tilde{M}(q)
 闭环系统的 $L_\infty$ 稳定性如果满足以下条件则得到保证：
 
 \begin{equation}
-\|K_p\| \geq \frac{\alpha_0}{1 - a}
+\frac{a}{\mu_1} < 1
 \end{equation}
 \end{theorem}
 
