@@ -42,16 +42,16 @@
 
 其中矩阵 $M(q)$ 是对称且正定的，其元素为 $m_{ij}(q)$，即
 
-\begin{align}
+\begin{align*}
 M(q) &= [m_{ij}(q)]_{n \times n}, \quad i,j = 1, \ldots, n \\
 m_{ij}(q) &= m_{ji}(q)
-\end{align}
+\end{align*}
 
 而 $N(q, \dot{q})$ 是一个 $n \times 1$ 向量，其元素为 $n_i$，即
 
-\begin{equation}
+\begin{equation*}
 N(q, \dot{q}) = [n_i(q, \dot{q})]_{n \times 1}
-\end{equation}
+\end{equation*}
 
 特别要注意，在 $n_i$ 的表达式中通过重力常数 $g = 9.8$ 米/秒$^2$ 来识别重力项。我们还将采用以下符号表示：
 
@@ -70,10 +70,10 @@ N(q, \dot{q}) = [n_i(q, \dot{q})]_{n \times 1}
 
 我们考虑的第一个机器人是通用 SCARA 构型机器人，如图 C.1.1 所示。这些方程适用于 AdeptOne 和 AdeptTwo 机器人。动力学包括前四个自由度，以符号形式给出如下：
 
-\begin{align}
-m_{11} &= (I_{zz1} + I_{zz2} + I_{zz3} + I_{zz4}) + (\frac{m_1}{4} + 2m_3 + m_4)L_1^2 \\
+\begin{align*}
+m_{11} &= (I_{zz1} + I_{zz2} + I_{zz3} + I_{zz4}) + (\frac{m_1}{4} + 2m_3 + m_4)L_1^2 \notag\\
 &\quad + (\frac{m_2}{2} + 3m_3 + m_4)L_1L_2C_2 + (\frac{m_2}{4} + m_3 + m_4)L_2^2 \\
-m_{12} &= (I_{zz2} + I_{zz3} + I_{zz4}) + (\frac{m_2}{4} + m_3 + m_4)L_2^2 \\
+m_{12} &= (I_{zz2} + I_{zz3} + I_{zz4}) + (\frac{m_2}{4} + m_3 + m_4)L_2^2 \notag\\
 &\quad + (2m_3 + m_4)L_1L_2C_2 \\
 m_{13} &= 0 \\
 m_{14} &= I_{zz4} \\
@@ -83,14 +83,14 @@ m_{24} &= I_{zz4} \\
 m_{33} &= m_3 + m_4 \\
 m_{34} &= 0 \\
 m_{44} &= I_{zz4}
-\end{align}
+\end{align*}
 
-\begin{align}
-n_1 &= (\frac{m_2}{2} - m_3)L_1L_2S_2\dot{q}_1^2 - (4m_3 + 2m_4)L_1L_2\dot{q}_1\dot{q}_2 \\
+\begin{align*}
+n_1 &= (\frac{m_2}{2} - m_3)L_1L_2\dot{q}_1^2 - (4m_3 + 2m_4)L_1L_2\dot{q}_1\dot{q}_2 \\
 n_2 &= (\frac{m_2}{2} + m_3 + m_4)L_1L_2S_2\dot{q}_1^2 \\
 n_3 &= (m_3 + m_4)g \\
 n_4 &= 0
-\end{align}
+\end{align*}
 
 \begin{figure}[H]
 \centering
@@ -102,8 +102,8 @@ n_4 &= 0
 
 如图 C.2.1 所示的 Stanford 机械臂具有以下动力学方程 [Bejczy 1974], [Paul 1981]：
 
-\begin{align}
-M_{11} &= 1.316 - 1.056108d_2 + 11.48d_2^2 + 2.51S_2^2 \\
+\begin{align*}
+M_{11} &= 1.316 - 1.056108d_2 + 11.48d_2^2 + 2.51S_2^2 \notag\\
 &\quad - 5.47995S_2^2d_3 + 6.47S_2^2d_3^2 + 0.23S_2^2d_3C_5 \\
 m_{12} &= -6.47C_2d_2d_3 \\
 m_{13} &= -6.47S_2d_2 \\
@@ -125,16 +125,16 @@ m_{46} &= 0 \\
 m_{55} &= 0.113 \\
 m_{56} &= 0 \\
 m_{66} &= 0.0203
-\end{align}
+\end{align*}
 
-\begin{align}
+\begin{align*}
 n_1 &= 0 \\
 n_2 &= -[2.734S_2 + 6.47S_2d_3 + 0.115(S_2C_5 + C_2C_4S_5)]g \\
 n_3 &= 6.47C_2g \\
 n_4 &= 0.115(S_2S_4S_5)g \\
 n_5 &= 0.115(S_2C_4C_5 - C_2S_5)g \\
 n_6 &= 0
-\end{align}
+\end{align*}
 
 \begin{figure}[H]
 \centering
@@ -146,7 +146,7 @@ n_6 &= 0
 
 PUMA 560 如图 C.3.1 所示。对于这种特定的结构，可以进行许多简化以获得以下动力学方程，这些方程出现在 [Armstrong et al. 1986] 中。
 
-\begin{align}
+\begin{align*}
 m_{11} &= 2.57 + 1.38CC_2 + 0.3SS_{23} + 0.744C_2S_{23} \\
 m_{12} &= 0.69S_2 - 0.134C_{23} - 0.0238C_2 \\
 m_{13} &= -0.134C_{23} - 0.00397S_{23} \\
@@ -168,18 +168,18 @@ m_{46} &= 0 \\
 m_{55} &= 0.18 \\
 m_{56} &= 0 \\
 m_{66} &= 0.19
-\end{align}
+\end{align*}
 
-\begin{align}
+\begin{align*}
 n_1 &= [0.69C_2 + 0.134S_{23} - 0.0238S_2]\dot{q}_2^2 + [0.1335S_{23} - 0.00379C_{23}]\dot{q}_3^2 \\
 &\quad + [-2.76SC_2 + 0.744C_{223} + 0.6SC_{23} - 0.0213(1 - 2SS_{23})]\dot{q}_1\dot{q}_2 \\
 &\quad + [0.744C_2C_{23} + 0.6SC_{23} + 0.022C_2S_{23} - 0.0213(1 - 2SS_{23})]\dot{q}_1\dot{q}_3 \\
-&\quad + [-0.0025SC_{23}S_4S_5 + 0.00086C_4S_5 - 0.00248C_2C_{23}S_4S_5]\dot{q}_1\dot{q}_4 \\
+&\quad + [-0.0025SC_{23}S_4S_5 - 0.00086C_4S_5 + 0.00248C_2C_{23}S_4S_5]\dot{q}_1\dot{q}_4 \\
 &\quad + [-0.0025(SS_{23}S_5 - SC_{23}C_4C_5) - 0.00248C_2(S_{23}S_5 - C_{23}C_4C_5) \\
 &\quad + 0.000864S_4C_5]\dot{q}_1\dot{q}_5 + [0.267S_{23} - 0.00758C_{23}]\dot{q}_2\dot{q}_3
-\end{align}
+\end{align*}
 
-\begin{align}
+\begin{align*}
 n_2 &= -\frac{1}{2}[-2.76SC_2 + 0.744C_{223} + 0.6SC_{23} - 0.0213(1 - 2SS_{23})]\dot{q}_1^2 \\
 &\quad + \frac{1}{2}[0.022S_3 + 0.744C_3]\dot{q}_3^2 \\
 &\quad + [0.00164S_{23} - 0.0025C_{23}C_4S_5 + 0.00248S_2C_4S_5 + 0.00003S_{23}(1 - 2SS_4)]\dot{q}_1\dot{q}_4 \\
@@ -189,36 +189,36 @@ n_2 &= -\frac{1}{2}[-2.76SC_2 + 0.744C_{223} + 0.6SC_{23} - 0.0213(1 - 2SS_{23})
 &\quad - [0.00248C_3S_4S_5]\dot{q}_3\dot{q}_4 \\
 &\quad + [-0.0025S_5 + 0.00248(C_3C_4C_5 - S_3S_5)]\dot{q}_3\dot{q}_5 \\
 &\quad - 37.2C_2 - 8.4S_{23} + 1.02S_2
-\end{align}
+\end{align*}
 
-\begin{align}
+\begin{align*}
 n_3 &= -\frac{1}{2}[-2.76SC_2 + 0.744C_{223} + 0.6SC_{23} - 0.0213(1 - 2SS_{23})]\dot{q}_1^2 \\
 &\quad - \frac{1}{2}[0.022S_3 + 0.744C_3]\dot{q}_2^2 - [0.00125C_4S_5]\dot{q}_5^2 - [0.00125C_4S_5]\dot{q}_4^2 \\
 &\quad + [-0.0025C_{23}C_4S_5 + 0.00164S_{23} + 0.00003S_{23}(1 - 2SS_4)]\dot{q}_1\dot{q}_4 \\
 &\quad - [0.0025C_{23}S_4C_5 + 0.000642C_{23}S_4]\dot{q}_1\dot{q}_5 - [0.0025S_5]\dot{q}_2\dot{q}_5 \\
 &\quad - [0.0025S_5]\dot{q}_3\dot{q}_5 - [0.0025S_4C_5]\dot{q}_4\dot{q}_5 - 8.4S_{23} + 0.25C_{23}
-\end{align}
+\end{align*}
 
-\begin{align}
+\begin{align*}
 n_4 &= \frac{1}{2}[0.0025SC_{23}S_4S_5 - 0.00086C_4S_5 + 0.00248C_2C_{23}S_4S_5]\dot{q}_1^2 \\
 &\quad - \frac{1}{2}[0.00248C_3S_4S_5]\dot{q}_2^2 \\
 &\quad + [0.00164S_{23} - 0.0025C_{23}C_4S_5 + 0.00248S_2C_4S_5 + 0.00003S_{23}(1 - 2SS_4)]\dot{q}_1\dot{q}_2 \\
 &\quad + [0.0025C_{23}C_4C_5 - 0.00164S_{23} - 0.003S_{23}(1 - 2SS_4)]\dot{q}_1\dot{q}_3 \\
 &\quad - [0.000642C_{23}S_4]\dot{q}_1\dot{q}_5 + [0.000642S_4]\dot{q}_2\dot{q}_5 \\
 &\quad + [0.000642S_4]\dot{q}_3\dot{q}_5 + 0.028S_{23}S_4S_5
-\end{align}
+\end{align*}
 
-\begin{align}
+\begin{align*}
 n_5 &= \frac{1}{2}[0.0025(SS_{23}S_5 - SC_{23}C_4C_5) + 0.00248C_2(S_{23}S_5 - C_{23}C_4C_5) \\
-&\quad - 0.000864S_4C_5]\dot{q}_1^2 - \frac{1}{2}[0.0025S_5 - 0.00248(C_3C_4C_5 - S_3S_5)]\dot{q}_2^2 \\
-&\quad + [0.0025C_{23}S_4C_5 - 0.00248S_2S_4C_5 + 0.000642C_{23}S_4]\dot{q}_1\dot{q}_2 \\
+&\quad - 0.000864S_4C_5]\dot{q}_1^2 - \frac{1}{2}[0.0025S_5 - 0.00248(C_3C_4C_5 + S_3S_5)]\dot{q}_2^2 \\
+&\quad + [0.0026C_{23}S_4C_5 - 0.00248S_2S_4C_5 + 0.000642C_{23}S_4]\dot{q}_1\dot{q}_2 \\
 &\quad + [0.0025C_{23}S_4C_5 + 0.000642C_{23}S_4]\dot{q}_1\dot{q}_3 + [0.000642C_{23}S_4]\dot{q}_1\dot{q}_4 \\
 &\quad - [0.000642S_4]\dot{q}_2\dot{q}_4 - [0.000642S_4]\dot{q}_3\dot{q}_4 - 0.028(C_{23}C_5 + S_{23}C_4C_5)
-\end{align}
+\end{align*}
 
-\begin{equation}
+\begin{equation*}
 n_6 = 0
-\end{equation}
+\end{equation*}
 
 \begin{figure}[H]
 \centering

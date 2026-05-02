@@ -71,12 +71,17 @@ v = \omega \times r
 
 想象一个球体（即地球）以其中心为轴以角速度$\omega_0$旋转。见图3.2.2。在球面上以速度$v$移动的质量为$m$的物体所受的科里奥利力为
 \begin{equation}
-F_{cor} = -2m\omega_0 \times v
+F_{\text{cor}} = -2m\omega_0 \times v
+\end{equation}
+
+由于$\omega_0 = \dot{\theta}$且$v = R\dot{\varphi}$，可写为
+\begin{equation}\label{eq:3.2.4}
+F_{\text{cor}} = -2m\dot{\theta}\dot{\varphi}R\sin(90^\circ + \varphi) = -2mR\dot{\theta}\dot{\varphi}\cos\varphi.
 \end{equation}
 
 使用右手螺旋定则（即如果手指从$\omega_0$旋转到$v$，拇指指向$\omega_0 \times v$的方向），我们看到，在图中，科里奥利力使$m$向右偏转。
 
-在低气压天气系统中，气团向低压中心移动。科里奥利力负责将气团向右偏转，从而引起称为气旋流的逆时针环流。结果是飓风的旋转运动。对图3.2.2的简要检查表明，在南半球，$F_{cor}$使移动的物体向左偏转，因此低压系统将具有顺时针风向运动。
+在低气压天气系统中，气团向低压中心移动。科里奥利力负责将气团向右偏转，从而引起称为气旋流的逆时针环流。结果是飓风的旋转运动。对图3.2.2的简要检查表明，在南半球，$F_{\text{cor}}$使移动的物体向左偏转，因此低压系统将具有顺时针风向运动。
 
 由于$v = \omega \times r$和$\omega \times (\omega \times r) = \omega(\omega \cdot r) - r(\omega \cdot \omega)$，我们可以写出
 \begin{equation}
@@ -316,35 +321,39 @@ M(q)\ddot{q} + V(q,\dot{q}) + G(q) = \tau
 
 \textbf{机械臂动能}
 
-给定连杆$i$上以相对于连接到该连杆的坐标系$i$的坐标$^ir$表示的一个点，该点在基坐标系中的坐标为
-\begin{equation}
-\begin{bmatrix} x \\ y \\ z \\ 1 \end{bmatrix} = T_i \, {^ir}
+给定连杆$i$上、在固连于该连杆的坐标系$i$中以坐标${^ir}$表示的一点，其在基坐标系中的齐次坐标为
+\begin{equation}\label{eq:3.2.17}
+r = T_i\,{^ir}.
 \end{equation}
-其中$T_i$是附录A中定义的$4 \times 4$齐次变换矩阵。注意$T_i$是关节变量$q_1, q_2, \ldots, q_i$的函数。因此，该点在基坐标系中的速度为
-\begin{equation}
-\begin{bmatrix} \dot{x} \\ \dot{y} \\ \dot{z} \\ 0 \end{bmatrix} = \sum_{j=1}^{i} \frac{\partial T_i}{\partial q_j}\dot{q}_j \, {^ir}
+其中$T_i$是附录A中定义的$4\times4$齐次变换矩阵。注意$T_i$是关节变量$q_1, q_2, \ldots, q_i$的函数。因此，该点在基坐标系中的速度为
+\begin{equation}\label{eq:3.2.18}
+v = \frac{\mathrm{d}r}{\mathrm{d}t} = \sum_{j=1}^{i} \left[ \frac{\partial T_i}{\partial q_j}\,\dot{q}_j \right] {^ir}.
 \end{equation}
+以下将$\dot{r}=\mathrm{d}r/\mathrm{d}t=[\dot{x}\ \dot{y}\ \dot{z}\ 0]^T$的前三个分量记作$v=[v_x\ v_y\ v_z]^T$。
 
 由于当$j > i$时，$\partial T_i/\partial q_j = 0$，我们可以将上限求和替换为$n$，即连杆数。如果已知机械臂矩阵$T_i$，则可以计算$4 \times 4$矩阵$\partial T_i/\partial q_j$。
 
-以速度$v = [v_x \ v_y \ v_z]^T$运动的无穷小质量$dm$的动能为
-\begin{equation}
-dK_i = \frac{1}{2}(\dot{x}^2 + \dot{y}^2 + \dot{z}^2)dm = \frac{1}{2}\text{trace}(\dot{T}_i \, {^ir} \, {^ir}^T \dot{T}_i^T)dm
+以在${^ir}$处、速度为$v=[v_x\ v_y\ v_z]^T$的无穷小质量$dm$的动能为
+\begin{equation}\label{eq:3.2.19}
+\begin{aligned}
+dK_i &= \frac{1}{2}(v_x^2+v_y^2+v_z^2)\,dm = \frac{1}{2}\text{trace}(v^{T}v)\,dm = \frac{1}{2}\text{trace}(vv^{T})\,dm \\
+&= \frac{1}{2}\text{trace}\!\left[\sum_{j=1}^{n}\sum_{k=1}^{n} \frac{\partial T_i}{\partial q_j}\bigl({^ir}\,{^ir}^{T}\bigr)\frac{\partial T_i^{T}}{\partial q_k}\,\dot{q}_j\dot{q}_k\right]dm.
+\end{aligned}
 \end{equation}
 
 因此，连杆$i$的总动能为
-\begin{equation}
-K_i = \int_{\text{link }i} dK_i = \frac{1}{2}\text{trace}\left[\sum_{j=1}^{i}\sum_{k=1}^{i}\frac{\partial T_i}{\partial q_j}\dot{q}_j\left(\int_{\text{link }i}{^ir} \, {^ir}^T dm\right)\frac{\partial T_i^T}{\partial q_k}\dot{q}_k\right]
+\begin{equation*}
+K_i = \int_{\text{link }i} dK_i.
+\end{equation*}
+
+将\eqref{eq:3.2.19}中的$dK_i$代入，可将积分移入求和号内。再定义连杆$i$的$4\times4$\emph{伪惯量矩阵}为
+\begin{equation}\label{eq:3.2.20}
+I_i \equiv \int_{\text{link }i}{^ir}\,{^ir}^{T}\,dm,
 \end{equation}
 
-将$dK_i$的表达式代入，我们可以将积分移到求和内。然后，为连杆$i$定义$4 \times 4$伪惯量矩阵为
-\begin{equation}
-M_i = \int_{\text{link }i}{^ir} \, {^ir}^T dm
-\end{equation}
-
-我们可以将连杆$i$的动能写为
-\begin{equation}
-K_i = \frac{1}{2}\sum_{j=1}^{i}\sum_{k=1}^{i}\text{trace}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)\dot{q}_j\dot{q}_k
+于是可将连杆$i$的动能写为
+\begin{equation}\label{eq:3.2.21}
+K_i = \frac{1}{2}\text{trace}\left[\sum_{j=1}^{n}\sum_{k=1}^{n} \frac{\partial T_i}{\partial q_j}\,I_i\,\frac{\partial T_i^{T}}{\partial q_k}\,\dot{q}_j\dot{q}_k\right].
 \end{equation}
 而机械臂总动能为$K = \sum_{i=1}^{n}K_i$；\emph{不可}用$\frac{1}{2}q^{T}M\dot{q}$或把单杆$K_i$与$\frac{1}{2}\dot{q}^{T}M\dot{q}$等同（后者是总动能，$M$由$(m_{jk})$完全求和定出，见(3.2.29)）。
 
@@ -352,9 +361,14 @@ K_i = \frac{1}{2}\sum_{j=1}^{i}\sum_{k=1}^{i}\text{trace}\left(\frac{\partial T_
 \begin{equation}
 {^ir} = [x \ y \ z \ 1]^T
 \end{equation}
-为无穷小质量$dm$在坐标系$i$中的坐标。那么，展开(3.2.20)得到
-\begin{equation}
-M_i = \begin{bmatrix} \int x^2 dm & \int xy dm & \int xz dm & \int x dm \\ \int xy dm & \int y^2 dm & \int yz dm & \int y dm \\ \int xz dm & \int yz dm & \int z^2 dm & \int z dm \\ \int x dm & \int y dm & \int z dm & \int dm \end{bmatrix}
+为无穷小质量$dm$在坐标系$i$中的坐标。那么，展开\eqref{eq:3.2.20}得到
+\begin{equation}\label{eq:3.2.22}
+I_i = \begin{bmatrix}
+\displaystyle\int x^2\,dm & \displaystyle\int yx\,dm & \displaystyle\int zx\,dm & \displaystyle\int x\,dm \\[6pt]
+\displaystyle\int xy\,dm & \displaystyle\int y^2\,dm & \displaystyle\int zy\,dm & \displaystyle\int y\,dm \\[6pt]
+\displaystyle\int xz\,dm & \displaystyle\int yz\,dm & \displaystyle\int z^2\,dm & \displaystyle\int z\,dm \\[6pt]
+\displaystyle\int x\,dm & \displaystyle\int y\,dm & \displaystyle\int z\,dm & \displaystyle\int dm
+\end{bmatrix},
 \end{equation}
 其中积分在连杆$i$的体积上进行。这是一个对每个连杆计算一次的常数矩阵。它取决于连杆$i$的几何形状和质量分布。实际上，根据连杆$i$的惯性矩
 \begin{align}
@@ -366,22 +380,24 @@ I_{xy} &= \int xy dm \\ I_{xz} &= \int xz dm \\ I_{yz} &= \int yz dm
 \end{align}
 和一阶矩
 \begin{align}
-mx &= \int x dm = mx_c \\ my &= \int y dm = my_c \\ mz &= \int z dm = mz_c
+\int x\,dm &= m\overline{x} \\
+\int y\,dm &= m\overline{y} \\
+\int z\,dm &= m\overline{z},
 \end{align}
-其中$m$为连杆$i$的总质量，
-\begin{equation}
-x_c = \frac{1}{m}\int x dm
+其中$m$为连杆$i$的总质量，且
+\begin{equation}\label{eq:3.2.26}
+{^i\overline{r}} = [\overline{x}\ \ \overline{y}\ \ \overline{z}\ \ 1]^T
 \end{equation}
-是连杆$i$质心在坐标系$i$中的坐标，我们可以写出
+为连杆$i$的质心在坐标系$i$中的齐次坐标（$\overline{x}=\dfrac{1}{m}\displaystyle\int x\,dm$，其余分量类推）。于是可写出
 \begin{equation}
-M_i = \begin{bmatrix} \frac{1}{2}(-I_{xx}+I_{yy}+I_{zz}) & I_{xy} & I_{xz} & mx_c \\ I_{xy} & \frac{1}{2}(I_{xx}-I_{yy}+I_{zz}) & I_{yz} & my_c \\ I_{xz} & I_{yz} & \frac{1}{2}(I_{xx}+I_{yy}-I_{zz}) & mz_c \\ mx_c & my_c & mz_c & m \end{bmatrix}
+I_i = \begin{bmatrix} \frac{1}{2}(-I_{xx}+I_{yy}+I_{zz}) & I_{xy} & I_{xz} & m\overline{x} \\ I_{xy} & \frac{1}{2}(I_{xx}-I_{yy}+I_{zz}) & I_{yz} & m\overline{y} \\ I_{xz} & I_{yz} & \frac{1}{2}(I_{xx}+I_{yy}-I_{zz}) & m\overline{z} \\ m\overline{x} & m\overline{y} & m\overline{z} & m \end{bmatrix}
 \end{equation}
 
 这些量要么在机械臂制造商的规格表中列出，要么可以从那里列出的量计算得出。
 
 回到我们的推导，机械臂总动能可以写为
 \begin{equation}
-K = \sum_{i=1}^{n}K_i = \frac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{n}\sum_{k=1}^{n}\text{trace}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)\dot{q}_j\dot{q}_k
+K = \sum_{i=1}^{n}K_i = \frac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{n}\sum_{k=1}^{n}\text{trace}\left(\frac{\partial T_i}{\partial q_j}I_i\frac{\partial T_i^{T}}{\partial q_k}\right)\dot{q}_j\dot{q}_k
 \end{equation}
 
 由于矩阵和的迹是各个迹的和，我们可以交换求和和迹算子得到
@@ -390,12 +406,12 @@ K = \frac{1}{2}\sum_{j=1}^{n}\sum_{k=1}^{n}m_{jk}\dot{q}_j\dot{q}_k = \frac{1}{2
 \end{equation}
 其中$n \times n$机械臂惯量矩阵$M(q)$的元素定义为
 \begin{equation}
-m_{jk} = \sum_{i=\max(j,k)}^{n}\text{trace}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)
+m_{jk} = \sum_{i=\max(j,k)}^{n}\text{trace}\left(\frac{\partial T_i}{\partial q_j}I_i\frac{\partial T_i^{T}}{\partial q_k}\right)
 \end{equation}
 
 由于当$j > i$时，$\partial T_i/\partial q_j = 0$，我们可以更有效地将其写为
 \begin{equation}
-m_{jk} = \sum_{i=\max(j,k)}^{n}\text{trace}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)
+m_{jk} = \sum_{i=\max(j,k)}^{n}\text{trace}\left(\frac{\partial T_i}{\partial q_j}I_i\frac{\partial T_i^{T}}{\partial q_k}\right)
 \end{equation}
 
 方程(3.2.29)正是我们一直在寻求的；它提供了以已知量和关节变量$q$表示的机械臂动能的方便表达式。由于$m_{jk} = m_{kj}$，惯量矩阵$M(q)$是对称的。由于动能是正的，只有当广义速度为零时才消失，惯量矩阵$M(q)$也是正定的。注意动能取决于$q$和$\dot{q}$。
@@ -404,7 +420,7 @@ m_{jk} = \sum_{i=\max(j,k)}^{n}\text{trace}\left(\frac{\partial T_i}{\partial q_
 
 如果连杆$i$具有质量$m_i$和以其坐标系$i$的坐标表示的质心，该连杆的势能为
 \begin{equation}
-P_i = -m_i g^T T_i {^ir_i}
+P_i = -m_i g^T T_i {^i\overline{r}}
 \end{equation}
 其中重力向量以基坐标表示为
 \begin{equation}
@@ -418,11 +434,15 @@ g = \begin{bmatrix} 0 \\ 0 \\ -9.8 \\ 0 \end{bmatrix} \text{m/s}^2
 
 因此，机械臂总势能为
 \begin{equation}
-P = \sum_{i=1}^{n}P_i = -\sum_{i=1}^{n}m_i g^T T_i {^ir_i}
+P = \sum_{i=1}^{n}P_i = -\sum_{i=1}^{n}m_i g^T T_i {^i\overline{r}}
 \end{equation}
 注意$P$仅取决于关节变量$q$，而不取决于关节速度$\dot{q}$。
 
-用连杆$i$的伪惯量矩阵$M_i$与$e_4 = [0\ 0\ 0\ 1]^T$，也可写成$P = -\sum_{i=1}^{n} g^T T_i (M_i e_4)$，与上式在常规定义下等价。
+注意到$m_i{^i\overline{r}}$是连杆$i$伪惯量矩阵$I_i$的最后一列，可写为
+\begin{equation}\label{eq:3.2.36}
+P(q) = -\sum_{i=1}^{n} g^T T_i(q)\, I_i\, e_4,
+\end{equation}
+其中$e_4 = [0\ 0\ 0\ 1]^T$。
 
 \textbf{拉格朗日方程}
 
@@ -511,7 +531,7 @@ N(q,\dot{q}) = V(q,\dot{q}) + F(\dot{q}) + G(q) + \tau_d
 \hline
 干扰 & $||\tau_d|| \leq d$ \\
 \hline
-线性参数化 & $M(q)\ddot{q} + V(q,\dot{q}) + F_v\dot{q} + F_d(\dot{q}) + G(q) = W(q,\dot{q},\ddot{q})\phi$ \\
+线性参数化 & $M(q)\ddot{q}+N(q,\dot{q})\equiv W(q,\dot{q},\ddot{q})\varphi$ \\
 \hline
 斜对称 & $S(q,\dot{q}) = \dot{M}(q) - 2V_m(q,\dot{q})$是斜对称的 \\
 \hline
@@ -560,27 +580,37 @@ m_1 \leq ||M(q)|| \leq m_2
 
 \textbf{$V(q,\dot{q})$的克罗内克积分析}
 
-让我们首先从克罗内克积[Brewer 1978]的角度检查项$V(q,\dot{q})$，克罗内克积对两个矩阵$A$、$B$定义为
+让我们首先从克罗内克积[Brewer 1978]的角度检查项$V(q,\dot{q})$。克罗内克积对两个矩阵$A$、$B$定义为
 \begin{equation}
-A \otimes B = [a_{ij}B]
+A \otimes B = [a_{ij}B],
 \end{equation}
-其中$A$有元素$a_{ij}$，$[a_{ij}B]$表示由$p \times q$块$a_{ij}B$组成的$np \times mq$块矩阵。因此，对于$A$、$B$、$C$、$D$，我们有
+其中$A$有元素$a_{ij}$，$[a_{ij}B]$表示由$p \times q$块$a_{ij}B$拼成的块矩阵。例如，当$A$为$3\times3$时，
+\begin{equation*}
+A \otimes B = \begin{bmatrix} a_{11}B & a_{12}B & a_{13}B \\ a_{21}B & a_{22}B & a_{23}B \\ a_{31}B & a_{32}B & a_{33}B \end{bmatrix}.
+\end{equation*}
+因此，对于$A$、$B$、$C$、$D$，有
 \begin{equation}
-(A \otimes B)(C \otimes D) = AC \otimes BD
+(A \otimes B)(C \otimes D) = AC \otimes BD.
 \end{equation}
 
-对于矩阵$A(q)$、$B(q)$，定义矩阵导数为
-\begin{equation}
-\frac{\partial A}{\partial q} = \begin{bmatrix} \frac{\partial A}{\partial q_1} & \cdots & \frac{\partial A}{\partial q_n} \end{bmatrix}
+对于矩阵$A(q)$、$B(q)$，其中$q\in\mathbb{R}^n$，定义\emph{矩阵导数}为
+\begin{equation}\label{eq:3.3.10}
+\frac{\partial A}{\partial q} = \begin{bmatrix} \dfrac{\partial A}{\partial q_1} \\ \vdots \\ \dfrac{\partial A}{\partial q_n} \end{bmatrix}.
 \end{equation}
 
-然后我们可以证明乘积法则
-\begin{equation}
-\frac{\partial}{\partial q}(AB) = \frac{\partial A}{\partial q}(I_n \otimes B) + A\frac{\partial B}{\partial q}
+于是可证乘积法则
+\begin{equation}\label{eq:3.3.11}
+\frac{\partial}{\partial q}\bigl[A(q)B(q)\bigr] = (I_n \otimes A)\,\frac{\partial B}{\partial q} + \frac{\partial A}{\partial q}\,B,
 \end{equation}
-其中$I_n$是$n \times n$单位矩阵。
+其中$I_n$为$n\times n$单位矩阵。
 
-现在我们可以检查科里奥利/向心向量$V(q,\dot{q})$[Koditschek 1984, Gu and Loh 1988]。在(3.2.42)上使用(3.3.11)两次，我们可以获得
+将\eqref{eq:3.3.10}中各分块改作**同一行横排**$\begin{bmatrix}\frac{\partial A}{\partial q_1}&\cdots&\frac{\partial A}{\partial q_n}\end{bmatrix}$（Brewer 所述与$\mathrm{vec}$ 算子相当的重排）时，乘积法则等价地写为
+\begin{equation}\label{eq:3.3.11b}
+\frac{\partial}{\partial q}(AB) = \frac{\partial A}{\partial q}(I_n \otimes B) + A\frac{\partial B}{\partial q}.
+\end{equation}
+以下对$M(q)$的求导采用\eqref{eq:3.3.11b}之行拼接约定，以便与$U(q)$等记号直接衔接。
+
+现在我们可以检查科里奥利/向心向量$V(q,\dot{q})$[Koditschek 1984, Gu and Loh 1988]。在(3.2.42)上使用\eqref{eq:3.3.11b}两次，我们可以获得
 \begin{equation}
 V(q,\dot{q}) = \frac{dM}{dt}\dot{q} - \frac{1}{2}(I_n \otimes \dot{q}^T)\frac{\partial M}{\partial q}\dot{q}
 \end{equation}
@@ -766,68 +796,70 @@ v_{kj} = \sum_{i}v_{ijk}\dot{q}_i
 
 \textbf{重力项$G(q)$的性质}
 
-根据(3.2.43)和(3.2.36)，
-\begin{equation}
-G(q) = \frac{\partial P}{\partial q} = -\sum_{i=1}^{n}m_i g^T \frac{\partial T_i}{\partial q}{^ir_i}
-\end{equation}
-因此使用(3.3.11)两次揭示
-\begin{equation}
-G(q) = -\sum_{i=1}^{n}m_i (I_n \otimes g^T)\frac{\partial T_i}{\partial q}{^ir_i}
+根据(3.2.43)与(3.2.36)，
+\begin{equation*}
+G(q) = \frac{\partial P}{\partial q} = -\sum_{i=1}^{n} \frac{\partial}{\partial q}\bigl(g^T T_i(q) I_i e_4\bigr),
+\end{equation*}
+其中$g$为重力加速度向量，$T_i(q)$为连杆$i$的齐次变换，$I_i$为连杆$i$的伪惯量矩阵，$e_4=[0\ 0\ 0\ 1]^T$。将\eqref{eq:3.3.11}用两次可得
+\begin{equation}\label{eq:3.3.50}
+\begin{aligned}
+G(q) &= -\sum_{i=1}^{n} \frac{\partial}{\partial q}\bigl(g^T T_i(q)\bigr) I_i e_4 \\[2pt]
+&= -\sum_{i=1}^{n} (I_n \otimes g^T)\frac{\partial T_i}{\partial q}\, I_i e_4 .
+\end{aligned}
 \end{equation}
 
-可以为任何给定机器人机械臂导出重力项的界限。因此
-\begin{equation}
-||G(q)|| \leq g_b(q)
+对任意给定机械臂均可给出重力项的上界估计，因而
+\begin{equation}\label{eq:3.3.51}
+\|G(q)\| \leq g_b(q),
 \end{equation}
-其中$||\cdot||$是任何适当的向量范数，$g_b$是可以为任何给定机械臂确定的标量函数（见例3.3.1）。对于旋转机械臂，$g_b$是与关节向量$q$无关的常数，但对于具有平移连杆的机械臂，$g_b$可能取决于$q$。见3.2节和例3.3.1中的例子来验证这些说法。
+其中$\|\cdot\|$为任一常用向量范数；$g_b$是可针对具体机型确定的标量函数（见例3.3.1）。对由转动关节组成的机械臂，$g_b$往往可取与$q$无关的常数；若含平移关节，则$g_b$可能依赖于$q$。见3.2节及例3.3.1。
 
 \textbf{摩擦项$F(\dot{q})$的性质}
 
 机械臂方程(3.3.1)中的摩擦形式为
-\begin{equation}
-F(\dot{q}) = F_v\dot{q} + F_d(\dot{q})
+\begin{equation}\label{eq:3.3.52}
+F(\dot{q}) = F_v\dot{q} + F_d(\dot{q}),
 \end{equation}
-其中$F_v$是粘性摩擦系数矩阵，$F_d$是动态摩擦项。摩擦系数是为给定机械臂最难确定的参数之一，实际上，(3.3.52)仅代表其影响的近似数学模型。更多讨论见[Craig 1988, Schilling 1990]。
+其中$F_v$为粘性摩擦矩阵，$F_d$为动（库仑）摩擦项。摩擦系数往往是机型上最难标定的量之一；\eqref{eq:3.3.52}及以下各式仅给出常用的近似数学结构。更多讨论见[Craig 1988, Schilling 1990]。
 
-由于摩擦是局部效应，我们可以假设$F(\dot{q})$在关节之间是解耦的，因此
-\begin{equation}
-F(\dot{q}) = \begin{bmatrix} f_1(\dot{q}_1) \\ \vdots \\ f_n(\dot{q}_n) \end{bmatrix}
+由于摩擦为局部效应，可假设$F(\dot{q})$在各关节上解耦，因而
+\begin{equation}\label{eq:3.3.53}
+F(\dot{q}) = \mathrm{vec}\{f_i(\dot{q}_i)\} \equiv \begin{bmatrix} f_1(\dot{q}_1) \\ \vdots \\ f_n(\dot{q}_n) \end{bmatrix},
 \end{equation}
-其中$f_i(\cdot)$是可以为任何给定机械臂确定的已知标量函数。我们为将来使用定义了$\text{vec}\{\cdot\}$函数。
+其中各$f_i(\cdot)$为已知标量函数；$\mathrm{vec}\{\cdot\}$将分量堆成列向量。
 
-粘性摩擦通常可以假设具有形式
-\begin{equation}
-F_v\dot{q} = \text{diag}\{v_i\}\dot{q}
+粘性摩擦常写作
+\begin{equation}\label{eq:3.3.54}
+F_v\dot{q} = \mathrm{vec}\{v_i\dot{q}_i\},
 \end{equation}
-其中$v_i$是已知常数系数。那么$F_v = \text{diag}\{v_i\}$，一个对角元素为$v_i$的对角矩阵。动态摩擦通常可以假设具有形式
-\begin{equation}
-F_d(\dot{q}) = \text{diag}\{k_i\}\text{sgn}(\dot{q})
+且$F_v=\mathrm{diag}\{v_i\}$，$v_i$为已知常数。动摩擦常写作
+\begin{equation}\label{eq:3.3.55}
+F_d(\dot{q}) = \mathrm{vec}\{k_i\,\mathrm{sgn}(\dot{q}_i)\},
 \end{equation}
-其中$k_i$是已知常数系数，符号函数对标量$x$定义为
-\begin{equation}
-\text{sgn}(x) = \begin{cases} +1, & x > 0 \\ -1, & x < 0 \\ 0, & x = 0 \end{cases}
+$k_i$为已知常数；对标量$x$，符号函数取为
+\begin{equation}\label{eq:3.3.56}
+\mathrm{sgn}(x) = \begin{cases} +1, & x > 0 \\ \text{不定}, & x = 0 \\ -1, & x < 0. \end{cases}
+\end{equation}
+从而
+\begin{equation}\label{eq:3.3.57}
+F_d(\dot{q}) = K_d\,\mathrm{sgn}(\dot{q}),
+\end{equation}
+其中$K_d=\mathrm{diag}\{k_i\}$为动摩擦系数矩阵。对向量自变量，逐分量符号函数记为
+\begin{equation}\label{eq:3.3.58}
+\mathrm{sgn}(x) = \mathrm{vec}\{\mathrm{sgn}(x_i)\}.
 \end{equation}
 
-那么
-\begin{equation}
-F_d(\dot{q}) = K_d \text{sgn}(\dot{q})
+常假定摩擦项满足联合有界性
+\begin{equation}\label{eq:3.3.59}
+\|F_v\dot{q} + F_d(\dot{q})\| \leq v\|\dot{q}\| + k,
 \end{equation}
-其中$K_d = \text{diag}\{k_i\}$是动态摩擦系数矩阵，向量$x$的符号函数定义为
-\begin{equation}
-\text{sgn}(x) = \text{vec}\{\text{sgn}(x_i)\} = \begin{bmatrix} \text{sgn}(x_1) \\ \vdots \\ \text{sgn}(x_n) \end{bmatrix}
-\end{equation}
+其中$v$、$k$为与该机械臂相关的已知常数，$\|\cdot\|$为适当范数。
 
-摩擦项的界限可以假设具有形式
-\begin{equation}
-||F_v\dot{q}|| \leq v||\dot{q}||, \quad ||F_d(\dot{q})|| \leq k
+亦可在$F(\dot{q})$中加入描述静摩擦/Stribeck 过渡的分量，例如
+\begin{equation}\label{eq:3.3.60}
+F_{si} = \mathrm{sgn}(\dot{q}_i)\bigl[(k_{si}-k_i)\exp\bigl(-|\dot{q}_i|/\epsilon\bigr)\bigr],
 \end{equation}
-其中$v$和$k$对特定机械臂是已知的，$||\cdot||$是合适的范数。
-
-可以包含在$F(\dot{q})$中的另一个摩擦项是静摩擦，其分量具有形式
-\begin{equation}
-F_{si} = k_{si}\text{sgn}(\dot{q}_i), \quad |\dot{q}_i| < \epsilon
-\end{equation}
-其中$k_{si}$是关节$i$的静摩擦系数，$\epsilon$是一个小的正参数。我们通常忽略这个项。
+$k_{si}$为关节$i$的静摩擦系数，$\epsilon$为小正参数。后文一般\textbf{忽略}该项。
 
 \textbf{干扰项$\tau_d$的性质}
 
@@ -842,17 +874,20 @@ F_{si} = k_{si}\text{sgn}(\dot{q}_i), \quad |\dot{q}_i| < \epsilon
 机器人动力学方程享有的最后一个性质将在第五章中对我们非常有用。即，它在参数中是线性的，这个性质首先在[Craig 1988]的自适应控制中被利用。这很重要，因为一些或所有参数可能是未知的；因此动力学在未知项中是线性的。
 
 这个性质可以表示为
-\begin{equation}
-M(q)\ddot{q} + V(q,\dot{q}) + F_v\dot{q} + F_d(\dot{q}) + G(q) = W(q,\dot{q},\ddot{q})\phi
+\begin{equation}\label{eq:3.3.62}
+\begin{aligned}
+&M(q)\ddot{q} + V(q,\dot{q}) + F_v\dot{q} + F_d(\dot{q}) + G(q) \\
+&\quad = M(q)\ddot{q} + N(q,\dot{q}) \equiv W(q,\dot{q},\ddot{q})\varphi,
+\end{aligned}
 \end{equation}
-其中$\phi$是参数向量，$W(q,\dot{q},\ddot{q})$是取决于关节变量、关节速度和关节加速度的机器人函数矩阵。这个矩阵可以为任何给定机器人机械臂计算，因此是已知的。见例3.3.1。注意干扰$\tau_d$不包含在这个方程中。
+其中$N(q,\dot{q})\equiv V(q,\dot{q})+F_v\dot{q}+F_d(\dot{q})+G(q)$汇集了非惯性项；$\varphi$为参数向量，$W(q,\dot{q},\ddot{q})$为回归矩阵（仅依赖于$q,\dot{q},\ddot{q}$的已知函数矩阵），可对给定机械臂算出。见例3.3.1。注意干扰$\tau_d$不包含在式中。
 
 \textbf{例3.3-1：二连杆平面肘形机械臂的结构和界限}
 
 二连杆平面机械臂的动力学在例3.2.2中给出。我们现在应该计算本节中定义的结构矩阵，以及表3.3.1中需要的界限。摩擦界限是直接的，因此我们在这里不提及它们。动力学矩阵为
 \begin{align}
 M(q) &= \begin{bmatrix} (m_1+m_2)a_1^2 + m_2a_2^2 + 2m_2a_1a_2\cos\theta_2 & m_2a_2^2 + m_2a_1a_2\cos\theta_2 \\ m_2a_2^2 + m_2a_1a_2\cos\theta_2 & m_2a_2^2 \end{bmatrix} \\
-V(q,\dot{q}) &= \begin{bmatrix} -m_2a_1a_2(2\dot{\theta}_1+\dot{\theta}_2)\dot{\theta}_2\sin\theta_2 \\ m_2a_1a_2\dot{\theta}_1^2\sin\theta_2 \end{bmatrix} \\
+V(q,\dot{q}) &= \begin{bmatrix} -m_2a_1a_2(2\dot{\theta}_1\dot{\theta}_2 + \dot{\theta}_2^2)\sin\theta_2 \\ m_2a_1a_2\dot{\theta}_1^2\sin\theta_2 \end{bmatrix} \\
 G(q) &= \begin{bmatrix} (m_1+m_2)ga_1\cos\theta_1 + m_2ga_2\cos(\theta_1+\theta_2) \\ m_2ga_2\cos(\theta_1+\theta_2) \end{bmatrix}
 \end{align}
 
@@ -862,146 +897,183 @@ G(q) &= \begin{bmatrix} (m_1+m_2)ga_1\cos\theta_1 + m_2ga_2\cos(\theta_1+\theta_
 
 \textbf{a. 惯量矩阵的界限}
 
-$\mu_1$和$\mu_2$的评估相当于确定$M(q)$在所有$q$上的最小和最大特征值。这不是一件容易的事，需要求解一些二次方程，尽管使用Mathematica或Maple等软件可以相当容易地进行。因此，让我们找到$m_1$和$m_2$。
+$\mu_1$、$\mu_2$（最小/最大特征值）的估计需求解特征方程。此处我们改用\textbf{诱导$\mathbf{1}$-范数}（最大绝对列和）得到常数上、下界$M_2$、$M_1$，记号与质量$m_1$、$m_2$区分。
 
-$M(q)$的诱导1-范数是最大绝对列和。在确定这个范数的界限时，重要的是要考虑关节角允许的运动范围。为了说明，假设$\theta_1$和$\theta_2$被限制在$\pm\pi/2$以内。那么1-范数总是以第1列表示为
+在确定$\|M(q)\|_1$的界限时，须考虑关节角允许范围。为说明，设$\theta_1$、$\theta_2$限制在$\pm\pi/2$内，则诱导1-范数可由第1列给出
 \begin{equation}
-||M(q)||_1 = |(m_1+m_2)a_1^2 + m_2a_2^2 + 2m_2a_1a_2\cos\theta_2| + |m_2a_2^2 + m_2a_1a_2\cos\theta_2|
+\|M(q)\|_1 = |(m_1+m_2)a_1^2 + m_2a_2^2 + 2m_2a_1a_2\cos\theta_2| + |m_2a_2^2 + m_2a_1a_2\cos\theta_2|.
 \end{equation}
+对一切$\theta_2$，该式由上界
+\begin{equation}
+M_2 = (m_1+m_2)a_1^2 + 2m_2a_2^2 + 3m_2a_1a_2
+\end{equation}
+界定；由下界
+\begin{equation}
+M_1 = (m_1+m_2)a_1^2 + 2m_2a_2^2
+\end{equation}
+界定（印本取此常数下界；未必为与$\cos\theta_2$组合相关的最紧下界）。
 
-这被上界
-\begin{equation}
-m_2 = (m_1+m_2)a_1^2 + 2m_2a_2^2 + 3m_2a_1a_2
-\end{equation}
-和下界
-\begin{equation}
-m_1 = (m_1+m_2)a_1^2 + m_2a_2^2 - 2m_2a_1a_2
-\end{equation}
-限制。
-
-由于机械臂是旋转的，且$\cos\theta_2$上下有界，$M_2$和$M_1$是常数。重要的是要注意，如果机械臂是旋转/平移（RP）的，因此关节变量为$(\theta_1, a_2)$，界限是$q$的函数。
+由于连杆为转动关节且$\cos\theta_2$有界，$M_2$与$M_1$在此取法下为常数。若机械臂为转动/平移（RP）构型、关节变量为$(\theta_1,a_2)$，则类似界限一般是$q$的函数。
 
 \textbf{b. 科里奥利和重力项的界限}
 
-使用
+由
 \begin{equation}
-V(q,\dot{q}) = \begin{bmatrix} -m_2a_1a_2(2\dot{\theta}_1+\dot{\theta}_2)\dot{\theta}_2\sin\theta_2 \\ m_2a_1a_2\dot{\theta}_1^2\sin\theta_2 \end{bmatrix}
+V(q,\dot{q}) = \begin{bmatrix} -m_2a_1a_2(2\dot{\theta}_1\dot{\theta}_2 + \dot{\theta}_2^2)\sin\theta_2 \\ m_2a_1a_2\dot{\theta}_1^2\sin\theta_2 \end{bmatrix}
 \end{equation}
-找到科里奥利/向心向量的界限$v_b$，因此$v_b = m_2a_1a_2$。
+有
+\begin{equation}
+\begin{aligned}
+\|V(q,\dot{q})\|_1 &= \bigl|m_2a_1a_2(2\dot{\theta}_1\dot{\theta}_2 + \dot{\theta}_2^2)\sin\theta_2\bigr| + \bigl|m_2a_1a_2\dot{\theta}_1^2\sin\theta_2\bigr| \\
+&\leq m_2a_1a_2\bigl(|\dot{\theta}_1| + |\dot{\theta}_2|\bigr)^2 \equiv v_b \|\dot{q}\|^2,
+\end{aligned}
+\end{equation}
+其中若定义$\|\dot{q}\|:=|\dot{\theta}_1|+|\dot{\theta}_2|$，即得印本所写形式；此时$v_b = m_2a_1a_2$。
 
-同样，对于重力界限，
+同样，对重力向量
 \begin{equation}
 G(q) = \begin{bmatrix} (m_1+m_2)ga_1\cos\theta_1 + m_2ga_2\cos(\theta_1+\theta_2) \\ m_2ga_2\cos(\theta_1+\theta_2) \end{bmatrix}
 \end{equation}
+有
+\begin{equation}
+\begin{aligned}
+\|G(q)\|_1 &= \bigl|(m_1+m_2)ga_1\cos\theta_1 + m_2ga_2\cos(\theta_1+\theta_2)\bigr| + \bigl|m_2ga_2\cos(\theta_1+\theta_2)\bigr| \\
+&\leq (m_1+m_2)ga_1 + 2m_2ga_2 \equiv g_b.
+\end{aligned}
+\end{equation}
 
-注意如果机械臂是RP，那么$v_b$和$g_b$是$q$的函数。
+注意若机械臂为RP构型，则$v_b$与$g_b$可能依赖于$q$。
 
 \textbf{c. 科里奥利/向心结构矩阵}
 
-我们现在列出本节讨论的$V(q,\dot{q})$的各种结构矩阵。它们的计算留作练习（见习题）。
+以下给出与克罗内克记号一致的辅助矩阵及各形式的$V_m$。详细推导留作习题。
 
-科里奥利/向心矩阵：
+记
+\begin{equation}
+U \equiv (I \otimes \dot{q}^T)\,\frac{\partial M}{\partial q}
+ = \begin{bmatrix} 0 & 0 \\ -(2\dot{\theta}_1 + \dot{\theta}_2)m_2a_1a_2\sin\theta_2 & -\dot{\theta}_1 m_2a_1a_2\sin\theta_2 \end{bmatrix},
+\end{equation}
+其中$I$为与$M$同阶的单位阵。则
 \begin{align}
-V_{m1}(q,\dot{q}) &= \begin{bmatrix} -m_2a_1a_2\dot{\theta}_2\sin\theta_2 & -m_2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 \\ m_2a_1a_2\dot{\theta}_1\sin\theta_2 & 0 \end{bmatrix} \\
-V_{m2}(q,\dot{q}) &= \begin{bmatrix} -m_2a_1a_2\dot{\theta}_2\sin\theta_2 & m_2a_1a_2\dot{\theta}_1\sin\theta_2 \\ -m_2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 & 0 \end{bmatrix}
+V_{m1}(q,\dot{q}) &= \dot{M}(q) - \tfrac{1}{2}U \nonumber\\
+&= \begin{bmatrix} -2\dot{\theta}_2 m_2a_1a_2\sin\theta_2 & -\dot{\theta}_2 m_2a_1a_2\sin\theta_2 \\[2pt] (\dot{\theta}_1 - \tfrac{1}{2}\dot{\theta}_2) m_2a_1a_2\sin\theta_2 & \tfrac{1}{2}\dot{\theta}_1 m_2a_1a_2\sin\theta_2 \end{bmatrix}, \\[6pt]
+V_{m2}(q,\dot{q}) &= U^T - \tfrac{1}{2}U \nonumber\\
+&= \begin{bmatrix} 0 & -(2\dot{\theta}_1 + \dot{\theta}_2) m_2a_1a_2\sin\theta_2 \\[2pt] (\dot{\theta}_1 + \tfrac{1}{2}\dot{\theta}_2) m_2a_1a_2\sin\theta_2 & \tfrac{1}{2}\dot{\theta}_1 m_2a_1a_2\sin\theta_2 \end{bmatrix}, \\[6pt]
+V_m(q,\dot{q}) &= \tfrac{1}{2}\bigl(\dot{M} + U^T - U\bigr) \nonumber\\
+&= \begin{bmatrix} -\dot{\theta}_2 m_2a_1a_2\sin\theta_2 & -(\dot{\theta}_1 + \dot{\theta}_2) m_2a_1a_2\sin\theta_2 \\[2pt] \dot{\theta}_1 m_2a_1a_2\sin\theta_2 & 0 \end{bmatrix}.
 \end{align}
 
-斜对称矩阵$S(q,\dot{q})$：
+又$S(q,\dot{q}) = U - U^T$为斜对称阵，
 \begin{equation}
-S = \begin{bmatrix} 0 & -m_2a_1a_2(2\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 \\ m_2a_1a_2(2\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 & 0 \end{bmatrix}
+S(q,\dot{q}) = \begin{bmatrix} 0 & (2\dot{\theta}_1 + \dot{\theta}_2)m_2a_1a_2\sin\theta_2 \\ -(2\dot{\theta}_1 + \dot{\theta}_2)m_2a_1a_2\sin\theta_2 & 0 \end{bmatrix}.
 \end{equation}
 
-对称矩阵$V_1(q)$、$V_2(q)$：
+将$V(q,\dot{q})$写为$\dot{q}^T V_i \dot{q}$形式时出现的对称矩阵可取为
 \begin{align}
-V_1(q) &= \begin{bmatrix} -m_2a_1a_2\sin\theta_2 & -m_2a_1a_2\sin\theta_2 \\ -m_2a_1a_2\sin\theta_2 & 0 \end{bmatrix} \\
-V_2(q) &= \begin{bmatrix} 0 & -m_2a_1a_2\sin\theta_2 \\ -m_2a_1a_2\sin\theta_2 & -m_2a_1a_2\sin\theta_2 \end{bmatrix}
+V_1(q) &= \begin{bmatrix} 0 & -m_2a_1a_2\sin\theta_2 \\ -m_2a_1a_2\sin\theta_2 & -m_2a_1a_2\sin\theta_2 \end{bmatrix}, \\
+V_2(q) &= \begin{bmatrix} m_2a_1a_2\sin\theta_2 & 0 \\ 0 & 0 \end{bmatrix}.
 \end{align}
 
-位置/速度分解矩阵：
-\begin{align}
-V_p(q) &= \begin{bmatrix} -m_2a_1a_2\dot{\theta}_2\sin\theta_2 & -m_2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 \\ m_2a_1a_2\dot{\theta}_1\sin\theta_2 & 0 \end{bmatrix} \\
-V_v(\dot{q}) &= \begin{bmatrix} 0 & -m_2a_1a_2\dot{\theta}_1\sin\theta_2 \\ -m_2a_1a_2(\dot{\theta}_1+\dot{\theta}_2)\sin\theta_2 & 0 \end{bmatrix}
-\end{align}
+位置–速度分解（印本）为
+\begin{equation}
+V_p(q) = \begin{bmatrix} 0 & 0 \\ 0 & 0 \\ -2m_2a_1a_2\sin\theta_2 & -m_2a_1a_2\sin\theta_2 \\ -m_2a_1a_2\sin\theta_2 & 0 \end{bmatrix},
+\end{equation}
+\begin{equation}
+V_v(\dot{q}) = \begin{bmatrix} \frac{1}{2}\dot{\theta}_1 & -\frac{1}{2}\dot{\theta}_2 & \dot{\theta}_2 & 0 \\[2pt] 0 & \dot{\theta}_1 & -\frac{1}{2}\dot{\theta}_1 & \frac{1}{2}\dot{\theta}_2 \end{bmatrix},
+\end{equation}
+且有
+\begin{equation}
+V(q,\dot{q}) = V_v(\dot{q})\,V_p(q)\,\dot{q}
+\end{equation}
+（将$V_v$的$4$列依次与$w=V_p\dot{q}$的$4$个分量相乘求和即得向量$V$；见习题直接验算。）
 
 \textbf{d. 机器人函数参数矩阵$W$}
 
-机器人动力学在参数中是线性的。对于自适应控制的目的，应该选择表3.3.1中的参数向量$\phi$，使其包含未知参数。
-
-包括摩擦在内的动力学可以写为
+计入关节粘性摩擦$v_i$与库仑摩擦$k_i\,\mathrm{sgn}(\dot{\theta}_i)$时，标量方程可写为
 \begin{equation}
-\tau = W\phi
+\begin{aligned}
+\tau_1 &= \bigl[(m_1+m_2)a_1^2 + m_2a_2^2 + 2m_2a_1a_2\cos\theta_2\bigr]\ddot{\theta}_1
+ + \bigl[m_2a_2^2 + m_2a_1a_2\cos\theta_2\bigr]\ddot{\theta}_2 \\
+ &\quad - m_2a_1a_2(2\dot{\theta}_1\dot{\theta}_2 + \dot{\theta}_2^2)\sin\theta_2 \\
+ &\quad + (m_1+m_2)ga_1\cos\theta_1 + m_2ga_2\cos(\theta_1+\theta_2) \\
+ &\quad + v_1\dot{\theta}_1 + k_1\,\mathrm{sgn}(\dot{\theta}_1),
+\end{aligned}
+\end{equation}
+\begin{equation}
+\begin{aligned}
+\tau_2 &= \bigl[m_2a_2^2 + m_2a_1a_2\cos\theta_2\bigr]\ddot{\theta}_1 + m_2a_2^2\ddot{\theta}_2
+ + m_2a_1a_2\dot{\theta}_1^2\sin\theta_2 \\
+ &\quad + m_2ga_2\cos(\theta_1+\theta_2) + v_2\dot{\theta}_2 + k_2\,\mathrm{sgn}(\dot{\theta}_2).
+\end{aligned}
+\end{equation}
+
+机器人动力学在参数中是线性的。若连杆参数$a_1,a_2$已知，而第二质量$m_2$（含负载）与摩擦系数未知，则可将动力学写为
+\begin{equation}
+\tau = W(q,\dot{q},\ddot{q})\,\varphi
 \end{equation}
 其中
 \begin{equation}
-\phi = \begin{bmatrix} m_1 \\ m_2 \\ v_1 \\ k_1 \\ v_2 \\ k_2 \end{bmatrix}
+\varphi = \begin{bmatrix} m_1 \\ m_2 \\ k_1 \\ v_1 \\ k_2 \\ v_2 \end{bmatrix}
 \end{equation}
-第二质量$m_2$包括负载的质量。这个和摩擦系数通常是未知的。因此，选择
-\begin{equation}
-\phi = \begin{bmatrix} m_1 \\ m_2 \\ m_1a_1 + m_2a_1 \\ m_2a_2 \\ m_1a_1^2 + m_2a_1^2 \\ m_2a_2^2 \\ m_2a_1a_2 \\ v_1 \\ v_2 \\ k_1 \\ k_2 \end{bmatrix}
-\end{equation}
+（$k_i$、$v_i$分别对应关节$i$的库仑与粘性摩擦。）
 
-那么已知机器人函数的矩阵$W(q,\dot{q},\ddot{q})$变为
+已知机器人函数构成的矩阵$W$为
 \begin{equation}
-W = \begin{bmatrix} w_{11} & w_{12} & w_{13} & w_{14} & w_{15} & w_{16} & w_{17} & \dot{\theta}_1 & \text{sgn}(\dot{\theta}_1) & 0 & 0 \\ 0 & w_{22} & 0 & w_{24} & 0 & w_{26} & w_{27} & 0 & 0 & \dot{\theta}_2 & \text{sgn}(\dot{\theta}_2) \end{bmatrix}
+W = \begin{bmatrix} w_{11} & w_{12} & w_{13} & w_{14} & 0 & 0 \\ 0 & w_{22} & 0 & 0 & w_{25} & w_{26} \end{bmatrix}
 \end{equation}
 其中
 \begin{align}
-w_{11} &= \ddot{\theta}_1 \\
-w_{12} &= \ddot{\theta}_1 + \ddot{\theta}_2 \\
-w_{13} &= g\cos\theta_1 \\
-w_{14} &= g\cos(\theta_1 + \theta_2) \\
-w_{15} &= a_1^2\ddot{\theta}_1 \\
-w_{16} &= a_2^2(\ddot{\theta}_1 + \ddot{\theta}_2) \\
-w_{17} &= (2\ddot{\theta}_1 + \ddot{\theta}_2)a_1a_2\cos\theta_2 - (2\dot{\theta}_1\dot{\theta}_2 + \dot{\theta}_2^2)a_1a_2\sin\theta_2 \\
-w_{22} &= \ddot{\theta}_1 + \ddot{\theta}_2 \\
-w_{24} &= g\cos(\theta_1 + \theta_2) \\
-w_{26} &= a_2^2(\ddot{\theta}_1 + \ddot{\theta}_2) \\
-w_{27} &= \ddot{\theta}_1 a_1a_2\cos\theta_2 + \dot{\theta}_1^2 a_1a_2\sin\theta_2
+w_{11} &= a_1^2\ddot{\theta}_1 + ga_1\cos\theta_1, \\
+w_{12} &= \bigl[a_1^2 + a_2^2 + 2a_1a_2\cos\theta_2\bigr]\ddot{\theta}_1 + \bigl[a_2^2 + a_1a_2\cos\theta_2\bigr]\ddot{\theta}_2 \notag\\
+ &\quad - a_1a_2(2\dot{\theta}_1\dot{\theta}_2 + \dot{\theta}_2^2)\sin\theta_2 + ga_1\cos\theta_1 + ga_2\cos(\theta_1+\theta_2), \\
+w_{13} &= \mathrm{sgn}(\dot{\theta}_1), \quad w_{14} = \dot{\theta}_1, \\
+w_{22} &= \bigl[a_2^2 + a_1a_2\cos\theta_2\bigr]\ddot{\theta}_1 + a_2^2\ddot{\theta}_2 + a_1a_2\dot{\theta}_1^2\sin\theta_2 + ga_2\cos(\theta_1+\theta_2), \\
+w_{25} &= \mathrm{sgn}(\dot{\theta}_2), \quad w_{26} = \dot{\theta}_2.
 \end{align}
 
-读者应该验证，有了这些定义，动力学可以表示为$\tau = W\phi$。矩阵$W$由测量的关节位置及其速度和加速度计算得出。
+读者应验证：按上式有$\tau = W\varphi$与大段标量动力学一致；$W$由可测的$q,\dot{q},\ddot{q}$构成。（若$a_1,a_2$亦待辨识，则应改选表3.3.1风格的更多基函数参数化。）
 
 \subsection{无源性与能量守恒}
 
-表3.3.1中给出的机械臂动力学的"牛顿"形式掩盖了一些我们应该在这里探讨的重要物理性质[Koditschek 1984]、[Ortega and Spong 1988]、[Johansson 1990]、[Slotine and Li 1987]、[Slotine 1988]。注意动力学可以用斜对称矩阵$S(q,\dot{q})$写为
-\begin{equation}
-M(q)\ddot{q} + V_m(q,\dot{q})\dot{q} + G(q) = \tau
+表3.3.1中给出的机械臂动力学的"牛顿"形式掩盖了一些我们应该在这里探讨的重要物理性质[Koditschek 1984]、[Ortega and Spong 1988]、[Johansson 1990]、[Slotine and Li 1987]、[Slotine 1988]。引入斜对称矩阵$S(q,\dot{q})$，可将动力学写为
+\begin{equation}\label{eq:3.3.63}
+M(q)\ddot{q} + \frac{1}{2}\bigl(\dot{M}(q) - S(q,\dot{q})\bigr)\dot{q} = \tau - G(q),
 \end{equation}
-其中摩擦和$\tau_d$被忽略。现在，以$K$为动能，
+其中摩擦与$\tau_d$暂略；此式与常见的$M\ddot{q}+V_m\dot{q}+G=\tau$在$V_m=\frac{1}{2}(\dot{M}-S)$时等价。现在，以$K$为动能，
 \begin{equation}
-\dot{K} = \frac{1}{2}\dot{q}^T\dot{M}\dot{q} + \dot{q}^T M\ddot{q}
+\frac{\mathrm{d}K}{\mathrm{d}t} = \frac{1}{2}\frac{\mathrm{d}}{\mathrm{d}t}\bigl(\dot{q}^T M(q)\dot{q}\bigr) = \dot{q}^T M\ddot{q} + \frac{1}{2}\dot{q}^T \dot{M}\dot{q}.
 \end{equation}
-因此(3.3.62)产生
-\begin{equation}
-\dot{K} = \frac{1}{2}\dot{q}^T(\dot{M} - 2V_m)\dot{q} + \dot{q}^T(\tau - G)
+将\eqref{eq:3.3.63}代入可得
+\begin{equation}\label{eq:3.3.64}
+\dot{K} = \frac{1}{2}\dot{q}^T S\dot{q} + \dot{q}^T(\tau - G).
 \end{equation}
-或
-\begin{equation}
-\dot{K} = \frac{1}{2}\dot{q}^T S \dot{q} + \dot{q}^T(\tau - G)
+由$S$的斜对称性有$\dot{q}^T S\dot{q}=0$，因而
+\begin{equation}\label{eq:3.3.65}
+\dot{K} = \dot{q}^T(\tau - G).
 \end{equation}
 
 这是能量守恒的表述，右边表示来自净外力的功率输入。$S(q,\dot{q})$的斜对称性只不过是一个陈述，即虚拟力$S(q,\dot{q})$不做功。外力所做的功由下式给出
-\begin{equation}
+\begin{equation}\label{eq:3.3.66}
 K(t) - K(0) = \int_0^t \dot{q}^T(\tau - G) dt - \frac{1}{2}\int_0^t \dot{q}^T S \dot{q} dt = \int_0^t \dot{q}^T(\tau - G) dt
 \end{equation}
 
 此时回忆机械臂从$\tau(t)$到$\dot{q}$的无源性（第1.5节），它仅仅说明机械臂不能创造能量。从控制的角度来看，无源系统不能变得不稳定。一些流行的控制方案（例如，标准计算扭矩，第3.4节）的问题是它们破坏了无源性性质，如果系统参数不完全已知或存在干扰，可能导致不稳定。基于无源性的设计确保闭环系统是无源的（见第4.3节、上面引用的参考文献和[Anderson 1989]）。
 
-这个分析不包括摩擦项。无论$f(\dot{q})$的形式如何，一个合理的假设是摩擦是耗散的，因此$f_i(x)$仅位于第一和第三象限。这等价于
-\begin{equation}
-\dot{q}^T F(\dot{q}) \geq -\gamma^2
+这个分析不包括摩擦项。无论$f(\dot{\mathbf{q}})$的形式如何，一个合理的假设是摩擦是\emph{耗散的}，因而$f_i(x)$仅位于第一和第三象限。这等价于
+\begin{equation}\label{eq:3.3.67}
+\dot{q}^T F(\dot{q}) \geq 0
 \end{equation}
 
-在这一假设下，摩擦不会破坏机械臂的无源性。然后可以简单地修改(3.3.63)设计的控制器以包含摩擦[Slotine 1988]。摩擦的耗散性质允许人们将系统的带宽增加到经典极限之外。
+在这一假设下，摩擦不会破坏机械臂的无源性。然后可以简单地修改针对\eqref{eq:3.3.63}设计的控制器以包含摩擦[Slotine 1988]。摩擦的耗散性质允许人们将系统的带宽增加到经典极限之外。
 
 \section{状态变量表示与反馈线性化}
 
 机器人机械臂动力学方程在表3.3.1中为
-\begin{equation}
+\begin{equation}\label{eq:3.4.1}
 M(q)\ddot{q} + V(q,\dot{q}) + F_v\dot{q} + F_d(\dot{q}) + G(q) + \tau_d = \tau
 \end{equation}
 其中$q(t) \in R^n$为关节变量向量，$\tau(t)$为控制输入。$M(q)$是惯量矩阵，$V(q,\dot{q})$是科里奥利/向心向量，$F_v(\dot{q})$是粘性摩擦，$F_d(\dot{q})$是动态摩擦，$G(q)$是重力，$\tau_d$是干扰。这些项满足表3.3.1中所示的性质。我们也可以将动力学写为
-\begin{equation}
+\begin{equation}\label{eq:3.4.2}
 M(q)\ddot{q} + N(q,\dot{q}) = \tau
 \end{equation}
 其中非线性项表示为
@@ -1011,7 +1083,7 @@ N(q,\dot{q}) = V(q,\dot{q}) + F_v\dot{q} + F_d(\dot{q}) + G(q) + \tau_d
 
 在本节中，我们打算展示机械臂动力学方程的一些等价表述。
 
-第2章讨论的非线性状态变量表示具有许多从控制角度来看有用的性质。函数$u(t)$是控制输入，$x(t)$是状态向量，描述能量在系统中如何存储。我们在这里展示如何将(3.4.1)放入这种形式。在第4章中，我们展示如何使用这种非线性状态变量形式使用计算机仿真机器人臂的行为。在整本书中，我们将反复使用状态空间表述进行控制设计，无论是非线性形式还是线性形式
+第2章讨论的非线性状态变量表示具有许多从控制角度来看有用的性质。函数$u(t)$是控制输入，$x(t)$是状态向量，描述能量在系统中如何存储。我们在这里展示如何将\eqref{eq:3.4.1}放入这种形式。在第4章中，我们展示如何使用这种非线性状态变量形式使用计算机仿真机器人臂的行为。在整本书中，我们将反复使用状态空间表述进行控制设计，无论是非线性形式还是线性形式
 \begin{equation}
 \dot{x} = Ax + Bu
 \end{equation}
@@ -1032,55 +1104,60 @@ p = \frac{\partial L}{\partial \dot{q}} = M(q)\dot{q}
 \end{equation}
 
 那么我们有
-\begin{equation}
-\dot{q} = M^{-1}(q)p
+\begin{equation}\label{eq:3.4.8}
+\dot{q} = M^{-1}(q)\,p
 \end{equation}
 以$p(t)$表示的动能为
-\begin{equation}
-K(q,p) = \frac{1}{2}p^T M^{-1}(q)p
+\begin{equation}\label{eq:3.4.9}
+K = \frac{1}{2}p^T M^{-1}(q)\,p.
 \end{equation}
 
 值得注意
-\begin{equation}
-\frac{\partial K}{\partial q} = -\frac{1}{2}(I_n \otimes p^T)\frac{\partial M^{-1}}{\partial q}p = \frac{1}{2}(I_n \otimes p^T)M^{-1}\frac{\partial M}{\partial q}M^{-1}p
+\begin{equation}\label{eq:3.4.10}
+K = \frac{1}{2}p^T \dot{q}.
 \end{equation}
 
-通过定义机械臂哈密顿量为
-\begin{equation}
-H(q,p) = K(q,p) + P(q)
+定义\emph{机械臂哈密顿量}为
+\begin{equation}\label{eq:3.4.11}
+H = p^T \dot{q} - L,
 \end{equation}
-哈密顿运动方程为
-\begin{align}
-\dot{q} &= \frac{\partial H}{\partial p} = M^{-1}(q)p \\
-\dot{p} &= -\frac{\partial H}{\partial q} + \tau = -\frac{\partial K}{\partial q} - \frac{\partial P}{\partial q} + \tau
-\end{align}
+则哈密顿运动方程为
+\begin{equation}\label{eq:3.4.12}
+\dot{q} = \frac{\partial H}{\partial p}
+\end{equation}
+\begin{equation}\label{eq:3.4.13}
+-\dot{p} = \frac{\partial H}{\partial q} - \tau.
+\end{equation}
 
 注意
-\begin{equation}
-\frac{\partial P}{\partial q} = G(q)
+\begin{equation}\label{eq:3.4.14}
+H = \tfrac{1}{2}\bm{p}^{T} M^{-1}(\bm{q})\,\bm{p} + P(\bm{q}) = K + P.
 \end{equation}
 
-评估(3.4.13)得到
-\begin{equation}
-\dot{p} = \frac{1}{2}(I_n \otimes p^T)M^{-1}\frac{\partial M}{\partial q}M^{-1}p - G(q) + \tau
+评估\eqref{eq:3.4.13}可得
+\begin{equation*}
+\dot{\bm{p}} = -\tfrac{1}{2}\,\frac{\partial}{\partial \bm{q}}\bigl(\bm{p}^{T} M^{-1}(\bm{q})\,\bm{p}\bigr) - \frac{\partial P}{\partial q} + \bm{\tau},
+\end{equation*}
+上式又可表为（见习题）
+\begin{equation}\label{eq:3.4.15}
+\dot{\bm{p}} = -\tfrac{1}{2}(I_n \otimes \bm{p}^{T})\,\frac{\partial M^{-1}(\bm{q})}{\partial \bm{q}}\,\bm{p} - G(\bm{q}) + \bm{\tau},
 \end{equation}
-可以表示为（见习题）
+其中$G(\bm{q})$为重力向量，$\otimes$为克罗内克积（见第3.3节）。利用$\frac{\partial M^{-1}}{\partial \bm{q}}$与$\frac{\partial M}{\partial \bm{q}}$之间的恒等关系，\eqref{eq:3.4.15}亦可等价地化为含$M^{-1}\frac{\partial M}{\partial \bm{q}}M^{-1}$的形式。又可写为（见习题）
 \begin{equation}
-\dot{p} = -V_m^T(q,\dot{q})\dot{q} - G(q) + \tau
+\dot{\bm{p}} = -V_m^{T}(\bm{q},\dot{\bm{q}})\,\dot{\bm{q}} - G(\bm{q}) + \bm{\tau}
 \end{equation}
-其中$G(q)$是重力向量，$\otimes$是克罗内克积（见第3.3节）。
 
-将状态向量定义为$x \in R^{2n}$
-\begin{equation}
-x = \begin{bmatrix} q \\ p \end{bmatrix}
+将状态向量定义为$\bm{x}\in R^{2n}$，
+\begin{equation}\label{eq:3.4.16}
+\bm{x} = \begin{bmatrix} \bm{q}^{T} & \bm{p}^{T} \end{bmatrix}^{T}.
 \end{equation}
 我们看到机械臂动力学可以表示为
-\begin{equation}
-\dot{x} = \begin{bmatrix} 0 & M^{-1}(q) \\ 0 & -V_m M^{-1} \end{bmatrix}x + \begin{bmatrix} 0 \\ I_n \end{bmatrix}u - \begin{bmatrix} 0 \\ G \end{bmatrix}
+\begin{equation}\label{eq:3.4.17}
+\frac{\mathrm{d}}{\mathrm{d}t}\begin{bmatrix} \bm{q} \\ \bm{p} \end{bmatrix} = \begin{bmatrix} M^{-1}(\bm{q})\,\bm{p} \\ -\tfrac{1}{2}(I_n \otimes \bm{p}^{T})\,\dfrac{\partial\bigl(M^{-1}(\bm{q})\,\bm{p}\bigr)}{\partial \bm{q}} \end{bmatrix} + \begin{bmatrix} 0 \\ I_n \end{bmatrix}\bm{u},
 \end{equation}
-其中$V_m$将$\dot{q}=M^{-1}p$代入原$V_m(q,\dot{q})$。控制输入定义为
-\begin{equation}
-u = \tau
+控制输入定义为
+\begin{equation}\label{eq:3.4.18}
+\bm{u}(t) = \bm{\tau} - G(\bm{q}).
 \end{equation}
 
 这是形式为(3.4.4)的非线性状态方程。重要的是要注意，这个动力学方程在控制输入$u$中是线性的，它激发广义动量$p(t)$的每个分量。
@@ -1095,7 +1172,7 @@ x = \begin{bmatrix} q \\ \dot{q} \end{bmatrix}
 \end{equation}
 可以获得机械臂动力学的替代状态空间表述。
 
-为了简单起见，忽略干扰$\tau_d$和摩擦$F_v + F_d(\dot{q})$，注意根据(3.4.2)，我们可以写出
+为了简单起见，忽略干扰$\tau_d$和摩擦$F_v + F_d(\dot{q})$，注意根据\eqref{eq:3.4.2}，我们可以写出
 \begin{equation}
 \ddot{q} = M^{-1}(q)[\tau - N(q,\dot{q})]
 \end{equation}
@@ -1107,7 +1184,7 @@ x = \begin{bmatrix} q \\ \dot{q} \end{bmatrix}
 这是(3.4.4)的形式，$u(t) = \tau(t)$。
 
 也可以写出一个形式为(3.4.5)的替代线性状态方程
-\begin{equation}
+\begin{equation}\label{eq:3.4.22}
 \dot{x} = \begin{bmatrix} 0 & I \\ 0 & 0 \end{bmatrix}x + \begin{bmatrix} 0 \\ I \end{bmatrix}u
 \end{equation}
 其中控制输入定义为
@@ -1119,100 +1196,99 @@ u = M^{-1}(q)[\tau - N(q,\dot{q})]
 
 \subsection{反馈线性化}
 
-现在让我们开发一种通用的方法，用于确定机械臂动力学(3.4.1)-(3.4.2)的线性状态空间表示。该技术涉及一种线性化变换，它消除机械臂的非线性。它是[Hunt et al. 1983, Gilbert and Ha 1984]中反馈线性化技术的简化版本。另见[Kreutz 1989]。
+现在让我们开发一种通用的方法，用于确定机械臂动力学\eqref{eq:3.4.1}--\eqref{eq:3.4.2}的线性状态空间表示。该技法依赖一种线性化变换，以消去机械臂的非线性。它是[Hunt et al. 1983, Gilbert and Ha 1984]中\emph{反馈线性化}技术的简化版本。另见[Kreutz 1989]。
 
-机器人动力学由(3.4.2)给出，$q \in R^n$。让我们定义一种通用类型的输出
-\begin{equation}
-y = h(q) - s(t)
+机器人动力学由\eqref{eq:3.4.2}给出，$\bm{q}\in R^n$。定义一类通用输出
+\begin{equation}\label{eq:3.4.24}
+\bm{y} = \bm{h}(\bm{q}) + \bm{s}(t),
 \end{equation}
-其中$h(q)$是关节变量$q \in R^n$的通用预定函数，$s(t)$是通用预定时间函数。那么控制问题将是选择关节扭矩和力输入$\tau(t)$以使输出$y(t)$变为零。
+其中$\bm{h}(\bm{q})$是关节变量$\bm{q}\in R^n$的任意预定函数，$\bm{s}(t)$是任意预定时间函数。于是控制问题是选择关节扭矩与力$\bm{\tau}(t)$使输出$\bm{y}(t)$趋于零。
 
-$h(q)$和$s(t)$的选择基于我们心中的控制目标。例如，如果$h(q) = -q$和$s(t) = q_d(t)$，我们希望机械臂遵循的期望关节空间轨迹，那么$y(t) = q_d(t) - q(t) = e(t)$，关节空间跟踪误差。在这种情况下强制$y(t)$为零将使关节变量$q(t)$跟踪它们的期望值$q_d(t)$，导致机械臂轨迹跟踪。
+$\bm{h}$与$\bm{s}$的选取取决于控制目标。例如，若$\bm{h}(\bm{q})=-\bm{q}$且$\bm{s}(t)=\bm{q}_d(t)$为期望关节轨迹，则$\bm{y}(t)=\bm{q}_d(t)-\bm{q}(t)=\bm{e}(t)$为关节空间跟踪误差；使$\bm{y}\to 0$即使$\bm{q}$跟踪$\bm{q}_d$，从而实现轨迹跟踪。
 
-作为另一个例子，$h(q)$可以表示笛卡尔空间跟踪误差，$y_d$为位置误差，$e_0 \in R^3$为方向误差。将$y(t)$控制为零然后将导致直接在笛卡尔空间中的轨迹跟踪，毕竟，期望运动通常是在那里指定的。
+作为另一例子，$\bm{h}(\bm{q})$可选为笛卡尔意义下的误差输出（位置误差$\bm{y}_d$、姿态误差$\bm{e}_0\in R^3$等）；强制$\bm{y}=\bm{0}$对应笛卡尔空间跟踪。
 
-最后，$-h(q)$可以表示到相机坐标系的非线性变换，$s(t)$是该坐标系中的期望轨迹。那么$y(t)$是相机坐标系跟踪误差。强制$y(t)$为零将产生相机空间中的跟踪运动。
+最后，若$\bm{h}(\bm{q})$表示相机坐标系中的量，而$\bm{s}(t)$为该系中的期望轨迹，则$\bm{y}$为相机空间跟踪误差；$\bm{y}=\bm{0}$给出相机空间中的跟踪运动。
 
 \textbf{反馈线性化变换}
 
-为了确定用于机器人控制器设计的线性状态变量模型，让我们简单地对输出$y(t)$求导两次以获得
-\begin{equation}
-\dot{y} = \frac{\partial h}{\partial q}\dot{q} - \dot{s} = J\dot{q} - \dot{s}
+为了确定用于机器人控制器设计的线性状态变量模型，让我们简单地对输出$\bm{y}(t)$求导两次以获得
+\begin{equation}\label{eq:3.4.25}
+\dot{\bm{y}} = \frac{\partial \bm{h}}{\partial \bm{q}}\dot{\bm{q}} + \dot{\bm{s}} = J\dot{\bm{q}} + \dot{\bm{s}}
 \end{equation}
-\begin{equation}
-\ddot{y} = J\ddot{q} + \dot{J}\dot{q} - \ddot{s}
+\begin{equation}\label{eq:3.4.26}
+\ddot{\bm{y}} = J\ddot{\bm{q}} + \dot{J}\dot{\bm{q}} + \ddot{\bm{s}}
 \end{equation}
 其中我们定义了雅可比矩阵
-\begin{equation}
-J(q) \equiv \frac{\partial h}{\partial q}
+\begin{equation}\label{eq:3.4.27}
+J(\bm{q}) \equiv \frac{\partial \bm{h}}{\partial \bm{q}}
 \end{equation}
 
 如果$y \in R^p$，雅可比矩阵是$p \times n$形式的矩阵
-\begin{equation}
+\begin{equation}\label{eq:3.4.28}
 J = \begin{bmatrix} \frac{\partial h_1}{\partial q_1} & \cdots & \frac{\partial h_1}{\partial q_n} \\ \vdots & \ddots & \vdots \\ \frac{\partial h_p}{\partial q_1} & \cdots & \frac{\partial h_p}{\partial q_n} \end{bmatrix}
 \end{equation}
 
 给定函数$h(q)$，计算与$h(q)$相关的雅可比矩阵$J(q)$是直接的。在特殊情况下，如果$\dot{q}$表示笛卡尔速度，$J(q)$是附录A中讨论的机械臂雅可比矩阵。那么，如果所有关节都是旋转的，$J$的单位是长度单位。
 
-根据(3.4.2)，
-\begin{equation}
-\ddot{q} = M^{-1}(\tau - N)
+根据\eqref{eq:3.4.2}，
+\begin{equation}\label{eq:3.4.29}
+\ddot{\bm{q}} = M^{-1}(-N - \tau_d + \tau),
 \end{equation}
-因此(3.4.26)产生
-\begin{equation}
-\ddot{y} = JM^{-1}(\tau - N) + \dot{J}\dot{q} - \ddot{s}
-\end{equation}
-
-定义控制输入函数
-\begin{equation}
-u = JM^{-1}(\tau - N) + \dot{J}\dot{q} - \ddot{s}
-\end{equation}
-和干扰函数
-\begin{equation}
-w = JM^{-1}\tau_d
+因而由\eqref{eq:3.4.26}得
+\begin{equation}\label{eq:3.4.30}
+\ddot{\bm{y}} = \ddot{\bm{s}} + \dot{J}\dot{\bm{q}} + JM^{-1}(-N - \tau_d + \tau).
 \end{equation}
 
-现在我们可以将状态$x(t) \in R^{2p}$定义为
-\begin{equation}
-x = \begin{bmatrix} y \\ \dot{y} \end{bmatrix}
+定义\emph{控制输入函数}
+\begin{equation}\label{eq:3.4.31}
+u(t) = \ddot{\bm{s}} + \dot{J}\dot{\bm{q}} + JM^{-1}(-N + \tau),
 \end{equation}
-并将机器人动力学写为
-\begin{equation}
-\dot{x} = \begin{bmatrix} 0 & I \\ 0 & 0 \end{bmatrix}x + \begin{bmatrix} 0 \\ I \end{bmatrix}u + \begin{bmatrix} 0 \\ -w \end{bmatrix} = Ax + Bu + \begin{bmatrix} 0 \\ -w \end{bmatrix}
-\end{equation}
-
-这是形式为
-\begin{equation}
-\dot{x} = Ax + Bu + \begin{bmatrix} 0 \\ -w \end{bmatrix}
-\end{equation}
-的线性状态空间系统
-由控制输入$u(t)$和干扰$v(t)$驱动。由于$A$和$B$的特殊形式，该系统被称为布鲁诺夫斯基标准形式（第2章）。读者应该确定可控性矩阵以验证它总是从$u(t)$可控。
-
-方程(3.4.31)被称为机器人动力学方程的线性化变换。我们可以反转这个变换以获得
-\begin{equation}
-\tau = M J^+ (u - \dot{J}\dot{q} + \ddot{s}) + N + J^+ w
-\end{equation}
-其中$J^+$是雅可比矩阵$J(q)$的摩尔-彭若斯逆[Rao and Mitra 1971]。如果$J(q)$是方阵（即$p = n$）且非奇异，那么$J^+(q) = J^{-1}(q)$，我们可以写出
-\begin{equation}
-\tau = M J^{-1} (u - \dot{J}\dot{q} + \ddot{s}) + N + J^{-1} w
+及\emph{扰动函数}
+\begin{equation}\label{eq:3.4.32}
+v(t) = -JM^{-1}\tau_d.
 \end{equation}
 
-正如我们将在第4章看到的，反馈线性化提供了一种强大的控制设计技术。事实上，如果我们选择$u(t)$使得(3.4.35)稳定（例如，一种可能性是PD反馈$u = -K_v \dot{y} - K_p y$），那么由(3.4.37)定义的控制输入扭矩$\tau(t)$使机器人臂以$y(t)$变为零的方式移动。
+现在可将状态$\bm{x}(t)\in R^{2p}$取为
+\begin{equation}\label{eq:3.4.33}
+\bm{x} = \begin{bmatrix} \bm{y}^{T} & \dot{\bm{y}}^{T} \end{bmatrix}^{T},
+\end{equation}
+并把机器人动力学写为
+\begin{equation}\label{eq:3.4.34}
+\frac{\mathrm{d}}{\mathrm{d}t}\begin{bmatrix} \bm{y} \\ \dot{\bm{y}} \end{bmatrix} = \begin{bmatrix} 0 & I_p \\ 0 & 0 \end{bmatrix}\begin{bmatrix} \bm{y} \\ \dot{\bm{y}} \end{bmatrix} + \begin{bmatrix} 0 \\ I_p \end{bmatrix}u + \begin{bmatrix} 0 \\ I_p \end{bmatrix}v.
+\end{equation}
 
-在特殊情况$y(t) = q(t)$，那么$J = I$，(3.4.34)简化为线性位置/速度形式(3.4.22)。
+这是形如
+\begin{equation}\label{eq:3.4.35}
+\dot{\bm{x}} = A\bm{x} + B\bm{u} + D\bm{v}
+\end{equation}
+的线性状态空间系统，由控制输入$\bm{u}(t)$与扰动$\bm{v}(t)$驱动。由于$A$、$B$（及$D$）的结构，系统呈布鲁诺夫斯基标准形（第2章）。读者可验证可控性矩阵，可知其关于$\bm{u}$可控。
+
+方程\eqref{eq:3.4.31}即机器人动力学的线性化变换。反解得
+\begin{equation}\label{eq:3.4.36}
+\tau = M J^+ (u - \ddot{\bm{s}} - \dot{J}\dot{\bm{q}}) + N
+\end{equation}
+其中$J^+$为雅可比$J(\bm{q})$的摩尔–彭若斯逆[Rao and Mitra 1971]。若$J$为$p=n$且非奇异，则$J^+=J^{-1}$，
+\begin{equation}\label{eq:3.4.37}
+\tau = M J^{-1} (u - \ddot{\bm{s}} - \dot{J}\dot{\bm{q}}) + N
+\end{equation}
+
+正如我们将在第4章看到的，反馈线性化提供了一种强大的控制设计技术。事实上，如果我们选择$u(t)$使得\eqref{eq:3.4.35}稳定（例如，一种可能性是PD反馈$u = -K_v \dot{y} - K_p y$），那么由\eqref{eq:3.4.37}定义的控制输入扭矩$\tau(t)$使机器人臂以$y(t)$变为零的方式移动。
+
+在特殊情况$y(t) = q(t)$，那么$J = I$，\eqref{eq:3.4.34}简化为线性位置/速度形式\eqref{eq:3.4.22}。
 
 \section{笛卡尔动力学与其他动力学}
 
 在3.2节中，我们以$q(t)$的时间行为推导了机器人动力学。根据表3.3.1，
-\begin{equation}
+\begin{equation}\label{eq:3.5.2}
 M(q)\ddot{q} + N(q,\dot{q}) = \tau
 \end{equation}
 或
-\begin{equation}
+\begin{equation}\label{eq:3.5.2a}
 M(q)\ddot{q} + V(q,\dot{q}) + F(\dot{q}) + G(q) + \tau_d = \tau
 \end{equation}
 其中非线性项为
-\begin{equation}
+\begin{equation}\label{eq:3.5.3}
 N(q,\dot{q}) = V(q,\dot{q}) + F(\dot{q}) + G(q) + \tau_d
 \end{equation}
 我们称之为以关节空间形式表述的机械臂动力学，或简称为关节空间动力学。
@@ -1220,122 +1296,130 @@ N(q,\dot{q}) = V(q,\dot{q}) + F(\dot{q}) + G(q) + \tau_d
 \subsection{笛卡尔机械臂动力学}
 
 拥有除关节变量$q(t)$以外的变量的动力学发展描述通常是有用的。因此，定义
-\begin{equation}
+\begin{equation}\label{eq:3.5.4}
 y = h(q)
 \end{equation}
 其中$h(q)$通常是来自运动学的非线性变换。虽然$y(t)$可以是任何感兴趣的变量，让我们在这里将其视为末端执行器的笛卡尔或任务空间位置（即在基坐标中末端执行器的位置和方向）。
 
-从关节空间动力学到笛卡尔动力学的推导类似于3.4节中的反馈线性化。将(3.5.4)求导两次得到
+从关节空间动力学到笛卡尔动力学的推导类似于3.4节中的反馈线性化。将\eqref{eq:3.5.4}求导两次得到
 \begin{align}
 \dot{y} &= \frac{\partial h}{\partial q}\dot{q} = J\dot{q} \\
 \ddot{y} &= J\ddot{q} + \dot{J}\dot{q}
 \end{align}
 其中雅可比矩阵为
-\begin{equation}
+\begin{equation}\label{eq:3.5.6}
 J = \frac{\partial h}{\partial q}
 \end{equation}
 
-笛卡尔速度向量为$\dot{y} = [v^T \ \omega^T]^T$，其中$v \in R^3$是线速度，$\omega \in R^3$是角速度。让我们假设连杆数为$n = 6$，因此$J$是方阵。还假设我们远离工作空间奇异点，因此$|J| \neq 0$，根据(3.5.6)，我们可以写出
-\begin{equation}
+笛卡尔速度向量为$\dot{y} = [v^T \ \omega^T]^T$，其中$v \in R^3$是线速度，$\omega \in R^3$是角速度。让我们假设连杆数为$n = 6$，因此$J$是方阵。还假设我们远离工作空间奇异点，因此$|J| \neq 0$，由$\ddot{y}=J\ddot{q}+\dot{J}\dot{q}$可解出
+\begin{equation}\label{eq:3.5.7}
 \ddot{q} = J^{-1}\ddot{y} - J^{-1}\dot{J}\dot{q}
 \end{equation}
-这是"逆加速度"变换。将其代入(3.5.2)得到
-\begin{equation}
-MJ^{-1}\ddot{y} - MJ^{-1}\dot{J}\dot{q} + N = \tau
+这是"逆加速度"变换。以下推导中取$N\equiv V+F+G$（不含$\tau_d$），关节干扰$\tau_d$单列；这与\eqref{eq:3.5.3}将$\tau_d$并入$N$的写法等价。将\eqref{eq:3.5.7}代入\eqref{eq:3.5.2a}，得
+\begin{equation}\label{eq:3.5.8}
+M(q)J^{-1}\ddot{y} + \bigl(N(q,\dot{q}) - M(q)J^{-1}\dot{J}\dot{q}\bigr) + \tau_d = \tau.
 \end{equation}
 
-现在回忆力变换$\tau = J^T F$，其中$F$是笛卡尔力向量（见附录A），我们有
-\begin{equation}
-MJ^{-1}\ddot{y} - MJ^{-1}\dot{J}J^{-1}\dot{y} + N = J^T F
+现在回忆力变换$\tau = J^T F$，其中$F$是笛卡尔力向量（见附录A）。将\eqref{eq:3.5.8}两端左乘$J^{-T}$，得
+\begin{equation}\label{eq:3.5.9}
+J^{-T}M(q)J^{-1}\ddot{y} + J^{-T}\bigl(N(q,\dot{q}) - M(q)J^{-1}\dot{J}\dot{q}\bigr) + J^{-T}\tau_d = F.
 \end{equation}
 
-这可以写为
-\begin{equation}
-M'\ddot{y} + N' = F
+这又可写成
+\begin{equation}\label{eq:3.5.10}
+\bar{M}\ddot{y} + \bar{N} + f_d = F,
 \end{equation}
-其中我们定义了笛卡尔惯量矩阵、非线性项和干扰为
+其中定义
 \begin{align}
-M'(q) &= J^{-T}M(q)J^{-1} \\
-N'(q,\dot{q}) &= J^{-T}[N(q,\dot{q}) - M(q)J^{-1}\dot{J}\dot{q}] \\
-\tau_d' &= J^{-T}\tau_d
+\label{eq:3.5.11} \bar{M} &\equiv J^{-T}M(q)J^{-1}, \\
+\label{eq:3.5.12} \bar{N} &\equiv J^{-T}\bigl(N(q,\dot{q}) - M(q)J^{-1}\dot{J}\dot{q}\bigr) = J^{-T}\bigl(N(q,\dot{q}) - M(q)J^{-1}\dot{J}J^{-1}\dot{y}\bigr), \\
+\label{eq:3.5.13} f_d &\equiv J^{-T}\tau_d.
 \end{align}
 
-方程(3.5.9)-(3.5.10)给出了机器人机械臂的笛卡尔或工作空间动力学。
+方程\eqref{eq:3.5.9}--\eqref{eq:3.5.10}给出了机器人机械臂的笛卡尔或工作空间动力学。
 
-注意，$M'$、$N'$和$\tau_d'$取决于$q$和$\dot{q}$，因此严格来说，笛卡尔动力学并没有完全以$y$给出。然而，给定$y(t)$，我们可以使用逆运动学确定$q(t)$，因此$M'$、$N'$、$\tau_d'$可以作为$y$和$\dot{y}$的函数使用计算机子程序计算。
+为与后文及常见文献中的撇号记号衔接，亦记$M'\equiv\bar{M}$、$N'\equiv\bar{N}$、$\tau_d'\equiv f_d$，以及$V'\equiv\bar{V}$、$V_m'\equiv\bar{V}_m$、$S'\equiv\bar{S}$。注意，$\bar{M}$、$\bar{N}$和$f_d$依赖于$q$和$\dot{q}$，因此严格来说，笛卡尔动力学并没有完全以$y$给出。然而，给定$y(t)$，我们可以使用逆运动学确定$q(t)$，因此$\bar{M}$、$\bar{N}$、$f_d$（或等价地$M'$、$N'$、$\tau_d'$）可以作为$y$和$\dot{y}$的函数使用计算机子程序计算。
 
 \subsection{笛卡尔动力学的结构与性质}
 
-重要的是要认识到，只要$J$是非奇异的，表3.3.1中列出的关节空间动力学的所有性质都适用于笛卡尔动力学[Slotine and Li 1987]。特别要注意，$M'$是对称且正定的。对于旋转机械臂，雅可比矩阵具有长度单位且是有界的。在这种情况下，$M'$上下有界。
+重要的是要认识到，只要$J$是非奇异的，表3.3.1中列出的关节空间动力学的所有性质都适用于笛卡尔动力学[Slotine and Li 1987]。特别要注意，$\bar{M}$是对称且正定的。对于旋转机械臂，雅可比矩阵具有长度单位且是有界的。在这种情况下，$\bar{M}$上下有界。
 
 定义
-\begin{equation}
-V' = J^{-T}(V - MJ^{-1}\dot{J}J^{-1}\dot{y}) = J^{-T}(V - MJ^{-1}\dot{J}\dot{q})
+\begin{equation}\label{eq:3.5.14}
+\bar{V} \equiv J^{-T}\bigl(V(q,\dot{q}) - M J^{-1}\dot{J}J^{-1}\dot{y}\bigr)
 \end{equation}
-它遵循
-\begin{equation}
-V' = V_m'\dot{y}
+（因$\dot{q}=J^{-1}\dot{y}$，上式亦等价于$J^{-T}(V - M J^{-1}\dot{J}\dot{q})$。）则有
+\begin{equation}\label{eq:3.5.15}
+\bar{V} = \bar{V}_m\dot{y},
 \end{equation}
 其中
-\begin{equation}
-V_m' = J^{-T}V_m J^{-1} - J^{-T}M J^{-1}\dot{J} J^{-1}
+\begin{equation}\label{eq:3.5.16}
+\bar{V}_m = J^{-T}\bigl(V_m - M J^{-1}\dot{J}\bigr)J^{-1},
 \end{equation}
-其中$V_m$在第3.3节中定义。
+而$V_m$在第3.3节中定义。
 
-很容易证明
-\begin{equation}
-S' \equiv \dot{M}' - 2V_m'
+易证
+\begin{equation}\label{eq:3.5.17}
+\bar{S} \equiv \dot{\bar{M}} - 2\bar{V}_m
 \end{equation}
-是斜对称的。确实，使用恒等式
-\begin{equation}
-\frac{dJ^{-1}}{dt} = -J^{-1}\dot{J}J^{-1}
+为斜对称矩阵。确实，由$\bar{M}=J^{-T}MJ^{-1}$对时间求导，并利用
+\begin{equation}\label{eq:3.5.18}
+\frac{\mathrm{d}}{\mathrm{d}t}(J^{-1}) = -J^{-1}\dot{J}J^{-1}
 \end{equation}
-我们可以看到
-\begin{equation}
-S' = J^{-T}SJ^{-1}
+及对$J^{-T}J^{T}=I$求导可得
+\begin{equation*}
+\frac{\mathrm{d}}{\mathrm{d}t}(J^{-T}) = -J^{-T}\dot{J}^{T}J^{-T}.
+\end{equation*}
+于是
+\begin{align*}
+\dot{\bar{M}} - 2\bar{V}_m
+&= \frac{\mathrm{d}}{\mathrm{d}t}(J^{-T}) M J^{-1} + J^{-T}\dot{M}J^{-1} + J^{-T}M\frac{\mathrm{d}}{\mathrm{d}t}(J^{-1}) - 2\bar{V}_m \\
+&= -J^{-T}\dot{J}^{T}J^{-T}MJ^{-1} - J^{-T}MJ^{-1}\dot{J}J^{-1} + 2J^{-T}MJ^{-1}\dot{J}J^{-1} + J^{-T}(\dot{M}-2V_m)J^{-1} \\
+&= J^{-T}\Bigl(\dot{M}-2V_m + \bigl[MJ^{-1}\dot{J} - (MJ^{-1}\dot{J})^{T}\bigr]\Bigr)J^{-1}.
+\end{align*}
+当$M$对称时，$MJ^{-1}\dot{J}-(MJ^{-1}\dot{J})^{T}$为斜对称矩阵；又$\dot{M}-2V_m$在关节空间中为斜对称，故括号内为斜对称矩阵之和。而若$A$斜对称，则$J^{-T}AJ^{-1}$亦斜对称，因而$\bar{S}$为斜对称。笛卡尔动力学中的摩擦项为
+\begin{equation}\label{eq:3.5.19}
+\bar{F}_v\dot{y} + \bar{F}_s \equiv J^{-T}F_v J^{-1}\dot{y} + J^{-T}F_d(\dot{q}),
 \end{equation}
-这是斜对称的，因为$S$是斜对称的。
-
-笛卡尔动力学中的摩擦项为
-\begin{equation}
-F' = J^{-T}F(\dot{q}) = J^{-T}F(J^{-1}\dot{y}) \equiv F'(\dot{y})
-\end{equation}
-它们满足表3.3.1中那样的界限。注意在笛卡尔坐标中，摩擦效应不是解耦的（例如，$J^{-T}F_vJ^{-1}$不是对角矩阵）。笛卡尔重力向量
-\begin{equation}
-G' = J^{-T}G(q)
+它们满足表3.3.1中那样的界限。注意在笛卡尔坐标中，摩擦效应不是解耦的（例如，$J^{-T}F_vJ^{-1}$一般不是对角矩阵）。笛卡尔重力向量
+\begin{equation}\label{eq:3.5.20}
+\bar{G} \equiv J^{-T}G(q),
 \end{equation}
 是有界的。
 
-参数线性性质成立并表示为
-\begin{equation}
-M'\ddot{y} + V' + F' + G' = W'(y,\dot{y},\ddot{y})\phi
+参数线性性质成立，并可表为
+\begin{equation}\label{eq:3.5.21}
+\bar{M}\ddot{y} + \bar{N} = \bar{M}\ddot{y} + \bar{V}_m\dot{y} + \bar{F}_v\dot{y} + \bar{F}_s + \bar{G} = \bar{W}(y,\dot{y},\ddot{y})\varphi,
 \end{equation}
-其中已知笛卡尔机器人函数为
-\begin{equation}
-W' = J^{-T}W
+其中已知笛卡尔机器人函数满足
+\begin{equation}\label{eq:3.5.22}
+\bar{W}(y,\dot{y},\ddot{y}) = J^{-T}W(q,\dot{q},\ddot{q}),
 \end{equation}
-$\phi$是机械臂参数向量。
+$\varphi$为机械臂参数向量。（记号上亦常写$W'\equiv\bar{W}$、$F'\equiv \bar{F}_v\dot{y}+\bar{F}_s$等与撇号形式等价的关系。）
 
 \textbf{例3.5-1：三连杆圆柱形机械臂的笛卡尔动力学}
 
 让我们展示如何将例3.2.3中找到的关节空间动力学转换为笛卡尔动力学。从例A.3-1，机械臂雅可比矩阵及其逆为
 \begin{align}
-J &= \begin{bmatrix} -r\sin\theta & 0 & \cos\theta \\ r\cos\theta & 0 & \sin\theta \\ 0 & 1 & 0 \end{bmatrix} \\
-J^{-1} &= \begin{bmatrix} -\frac{\sin\theta}{r} & \frac{\cos\theta}{r} & 0 \\ 0 & 0 & 1 \\ \cos\theta & \sin\theta & 0 \end{bmatrix}
+J &= \begin{bmatrix} -r\cos\theta & 0 & -\sin\theta \\ -r\sin\theta & 0 & \cos\theta \\ 0 & 1 & 0 \end{bmatrix}, \\
+J^{-1} &= \begin{bmatrix} -\dfrac{\cos\theta}{r} & -\dfrac{\sin\theta}{r} & 0 \\[4pt] 0 & 0 & 1 \\ -\sin\theta & \cos\theta & 0 \end{bmatrix}
 \end{align}
+（$\det J=-r$，上式为标准逆。）
 
-从例3.2.3，机械臂惯量矩阵为
+从例3.2.3，机械臂惯量矩阵为（记转动惯量标量为$J$；与上文雅可比矩阵$J$同名异义，勿混）
 \begin{equation}
-M = \begin{bmatrix} J + m_2r^2 & 0 & 0 \\ 0 & m_1 + m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix}
+M = \begin{bmatrix} J + m_2 r^2 & 0 & 0 \\ 0 & m_1 + m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix}
 \end{equation}
 
-应用(3.5.11)得到（验证！）
+应用\eqref{eq:3.5.11}得（验证！）
 \begin{equation}
-M' = \begin{bmatrix} \frac{J+m_2r^2}{r^2} & 0 & 0 \\ 0 & m_1+m_2 & 0 \\ 0 & 0 & m_2 \end{bmatrix}
+\bar{M} = J^{-T} M J^{-1} = \begin{bmatrix}
+m_2 + \bar{J}\cos^2\theta & \bar{J}\sin\theta\cos\theta & 0 \\
+\bar{J}\sin\theta\cos\theta & m_2 + \bar{J}\sin^2\theta & 0 \\
+0 & 0 & m_1+m_2
+\end{bmatrix},
 \end{equation}
-其中$J' = \frac{J}{r^2} + m_2$。
-
-以类似的方式，可以计算$N'$。
+其中$\bar{J}\equiv J/r^2$。类似地，可计算$\bar{N}$。
 
 \section{执行器动力学}
 
@@ -1345,64 +1429,64 @@ M' = \begin{bmatrix} \frac{J+m_2r^2}{r^2} & 0 & 0 \\ 0 & m_1+m_2 & 0 \\ 0 & 0 & 
 
 我们将考虑电动执行器的情况，假设电机是电枢控制的。液压执行器由类似的方程描述。在本小节中，我们假设电枢电感可以忽略。
 
-$n$-连杆机器人机械臂的方程来自表3.3.1（此处为与下文消元一致，先不显式写出干扰项$\tau_d$；需要时可在最终合成方程中统一加入）：
-\begin{equation}
-M(q)\ddot{q} + V(q,\dot{q}) + F(\dot{q}) + G(q) = \tau
+$n$-连杆机器人机械臂的方程见表3.3.1，写为
+\begin{equation}\label{eq:3.6.1}
+M(q)\ddot{q} + V_m(q,\dot{q})\dot{q} + F(\dot{q}) + G(q) = \tau,
 \end{equation}
-其中$q \in R^n$是机械臂关节变量；$\tau$为关节侧广义力矩。驱动连杆的电枢控制直流电机的动力学由$n$个解耦方程给出；$\tau_M$为电机轴侧负载力矩，与关节侧力矩满足$\tau_M = R\tau$（$R$为齿轮比矩阵，见(3.6.4)）。记$K'_m$为扭矩常数矩阵、$R_a$为电枢电阻矩阵（定义见(3.6.3)），电感可忽略时电枢电流的稳态近似给出如下等价写法：
-\begin{equation}
-J_M\ddot{q}_M + B_M\dot{q}_M + F_M + R\tau = K'_M v
+其中$\bm{q}\in R^n$为关节变量；$\bm{\tau}$为关节侧广义力矩。电枢控制直流电机的动力学由$n$个解耦方程描述：
+\begin{equation}\label{eq:3.6.2}
+J_M\ddot{q}_M + B\dot{q}_M + F_M + R\tau = K_M v,
 \end{equation}
-其中$\dot{q}_M = \text{vec}\{\dot{q}_{Mi}\}$，$\dot{q}_{Mi}$是第$i$个转子位置角，$\text{vec}\{\alpha_i\}$表示分量为$\alpha_i$的向量；$K'_M = R_a^{-1} K'_m$为电压到电机轴扭矩的有效对角增益矩阵。控制输入是电机电压向量$v \in R^n$。
+其中$q_M=\text{vec}\{q_{Mi}\}$，$q_{Mi}$为第$i$个转子转角；$\dot{q}_M=\text{vec}\{\dot{q}_{Mi}\}$；$\text{vec}\{\alpha_i\}$表示以$\alpha_i$为分量的向量；控制输入为电机电压向量$\bm{v}\in R^n$。
 
-执行器系数矩阵都是常数，由下式给出
-\begin{equation}
+执行器系数矩阵均为常数，由下式给出
+\begin{equation}\label{eq:3.6.3}
 \begin{aligned}
-&J_M = \text{diag}\{J_{Mi}\}, \quad B_M = \text{diag}\{B_{Mi}\}, \quad K'_m = \text{diag}\{K_{Mi}\}, \quad R_a = \text{diag}\{R_{ai}\}, \\
-&K'_M = R_a^{-1} K'_m = \text{diag}\{K_{Mi} R_{ai}^{-1}\}
+J_M &= \mathrm{diag}\{J_{Mi}\}, \\
+B &= \mathrm{diag}\left\{B_{Mi} + K_{bi}K_{Mi}/R_{ai}\right\}, \\
+R &= \mathrm{diag}\{r_i\}, \\
+K_M &= \mathrm{diag}\{K_{Mi}/R_{ai}\},
 \end{aligned}
 \end{equation}
-其中第$i$个电机具有惯量$J_{Mi}$、转子阻尼常数$B_{Mi}$、反电动势常数$K_{bi}$、扭矩常数$K_{Mi}$和电枢电阻$R_{ai}$。记号$K'_m$、$K'_M$在三阶模型(3.6.11)、(3.6.12)中沿用。
+其中第$i$台电机具有惯量$J_{Mi}$、转子阻尼常数$B_{Mi}$、反电动势常数$K_{bi}$、扭矩常数$K_{Mi}$及电枢电阻$R_{ai}$；第$i$个关节的传动齿轮比为$r_i$。三阶模型\eqref{eq:3.6.10}、\eqref{eq:3.6.11}中的$K'_m=\mathrm{diag}\{K_{Mi}\}$（电机电磁力矩$K'_m I$）与本节记号一致。
 
-从第$i$个电机到第$i$个机械臂连杆的耦合齿轮比为$r_i$，我们定义使得
-\begin{equation}
-q_i = r_i q_{Mi} \quad \text{或} \quad q = Rq_M
+使得
+\begin{equation}\label{eq:3.6.4}
+q_i = r_i q_{Mi} \quad \text{或} \quad q = R q_M.
 \end{equation}
-如果第$i$个关节是旋转的，那么$r_i$是小于1的无量纲常数。如果$q_i$是平移的，那么$r_i$具有m/rad单位。
+若第$i$关节为转动关节，则$r_i$为小于$1$的无量纲常数；若$q_i$为平移关节坐标，则$r_i$具有m/rad量纲。
 
-执行器摩擦向量由下式给出
-\begin{equation}
-F_M = \text{vec}\{F_{Mi}\}
-\end{equation}
-其中$F_{Mi}$是第$i$个转子的摩擦。
+执行器摩擦向量为
+\[
+F_M = \text{vec}\{F_{Mi}\},
+\]
+其中$F_{Mi}$为第$i$个转子摩擦。记号中\textbf{大写$M$}表示电机常数与变量；$V_m$则由连杆侧模型（克里斯托费尔项，见表3.3.1）给出。
 
-注意大写的"M"表示电机常数和变量，而$V_m$是用克里斯托费尔符号定义的机械臂科里奥利/向心向量。
-
-使用(3.6.4)在(3.6.2)中消去$q_M$（有$\ddot{q}_M=R^{-1}\ddot{q}$，$\dot{q}_M=R^{-1}\dot{q}$），并将(3.6.1)中的$\tau = M\ddot{q}+V+F+G$代入(3.6.2)；两端左乘$R^{-1}$可整理为$\left(M + R^{-2}J_M\right)\ddot{q} + \left(V + R^{-2}B_M\right)\dot{q} + \left(F + R^{-1}F_M\right) + G = R^{-1}K'_M v$。再将该式\textbf{两端左乘}$R^2$，并与记号$V_m \equiv V(q,\dot{q})$（见上文及表3.3.1中的科里奥利/向心项）、电机阻尼$B_M$并列书写，得到与图示等价的关节空间形式
-\begin{equation}
-\left(J_M + R^2 M\right)\ddot{q} + \left(B_M + R^2 V_m\right)\dot{q} + \left(R F_M + R^2 F\right) + R^2 G = R K'_M v
+将\eqref{eq:3.6.4}代入\eqref{eq:3.6.2}消去$q_M$，并把\eqref{eq:3.6.1}中的$\tau$代入，可得关节空间形式
+\begin{equation}\label{eq:3.6.5}
+\left(J_M + R^2 M\right)\ddot{q} + \left(B + R^2 V_m\right)\dot{q} + \left(R F_M + R^2 F\right) + R^2 G = R K_M v
 \end{equation}
-若(3.6.1)中尚含关节侧扰动$\tau_d$，则在上式左端加上$R^2\tau_d$，右端仍为$R K'_M v$。或，通过适当定义符号，
-\begin{equation}
-M'(q)\ddot{q} + V'(q,\dot{q}) + F'(\dot{q}) + G'(q) = K' v
+（若需在\eqref{eq:3.6.1}中显式保留关节扰动$\tau_d$，可在上式左端加项$R^2\tau_d$。）亦可简记为
+\begin{equation}\label{eq:3.6.6}
+M'(q)\ddot{q} + V'(q,\dot{q})\dot{q} + F'(\dot{q}) + G'(q) = K' v,
 \end{equation}
-其中$M'=J_M + R^2 M$，$V'=B_M + R^2 V_m$，$F'=R F_M + R^2 F(\dot{q})$，$G'=R^2 G(q)$，$K'=R K'_M$；含扰动时左端加上$R^2\tau_d$。
+其中$M'=J_M + R^2 M$，$V'=B + R^2 V_m$，$F'=R F_M + R^2 F$，$G'=R^2 G$，$K'=R K_M$；含$\tau_d$时左端另加$R^2\tau_d$。
 
 \textbf{完整机械臂加执行器动力学的性质}
 
-完整动力学(3.6.6)与关节空间机器人动力学在结构上仍可对照表3.3.1逐项讨论。由于$M'=J_M+R^2M(q)$且$V'=B_M+R^2V_m$，其中$B_M$为常值对角阵，与纯连杆模型相比，验证斜对称/科里奥利项性质时须将$R^2V_m$与$B_M\dot{q}$分拆处理（见习题）。有界性及参数线性等结论在常见假设下仍适用。因此，在我们设计控制器时，往往仍以合并后的等效方程为对象，而把执行器视为已并入动力学中。
+完整动力学\eqref{eq:3.6.5}、\eqref{eq:3.6.6}与\eqref{eq:3.6.1}形式相同。容易验证：完整机械臂加执行器动力学享有表3.3.1中针对连杆动力所列的同类性质（见习题）。特别地，$V'$可作为$\dot{M}'$与某斜对称矩阵之差的二分之一来理解（与$V_m$在纯连杆模型中的角色类同）；有界性假设与参数线性性质在常见条件下仍成立。因而在后续控制器设计中，可认为执行器已并入表3.3.1意义上的臂方程。
 
 \textbf{独立关节动力学}
 
 在许多商业机器人机械臂中，齿轮比$r_i$非常小，在执行器/连杆耦合中提供很大的扭矩优势。这对机器人机械臂控制器的设计有重要的影响，大大简化了设计。
 
 为了探索这一点，让我们按分量写出完整动力学
-\begin{equation}
-(J_{Mi} + r_i^2 m_{ii})\ddot{q}_i + B_i\dot{q}_i + r_i F_{Mi} = \frac{r_i K_{Mi}}{R_{ai}} v_i - r_i^2 d_i, \quad i = 1,\ldots,n
+\begin{equation}\label{eq:3.6.7}
+(J_{Mi} + r_i^2 m_{ii})\,\ddot{q}_i + B_i\,\dot{q}_i + r_i F_{Mi} = \frac{r_i K_{Mi}}{R_{ai}} v_i - r_i^2 d_i, \quad i = 1,\ldots,n
 \end{equation}
-其中$B \equiv \text{diag}\{B_i\}$，$d_i$是由下式给出的干扰
-\begin{equation}
-d_i = \sum_{j \neq i} m_{ij}\ddot{q}_j + \sum_{j,k} V_{jki}\dot{q}_j\dot{q}_k + F_i + G_i
+其中$B_i$为式\eqref{eq:3.6.3}中矩阵$B=\mathrm{diag}\{B_{Mi}+K_{bi}K_{Mi}/R_{ai}\}$的第$i$个对角元（与原书记号$B\equiv\mathrm{diag}\{B_i\}$一致）；$d_i$由下式给出
+\begin{equation}\label{eq:3.6.8}
+d_i = \sum_{j \neq i} m_{ij}\,\ddot{q}_j + \sum_{j,\,k} V_{jki}\,\dot{q}_j\,\dot{q}_k + F_i + G_i
 \end{equation}
 其中$m_{ij}$为等效惯量矩阵$M' = J_M + R^2 M$的第$(i,j)$元素（$m_{ii}$为其对角元），$V_{jki}$为与科里奥利/向心项相关的Christoffel型系数，$F_i$与$G_i$分别为第$i$个关节的摩擦与重力分量。
 
@@ -1414,55 +1498,55 @@ d_i = \sum_{j \neq i} m_{ij}\ddot{q}_j + \sum_{j,k} V_{jki}\dot{q}_j\dot{q}_k + 
 
 有时在控制设计中使用完整机器人机械臂的替代模型[Tarn et al. 1991]。它是一个三阶微分方程，当电机电枢电感不可忽略时应该使用。
 
-当电枢电感$L_i$不可忽略时，必须同时保留电流动力学，即用下列方程\textbf{代替}(3.6.2)所表示的电感略去模型（齿轮矩阵仍记为$R$，\textbf{电枢电阻}矩阵记为$R_a$以免混用）：
-\begin{equation}
-L\frac{dI}{dt} + R_a I + K_b'\dot{q}_M = v
+当电枢电感$L_i$不可忽略时，电枢控制直流电机方程须\textbf{代替}\eqref{eq:3.6.2}所表示的略去电感模型（齿轮矩阵仍记为$R$，电枢电阻矩阵记为$R_a$以免与$R$混淆）。由原始电气方程$L\dot{I}+R_a I+K_b'\dot{q}_M=v$两端先左乘$R_a^{-1}$得$T\dot{I}+I+R_a^{-1}K_b'\dot{q}_M=R_a^{-1}v$（$T=LR_a^{-1}$），再左乘$K'_M:=\mathrm{diag}\{K_{Mi}\}$，并记$B':=K'_M R_a^{-1}K_b'=\mathrm{diag}\{K_{bi}K_{Mi}/R_{ai}\}$、$K_M=\mathrm{diag}\{K_{Mi}/R_{ai}\}$，即化为与印本一致的
+\begin{equation}\label{eq:3.6.9}
+T K'_M \dot{I} + K'_M I + B' \dot{q}_M = K_M v,
 \end{equation}
-\begin{equation}
-J_M\ddot{q}_M + B_M\dot{q}_M + F_M + R\tau = K'_m I
+\begin{equation}\label{eq:3.6.10}
+J_M \ddot{q}_M + B_M \dot{q}_M + F_M + R\tau = K'_m I,
 \end{equation}
-其中$I \in R^n$为电枢电流向量；$K'_m=\mathrm{diag}\{K_{Mi}\}$与(3.6.3)中记号一致（电机电磁转矩为$K'_m I$；当$L_i$可略去时，由(3.6.10)稳态可得到(3.6.2)中$K'_M=R_a^{-1}K'_m$）。反电动势取$K_b'=\mathrm{diag}\{K_{bi}\}$。以下矩阵与(3.6.10)直接对应，并\textbf{约定}：与$\dot{q}_M$耦合的反电动势系数在归一化电流方程中统一写为$R_a^{-1}K_b'$，勿与左乘$K'_m$等改写后的系数混用。
-\begin{equation}
+其中$I\in R^n$为电枢电流；$K'_m=K'_M=\mathrm{diag}\{K_{Mi}\}$（电磁转矩$K'_m I$）；$K_M=\mathrm{diag}\{K_{Mi}/R_{ai}\}$与\eqref{eq:3.6.3}一致；$K_b'=\mathrm{diag}\{K_{bi}\}$。式\eqref{eq:3.6.9}中$B'=\mathrm{diag}\{K_{bi}K_{Mi}/R_{ai}\}$。
+
+矩阵参数归并写为
+\begin{equation}\label{eq:3.6.11}
 \begin{aligned}
-&L = \text{diag}\{L_i\}, \quad R_a = \text{diag}\{R_{ai}\}, \quad
-T = L R_a^{-1} = \text{diag}\{L_i R_{ai}^{-1}\},\\
-&K'_m = \text{diag}\{K_{Mi}\}, \quad
-B_M = \text{diag}\{B_{Mi}\}, \quad
-B' := R_a^{-1} K_b' = \text{diag}\{K_{bi} R_{ai}^{-1}\} 。\\
-&\text{（将(3.6.10)两端左乘}R_a^{-1}\text{得归一化电流方程）}\quad
-T\dot{I} + I + B'\dot{q}_M = R_a^{-1}v
+T &= \mathrm{diag}\{L_i/R_{ai}\}, \\
+K'_m &= \mathrm{diag}\{K_{Mi}\}, \\
+B' &= \mathrm{diag}\{K_{bi}K_{Mi}/R_{ai}\}, \\
+B_M &= \mathrm{diag}\{B_{Mi}\}.
 \end{aligned}
 \end{equation}
-若采用SI单位且常取$K_{bi}=K_{Mi}$，则$B'=\mathrm{diag}\{K_{Mi}R_{ai}^{-1}\}$。其他文献有时把电气方程与$\tau=K'_m I$联立后再左乘常数矩阵，从而出现$\mathrm{diag}\{K_{bi}K_{Mi}R_{ai}^{-1}\}$等形式；与本书(3.6.10)逐项对照时，应以$R_a^{-1}K_b'$（即上式所定义之$B'$）为准。
 
-重要的是要注意，$T$为电机电气时间常数矩阵。在前一小节中，假设这些时间常数与电机机械时间常数相比可以忽略不计。
+若采用SI单位且常取$K_{bi}=K_{Mi}$，则$B'$的对角元为$K_{Mi}^2/R_{ai}$。这与将\eqref{eq:3.6.9}与\eqref{eq:3.6.10}逐项对照时所用记号一致。
 
-为了确定机械臂加直流电机执行器的整体动力学，在(3.6.1)和(3.6.11)之间消去$\tau$以获得$I$的表达式。然后，求导以显式暴露$\dot{I}$。将这些表达式代入(3.6.10)（见习题）以获得形式为
-\begin{equation}
-L'M'(q)\dddot{q} + D(q,\dot{q},\ddot{q}) = v
+重要的是要注意，$T$为电机电气时间常数矩阵。在前一小节中，假设这些时间常数与电机机械时间常数相比可以忽略不计。当$L_i$可略去时，\eqref{eq:3.6.9}中$T K'_M\dot I$项可忽略，电气关系退化为$K'_M I+B'\dot q_M=K_M v$；与\eqref{eq:3.6.10}及\eqref{eq:3.6.1}联立消元即可得到\eqref{eq:3.6.2}的一级模型（见习题）。
+
+为了确定机械臂加直流电机执行器的整体动力学，在\eqref{eq:3.6.1}与\eqref{eq:3.6.10}之间消去$\tau$求出$I$，再对时间求导得$\dot{I}$，代入\eqref{eq:3.6.9}（见习题），可得形式为
+\begin{equation}\label{eq:3.6.12}
+D(q)\frac{\mathrm{d}^3 q}{\mathrm{d}t^3} + f(q,\dot{q},\ddot{q}) = R K_M v
 \end{equation}
-的动力学。
+的动力学，其中$f$汇集$\dot q,\ddot q$及更低阶耦合项。
 
 系数矩阵$D$由下式给出
-\begin{equation}
-D(q) = TM'(q)
+\begin{equation}\label{eq:3.6.13}
+D(q) = T M(q).
 \end{equation}
-因此当$L_i$很小时可以忽略不计。
+因此当$L_i$很小时$D$亦可忽略。
 
 \subsection{具有关节柔性的动力学}
 
 我们假设执行器和机器人连杆之间的耦合通过具有齿轮比$r_i$的刚性齿轮系提供。在实际实践中，耦合存在齿隙和齿轮系柔性或弹性。这里我们在机械臂动力学模型中包含关节的柔性，为了简单起见，假设$r_i = 1$。
 
-这并不难做到。确实，假设耦合柔性被建模为刚性弹簧。那么在方程(3.6.1)、(3.6.2)中提到的扭矩只不过是
-\begin{equation}
-\tau = B_s(\dot{q}_M - \dot{q}) + K_s(q_M - q)
+这并不难做到。确实，假设耦合柔性可建模为**弹簧–阻尼**环节（有限刚度与阻尼，而非将传动视为绝对刚性）。若在\eqref{eq:3.6.1}、\eqref{eq:3.6.2}中记传导至连杆的关节力矩为$\tau$，则相应的柔性耦合可写为
+\begin{equation}\label{eq:3.6.14}
+\tau = B_s(\dot{q}_M - \dot{q}) + K_s(q_M - q),
 \end{equation}
-其中$B_s = \text{diag}\{b_{si}\}$，$K_s = \text{diag}\{k_{si}\}$，$b_{si}$和$k_{si}$是第$i$个齿轮系的阻尼和弹簧常数。因此动力学方程变为
-\begin{equation}
-M(q)\ddot{q} + V(q,\dot{q}) + G(q) + B_s(\dot{q} - \dot{q}_M) + K_s(q - q_M) = 0
+其中$B_s = \mathrm{diag}\{b_{si}\}$，$K_s = \mathrm{diag}\{k_{si}\}$。为与印本记号一致，以下将刚度矩阵简记为$K\equiv K_s$。于是动力学方程为
+\begin{equation}\label{eq:3.6.15}
+M(q)\ddot{q} + V_m(q,\dot{q})\dot{q} + F(\dot{q}) + G(q) + B_s(\dot{q} - \dot{q}_M) + K(q - q_M) = 0,
 \end{equation}
-\begin{equation}
-J_M\ddot{q}_M + B_M\dot{q}_M + F_M - B_s(\dot{q}_M - \dot{q}) - K_s(q_M - q) = K'_M v
+\begin{equation}\label{eq:3.6.16}
+J_M\ddot{q}_M + B\dot{q}_M + F_M + B_s(\dot{q}_M - \dot{q}) + K(q_M - q) = K_M v.
 \end{equation}
 
 这些方程的结构与表3.3.1中描述的刚性关节机械臂非常不同。我们在第6章讨论具有关节柔性的机器人机械臂的控制（见[Spong 1987]）。下一个例子展示了在控制柔性关节机器人时可能出现的问题。
@@ -1471,47 +1555,48 @@ J_M\ddot{q}_M + B_M\dot{q}_M + F_M - B_s(\dot{q}_M - \dot{q}) - K_s(q_M - q) = K
 
 为了关注关节柔性的影响，让我们检查单个电枢控制的直流电机通过具有显著柔性的轴耦合到负载。电气和机械子系统如图3.6.1所示。
 
-电机电气方程为
-\begin{equation}
-L\frac{di}{dt} + Ri + K_b\omega_m = u
+电机电气方程可写为
+\begin{equation}\label{eq:3.6.17}
+L\dot{i} = -Ri - k'_m\dot{\theta}_m + u,
 \end{equation}
-其中$i(t)$、$u(t)$分别是电枢电流和电压。反电动势为$e_b = K_b\omega_m$。
+其中$i(t)$、$u(t)$分别为电枢电流与电压；反电动势$e_b = k'_m\dot{\theta}_m$。
 
-柔性轴施加的相互作用力由下式给出$f = b(\omega_m - \omega_L) + k(\theta_m - \theta_L)$，其中轴阻尼和弹簧常数分别表示为$b$和$k$。因此运动方程可以写为
-\begin{align}
-J_m\dot{\omega}_m + b_m\omega_m + b(\omega_m - \omega_L) + k(\theta_m - \theta_L) &= K_T i \\
-J_L\dot{\omega}_L - b(\omega_m - \omega_L) - k(\theta_m - \theta_L) &= 0
+柔性轴施加的轴力矩为$f = b(\dot{\theta}_m - \dot{\theta}_L) + k(\theta_m - \theta_L)$，其中$b$、$k$为轴阻尼与刚度。于是
+\begin{align}\label{eq:3.6.18}
+J_m\ddot{\theta}_m + b_m\dot{\theta}_m + b(\dot{\theta}_m - \dot{\theta}_L) + k(\theta_m - \theta_L) &= k_m i, \\
+J_L\ddot{\theta}_L + b(\dot{\theta}_L - \dot{\theta}_m) + k(\theta_L - \theta_m) &= 0.
 \end{align}
-其中下标$m$和$L$分别指电机参数和负载参数。假设负载惯量$J_L$是常数。其余符号的定义可以从前面的文本中推断。
 
-为了将这些方程放入状态空间形式，将状态定义为
-\begin{equation}
-x = \begin{bmatrix} i \\ \theta_m \\ \omega_m \\ \theta_L \\ \omega_L \end{bmatrix}
+为了将这些方程写入状态空间，取状态
+\begin{equation}\label{eq:3.6.19}
+x = \begin{bmatrix} i & \theta_m & \omega_m & \theta_L & \omega_L \end{bmatrix}^T,
 \end{equation}
-其中$\omega_m$、$\omega_L$是电机和负载的角速度。那么
-\begin{equation}
+其中$\omega_m=\dot{\theta}_m$，$\omega_L=\dot{\theta}_L$；下标$m$与$L$分别表示电机侧与负载侧参量，并设负载惯量$J_L$为常数。
+
+标准形式为$\dot{x} = Ax + Bu$，展开即
+\begin{equation}\label{eq:3.6.20}
 \dot{x} = \begin{bmatrix} -\frac{R}{L} & 0 & -\frac{k'_m}{L} & 0 & 0 \\ 0 & 0 & 1 & 0 & 0 \\ \frac{k_m}{J_m} & -\frac{k}{J_m} & -\frac{(b+b_m)}{J_m} & \frac{k}{J_m} & \frac{b}{J_m} \\ 0 & 0 & 0 & 0 & 1 \\ 0 & \frac{k}{J_L} & \frac{b}{J_L} & -\frac{k}{J_L} & -\frac{b}{J_L} \end{bmatrix}x + \begin{bmatrix} \frac{1}{L} \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}u
 \end{equation}
 
 \textbf{a. 刚性耦合轴}
 
-如果耦合轴没有柔性，$\omega_m = \omega_L = \omega$，状态方程简化为（见习题）
-\begin{equation}
-\dot{x} = \begin{bmatrix} -\frac{R}{L} & -\frac{K_b}{L} \\ \frac{K_T}{J} & -\frac{b_m}{J} \end{bmatrix}x + \begin{bmatrix} \frac{1}{L} \\ 0 \end{bmatrix}u
+如果耦合轴无柔性，则$\omega_m=\omega_L=\omega$，状态方程可简化为（见习题）
+\begin{equation}\label{eq:3.6.21}
+\dot{x} = \begin{bmatrix} -\dfrac{R}{L} & -\dfrac{k'_m}{L} \\[4pt] \dfrac{k_m}{J} & -\dfrac{b_m}{J} \end{bmatrix}x + \begin{bmatrix} \dfrac{1}{L} \\[4pt] 0 \end{bmatrix}u
 \end{equation}
-其中$x = [i \ \omega]^T$，$J = J_m + J_L$。将输出定义为电机速度得到
-\begin{equation}
+其中$x = [i \ \omega]^T$，$J = J_m + J_L$。将输出取为电机转速$\omega$，
+\begin{equation}\label{eq:3.6.22}
 y = \begin{bmatrix} 0 & 1 \end{bmatrix}x
 \end{equation}
 
-传递函数计算为
-\begin{equation}
-H(s) = \frac{K_T}{(Ls+R)(Js+b_m) + K_T K_b}
+传递函数为
+\begin{equation}\label{eq:3.6.23}
+H(s) = \frac{k_m}{(Ls+R)(Js+b_m) + k_m k'_m}.
 \end{equation}
 
-使用参数值$J_m = J_L = 0.1$ kg-m$^2$，$L = 0.5$ H，$b_m = 0.2$ N-m/rad/s，和$R = 5$ $\Omega$得到
-\begin{equation}
-H(s) = \frac{20}{(s+2.3)(s+8.7)}
+采用$J_m = J_L = 0.1\ \mathrm{kg\cdot m^2}$（故$J=0.2$），$k_m = k'_m = 1\ \mathrm{V\cdot s}$，$L = 0.5\ \mathrm{H}$，$b_m = 0.2\ \mathrm{N\cdot m/(rad/s)}$，$R = 5\ \Omega$，得到
+\begin{equation}\label{eq:3.6.24}
+H(s) = \frac{10}{(s+2.3)(s+8.7)}.
 \end{equation}
 因此有两个实极点在$s = -2.3$，$s = -8.7$。
 
@@ -1519,17 +1604,17 @@ H(s) = \frac{20}{(s+2.3)(s+8.7)}
 
 \textbf{b. 非常柔性的耦合轴}
 
-对应于非常柔性轴的耦合轴参数$k = 2$ N-m/rad和$b = 0.2$ N-m/rad/s。使用这些值，可以使用PC-MATLAB等软件获得两个传递函数
-\begin{align}
-H_m(s) &= \frac{20s(s^2+3s+44)}{(s+10)[(s+3.4)^2+5.6^2]} \\
-H_L(s) &= \frac{40(s+10)}{(s+10)[(s+3.4)^2+5.6^2]}
+对应于非常柔性轴的耦合轴参数$k = 2\ \mathrm{N\cdot m/rad}$和$b = 0.2\ \mathrm{N\cdot m/(rad/s)}$。采用这些数值，可用PC-MATLAB等软件求得（从输入电压至转速的）传递函数，例如
+\begin{align}\label{eq:3.6.25}
+\frac{\omega_m}{u} &= \frac{20s\left[(s+1)^2 + 4.36^2\right]}{s(s+3.05)(s+6.14)\left[(s+3.4)^2 + 5.62^2\right]}\,, \\[4pt]
+\frac{\omega_L}{u} &= \frac{40s(s+10)}{s(s+3.05)(s+6.14)\left[(s+3.4)^2 + 5.62^2\right]}\,.
 \end{align}
 
-轴柔性模式有极点$s = -3.4 \pm j5.6$，因此阻尼比为$\zeta = 0.52$，自然频率为$\omega = 6.55$ rad/s。注意系统是边际稳定的，有一个极点在$s = 0$。由于极零点抵消，它是BIBO稳定的。
+分母在$s=0$处的极点对应速度扰动的积分模式；分子中的$s$可与之相消。共轭极点由$s=-3.4\pm\mathrm{j}5.62$给出（对应二阶因子$(s+3.4)^2+5.62^2$），另有实极点约$s=-3.05$、$s=-6.14$。注意系统在连续时间意义下存在$s=0$极点；若发生极零点对消，则对特定输入仍可具有BIBO稳定特性。
 
 程序TRESP产生图3.6.3中所示的阶跃响应。有几点值得注意。最初，电机速度$\omega_m$比图3.6.2中上升得更快，因为轴柔性意味着只有转子转动惯量$J_m$最初影响速度。然后，当负载$J_L$通过轴耦合回电机时，$\omega_m$的增加速率减慢。还要注意，负载速度$\omega_L$由于轴中的柔性表现出大约0.1 s的延迟。
 
-极其有趣的是要注意，轴柔性具有加速最慢电机实极点的效果[比较(8)和(9)]，因此$\omega_L$比刚性轴情况下更快地接近其稳态值。这是由于柔性轴的"甩动"作用。
+极其有趣的是要注意，轴柔性具有加速最慢电机实极点的效果[比较\eqref{eq:3.6.24}与\eqref{eq:3.6.25}]，因此$\omega_L$比刚性轴情况下更快地接近其稳态值。这是由于柔性轴的"甩动"作用。
 
 轴动力学使得在没有某种专门设计的控制器的情况下，控制$\theta_L$（在机器人机械臂中对应于关节角$q_i$）非常困难。
 
@@ -1625,7 +1710,7 @@ H_L(s) &= \frac{40(s+10)}{(s+10)[(s+3.4)^2+5.6^2]}
 \item[3.3-4] \textbf{科里奥利项}。在(3.3.40)中找到$V_{cor}(q)$和$V_{cen}(q)$。
 
 \item[3.3-5] \textbf{科里奥利项}。证明动力学方程中的科里奥利/向心项可以表示为$V(q,\dot{q}) = \text{vec}\{V(q,\dot{q})\}$，其中
-\[ V = \sum_{i=1}^{n} \sum_{j=1}^{n} \sum_{k=1}^{n} \text{tr}\left(\frac{\partial T_i}{\partial q_j}M_i\frac{\partial T_i^T}{\partial q_k}\right)\dot{q}_j\dot{q}_k \]
+\[ V = \sum_{i=1}^{n} \sum_{j=1}^{n} \sum_{k=1}^{n} \text{tr}\left(\frac{\partial T_i}{\partial q_j}I_i\frac{\partial T_i^T}{\partial q_k}\right)\dot{q}_j\dot{q}_k \]
 其中
 \[ \frac{\partial T_i}{\partial q_j} = T_i Q_j \]
 和附录A中定义的$T_i$。将其与第3.2节中定义的$V_{m1}$、$V_{m2}$、$V_m$进行比较。
@@ -1671,9 +1756,9 @@ H_L(s) &= \frac{40(s+10)}{(s+10)[(s+3.4)^2+5.6^2]}
 \textbf{第3.6节}
 
 \begin{enumerate}
-\item[3.6-1] \textbf{执行器动力学}。验证机械臂加执行器动力学(3.6.6)具有表3.3.1中列出的性质。
+\item[3.6-1] \textbf{执行器动力学}。验证机械臂加执行器动力学\eqref{eq:3.6.6}具有表3.3.1中列出的性质。
 
-\item[3.6-2] \textbf{执行器动力学}。推导三阶动力学(3.6.13)，提供$\tau$、$N$的显式表达式。验证当$L_i$可忽略时它们简化为(3.6.5)。
+\item[3.6-2] \textbf{执行器动力学}。推导三阶动力学\eqref{eq:3.6.12}，提供$\tau$、$N$的显式表达式。验证当$L_i$可忽略时它们简化为\eqref{eq:3.6.5}。
 
 \item[3.6-3] \textbf{柔性耦合轴}。验证例3.6.1中刚性轴情况的状态方程。
 \end{enumerate}

@@ -116,72 +116,80 @@
 
 因此，重要的是能够找到给定期望笛卡尔轨迹的期望关节空间轨迹$q_d(t)$)。这通过使用逆运动学来完成，如下面示例所示。该示例说明了笛卡尔到关节空间轨迹的映射可能不是唯一的——也就是说，几个关节空间轨迹可能对末端执行器产生相同的笛卡尔轨迹。
 
-\begin{examplebox}[示例4.2-1：将规定笛卡尔轨迹映射到关节空间]
+\begin{example}[示例4.2-1：将规定笛卡尔轨迹映射到关节空间]
 在示例A.3-5中推导出了图4.2.1所示的两连杆平面机器人手臂的逆运动学。让我们使用它们将路径从笛卡尔空间转换到关节空间。
 
 假设我们希望两连杆臂在$(x, y)$平面中跟随给定的工作空间或笛卡尔轨迹
-\begin{equation}
+\begin{equation*}
     p(t) = (x(t), y(t))
-\end{equation}
+\end{equation*}
 它是时间$t$的函数。由于手臂由控制其角度$\theta_1, \theta_2$的执行器移动，因此方便将指定的笛卡尔轨迹$(x(t), y(t))$转换为关节空间轨迹$(\theta_1(t), \theta_2(t))$以进行控制。
 
 这可以通过使用逆运动学变换来实现
-\begin{align}
+\begin{align*}
     r^2 &= x^2 + y^2 \\
-    C &= \cos\theta_2 = \frac{r^2 - a_1^2 - a_2^2}{2a_1a_2} \\
+    C &= \cos\theta_2 = \frac{r^2 - a_1^2 + a_2^2}{2a_1a_2} \\
     D &= \pm\sqrt{1 - C^2} = \sin\theta_2 \\
     \theta_2 &= \ATAN(D, C) \\
     \theta_1 &= \ATAN(y, x) - \ATAN(a_2\sin\theta_2, a_1 + a_2\cos\theta_2)
-\end{align}
+\end{align*}
 
 假设臂的末端应重复追踪图4.2.2所示的圆形工作空间路径$p(t)$，其描述为
-\begin{align}
+\begin{align*}
     x(t) &= 2 + \frac{1}{2}\cos t \\
     y(t) &= 1 + \frac{1}{2}\sin t
-\end{align}
+\end{align*}
 
 通过在每个时间$t$在逆运动学方程中使用这些表达式，我们得到图4.2.3所示的所需关节空间轨迹$q(t) = (\theta_1(t), \theta_2(t))$，这些轨迹产生了末端执行器的圆形笛卡尔运动（使用$a_1 = 2, a_2 = 2$）。
 
 我们为"肘部向下"配置计算了关节变量。在(4)中选择相反的符号会得到"肘部向上"的关节空间轨迹，产生相同的笛卡尔轨迹。
-\end{examplebox}
+\end{example}
 
 \subsection{多项式路径插值}
 
 假设已经为操作臂运动确定了期望轨迹，无论是在笛卡尔空间还是使用逆运动学在关节空间。为方便起见，我们使用关节空间变量$q(t)$表示。将整个轨迹存储在计算机内存中是不可能的，很少有实用有用的轨迹具有简单的闭合形式表达式。因此，通常的做法是将一系列点$q_i(t_k)$存储在计算机内存中，对于每个关节变量$i$，这些点代表变量在离散时间$t_k$的期望值。因此$q(t_k)$是$\mathbb{R}^n$中的一个点，关节变量应在时间$t_k$通过该点。我们称这些为经过点。
 
-大多数机器人控制方案需要连续的期望轨迹。为了将经过点表$q_i(t_k)$转换为连续的期望轨迹$q_d(t)$，我们可以使用许多选项。让我们在这里讨论多项式插值。
+大多数机器人控制方案需要连续的期望轨迹。为了将经过点表$q_i(t_k)$转换为各关节$i$的连续期望轨迹$q_{d_i}(t)$，我们可以使用许多选项。让我们在这里讨论多项式插值。
 
 假设经过点在时间上是均匀间隔的，并将采样周期定义为
-\begin{equation}
+\begin{equation}\label{eq:4.2.1}
     T = t_{k+1} - t_k
 \end{equation}
 
-对于平滑运动，在每个时间间隔$[t_k, t_{k+1}]$上，我们要求期望位置$q_d(t)$和速度$\dot{q}_d(t)$与制表的经过点匹配。这产生了边界条件
-\begin{equation}
+对于平滑运动，在每个时间间隔$[t_k, t_{k+1}]$上，我们要求期望位置$q_{d_i}(t)$和速度$\dot{q}_{d_i}(t)$与所制表的经过点匹配。这产生了边界条件
+\begin{equation}\label{eq:4.2.2}
     \begin{cases}
-        q_d(t_k) = q(t_k), & q_d(t_{k+1}) = q(t_{k+1}) \\
-        \dot{q}_d(t_k) = \dot{q}(t_k), & \dot{q}_d(t_{k+1}) = \dot{q}(t_{k+1})
+        q_{d_i}(t_k) = q_i(t_k), & q_{d_i}(t_{k+1}) = q_i(t_{k+1}) \\
+        \dot{q}_{d_i}(t_k) = \dot{q}_i(t_k), & \dot{q}_{d_i}(t_{k+1}) = \dot{q}_i(t_{k+1})
     \end{cases}
 \end{equation}
 
 为了匹配这些边界条件，有必要在每个时间间隔$[t_k, t_{k+1}]$上使用三次插值多项式
-\begin{equation}
-    q_d(t) = a_0 + a_1t + a_2t^2 + a_3t^3
+\begin{equation}\label{eq:4.2.3}
+    q_{d_i}(t) = a_i + (t-t_k)b_i + (t-t_k)^2 c_i + (t-t_k)^3 d_i
 \end{equation}
 它有四个自由变量。那么
 \begin{align}
-    \dot{q}_d(t) &= a_1 + 2a_2t + 3a_3t^2 \\
-    \ddot{q}_d(t) &= 2a_2 + 6a_3t
+    \dot{q}_{d_i}(t) &= b_i + 2(t-t_k)c_i + 3(t-t_k)^2 d_i \label{eq:4.2.4}\\
+    \ddot{q}_{d_i}(t) &= 2c_i + 6(t-t_k) d_i \label{eq:4.2.5}
 \end{align}
 
 因此，加速度在每个采样周期上是线性的。
 
 很容易求解在每个时间间隔$[t_k, t_{k+1}]$上保证边界条件匹配的系数。实际上，我们看到
-\begin{equation}
-    \begin{bmatrix} 1 & t_k & t_k^2 & t_k^3 \\ 0 & 1 & 2t_k & 3t_k^2 \\ 1 & t_{k+1} & t_{k+1}^2 & t_{k+1}^3 \\ 0 & 1 & 2t_{k+1} & 3t_{k+1}^2 \end{bmatrix} \begin{bmatrix} a_0 \\ a_1 \\ a_2 \\ a_3 \end{bmatrix} = \begin{bmatrix} q(t_k) \\ \dot{q}(t_k) \\ q(t_{k+1}) \\ \dot{q}(t_{k+1}) \end{bmatrix}
+\begin{equation}\label{eq:4.2.6}
+    \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 1 & T & T^2 & T^3 \\ 0 & 1 & 2T & 3T^2 \end{bmatrix} \begin{bmatrix} a_i \\ b_i \\ c_i \\ d_i \end{bmatrix} = \begin{bmatrix} q_i(t_k) \\ \dot{q}_i(t_k) \\ q_i(t_{k+1}) \\ \dot{q}_i(t_{k+1}) \end{bmatrix}
 \end{equation}
 
-这被求解以获得每个时间间隔$[t_k, t_{k+1}]$上所需的插值系数。
+这被求解以获得每个时间间隔$[t_k, t_{k+1}]$上所需的插值系数。实际上，我们看到
+\begin{equation}\label{eq:4.2.7}
+\begin{aligned}
+    a_i &= q_i(t_k) \\
+    b_i &= \dot{q}_i(t_k) \\
+    c_i &= \frac{3[q_i(t_{k+1}) - q_i(t_k)] - T[2\dot{q}_i(t_k) + \dot{q}_i(t_{k+1})]}{T^2} \\
+    d_i &= \frac{2[q_i(t_k) - q_i(t_{k+1})] - T[\dot{q}_i(t_k) + \dot{q}_i(t_{k+1})]}{T^3}
+\end{aligned}
+\end{equation}
 
 请注意，这种技术需要以表格形式存储每个采样点的期望位置和速度。一种变体使用更高阶的多项式来确保在每个采样时间$t_k$处的位置、速度和加速度连续。
 
@@ -193,26 +201,25 @@
 
 恒定加速度曲线如图4.2.4(a)所示。相关的速度和位置曲线如图4.2.4(b)和4.2.4(c)所示。位置轨迹由三部分组成：二次或抛物线初始部分、线性中间部分和抛物线最终部分。因此，让我们讨论使用带抛物线混合的线性函数(LFPB)的经过点插值。
 
-位置轨迹从抛物线切换到线性的时间被称为混合时间$t_b$。应为每个关节变量$i$指定位置$q_{di}(t)$。图4.2.4(c)中的轨迹可以写成关节$i$的形式
-\begin{equation}
-    q_{di}(t) = \begin{cases}
-        a_{i0} + a_{i1}t + a_{i2}t^2 & 0 \leq t < t_b \\
-        b_{i0} + b_{i1}t & t_b \leq t < t_f - t_b \\
-        c_{i0} + c_{i1}t + c_{i2}t^2 & t_f - t_b \leq t \leq t_f
+位置轨迹从抛物线切换到线性的时间被称为混合时间$t_b$。应为每个关节变量$i$指定位置$q_{d_i}(t)$。图4.2.4(c)中的轨迹可以写成关节$i$的形式
+\begin{equation}\label{eq:4.2.8}
+    q_{d_i}(t) = \begin{cases}
+        a_i + (t - t_k) b_i + (t - t_k)^2 c_i, & t_k \leq t < t_k + t_b \\
+        d_i + v_i t, & t_k + t_b \leq t < t_{k+1} - t_b \\
+        e_i + (t - t_{k+1}) f_i + (t - t_{k+1})^2 g_i, & t_{k+1} - t_b \leq t \leq t_{k+1}
     \end{cases}
 \end{equation}
 
 系数$v_i$可以被解释为关节变量$i$允许的最大速度。设计参数是$v_i$和$t_b$。
 
-很容易求解在每个时间间隔$[t_k, t_{k+1}]$上确保满足边界条件(4.2.2)的系数。结果是
-\begin{equation}
-\left\{
+很容易求解在每个时间间隔$[t_k, t_{k+1}]$上确保满足边界条件\eqref{eq:4.2.2}的系数。结果是
+\begin{equation}\label{eq:4.2.9}
 \begin{aligned}
-        a_{i0} &= q_{ik}, & a_{i1} &= 0, & a_{i2} &= \frac{v_i}{2t_b} \\
-        b_{i0} &= q_{ik} - \frac{v_i t_b}{2}, & b_{i1} &= v_i \\
-        c_{i0} &= q_{i,k+1} - \frac{v_i t_f^2}{2t_b}, & c_{i1} &= \frac{v_i t_f}{t_b}, & c_{i2} &= -\frac{v_i}{2t_b}
+    a_i &= q_i(t_k), & b_i &= \dot{q}_i(t_k), & c_i &= \frac{v_i - \dot{q}_i(t_k)}{2t_b}, \\
+    d_i &= \frac{q_i(t_k) + q_i(t_{k+1}) - v_i t_{k+1}}{2}, \\
+    e_i &= q_i(t_{k+1}), & f_i &= \dot{q}_i(t_{k+1}), \\
+    g_i &= \frac{v_i t_{k+1} + q_i(t_k) - q_i(t_{k+1}) + 2t_b \bigl[\dot{q}_i(t_{k+1}) - v_i\bigr]}{2t_b^2}
 \end{aligned}
-\right.
 \end{equation}
 
 \subsection{最小时间轨迹}
@@ -220,16 +227,16 @@
 有一类重要的特殊LFPB轨迹。假设加速度受到最大值$a_M$的限制，并且希望机器人手臂以最小时间从一个位置到达另一个位置。为简单起见，假设初始和最终速度等于零。一般情况在[Lewis 1986a]中涵盖（参见习题）。
 
 最小时间轨迹如图4.2.5所示。为了在最小时间$t_f$内将关节变量$i$从静止位置$q_0 = q_i(t_0)$驱动到期望的最终静止位置$q_f = q_i(t_f)$，最大加速度$a_M$应施加到切换时间$t_s$，之后时间应施加最大减速度$-a_M$直到$t_f$。注意$t_s$和$t_f$都取决于$q_0$和$q_f$。我们可以写成
-\begin{equation}
+\begin{equation}\label{eq:4.2.10}
     q_i(t_s) = q_0 + \frac{1}{2}a_M(t_s - t_0)^2
 \end{equation}
 
 那么速度方程产生
-\begin{equation}
+\begin{equation}\label{eq:4.2.11}
     v_i(t_s) = a_M(t_s - t_0) = a_M(t_f - t_s)
 \end{equation}
 或
-\begin{equation}
+\begin{equation}\label{eq:4.2.12}
     t_s = \frac{t_f + t_0}{2}
 \end{equation}
 
@@ -254,29 +261,29 @@
 有许多用于仿真非线性动力学系统的软件包，包括SIMNON [Åström and Wittenmark 1984]、MATLAB等。为方便起见，我们在附录B中包含了一些对连续和数字控制相当有用的仿真程序。
 
 所有仿真程序都要求用户编写类似的子程序。使用积分程序（如Runge-Kutta）的时间响应仿真器都需要计算给定当前状态的状态导数。在3.4节中，我们展示了如何将机器人手臂方程
-\begin{equation}
+\begin{equation}\label{eq:4.3.1}
     M(q)\ddot{q} + N(q, \dot{q}) = \tau
 \end{equation}
 以非线性状态空间形式表示
-\begin{equation}
+\begin{equation}\label{eq:4.3.2}
     E(x)\dot{x} = f(x, u, t)
 \end{equation}
 其中$x(t)$是状态，$u(t)$是输入。
 
 定义状态为$x = [q^T \, \dot{q}^T]^T$，我们可以写出隐式形式
-\begin{equation}
+\begin{equation}\label{eq:4.3.3}
     M(q)\frac{d\dot{q}}{dt} = -N(q, \dot{q}) + \tau - \tau_d
 \end{equation}
 其中$\tau$是臂控制力矩，由控制器提供，$\tau_d$是干扰力矩。我们说这是一种隐式形式，因为左侧的系数矩阵意味着$\ddot{q}$不是以右侧的显式形式给出的。
 
-给定$x(t)$，有必要为积分程序提供一个子程序来计算$\dot{x}(t)$。一种求解$\ddot{q}$的方法是求逆$M(q)$。然而，由于潜在的数值问题，这不推荐。让我们将(4.3.3)表示为
-\begin{equation}
+给定$x(t)$，有必要为积分程序提供一个子程序来计算$\dot{x}(t)$。一种求解$\ddot{q}$的方法是求逆$M(q)$。然而，由于潜在的数值问题，这不推荐。让我们将\eqref{eq:4.3.3}表示为
+\begin{equation}\label{eq:4.3.4}
     E(x)\dot{x} = f(x, u, t)
 \end{equation}
 请注意，在这种情况下，$u(t)$是由控制力$\tau(t)$和干扰$\tau_d(t)$组成的向量。
 
-附录B中给出了一个简单的时间响应程序TRESP。给定一个子程序F(time, x, xp)，它使用(4.3.4)根据$x(t)$和$u(t)$计算$\dot{x}$；它使用Runge-Kutta积分器来计算状态轨迹$x(t)$。为了在子程序F(t, x, xp)中求解$\dot{x}$，我们建议计算$M(q)$和$N(q, \dot{q})$，然后使用最小二乘技术求解
-\begin{equation}
+附录B中给出了一个简单的时间响应程序TRESP。给定一个子程序F(time, x, xp)，它使用\eqref{eq:4.3.4}根据$x(t)$和$u(t)$计算$\dot{x}$；它使用Runge-Kutta积分器来计算状态轨迹$x(t)$。为了在子程序F(t, x, xp)中求解$\dot{x}$，我们建议计算$M(q)$和$N(q, \dot{q})$，然后使用最小二乘技术求解
+\begin{equation}\label{eq:4.3.5}
     M(q)\frac{d\dot{q}}{dt} = -N(q, \dot{q}) + \tau - \tau_d
 \end{equation}
 [i.e., (4.3.3)的底部部分]，这比$M(q)$的逆数值上更稳定。最小二乘方程求解器在商业上很容易获得，例如在[IMSL]、[LINPACK]等处。对于更简单的臂，可以解析地求逆$M(q)$。
@@ -313,211 +320,219 @@
 
 机器人手臂动力学为
 \begin{align}
-    M(q)\ddot{q} + N(q, \dot{q}) &= \tau \\
-    M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) + F(\dot{q}) &= \tau - \tau_d
+    M(q)\ddot{q} + V(q, \dot{q}) + F_v\dot{q} + F_d(\dot{q}) + G(q) + \tau_d &= \tau \label{eq:4.4.1}\\
+    \intertext{或}
+    M(q)\ddot{q} + N(q, \dot{q}) + \tau_d &= \tau, \label{eq:4.4.2}
 \end{align}
-其中关节变量$q(t)$、控制力矩$\tau$和干扰$\tau_d(t)$。如果此方程包括电机执行器动力学（第3.6节），则$\tau(t)$是输入电压。
+其中$N(q, \dot{q}) = V(q, \dot{q}) + F_v\dot{q} + F_d(\dot{q}) + G(q)$，$q(t)$为关节变量，$\tau$为控制力矩，$\tau_d(t)$为干扰力矩。如果此动力学方程中包含电机执行器模型（第3.6节），则$\tau(t)$表示广义控制输入（例如输入电压）。
 
 假设已根据4.2节的讨论为臂运动选择了期望轨迹$q_d(t)$。为了确保关节变量的轨迹跟踪，定义输出或跟踪误差为
-\begin{equation}
+\begin{equation}\label{eq:4.4.3}
     e(t) = q_d(t) - q(t)
 \end{equation}
 
 为了演示输入$\tau(t)$对跟踪误差的影响，微分两次以获得
-\begin{equation}
+\begin{equation}\label{eq:4.4.4}
     \ddot{e} = \ddot{q}_d - \ddot{q}
 \end{equation}
 
-现在求解(4.4.2)中的$\ddot{q}$并将其代入最后一个方程得到
-\begin{equation}
+现在求解\eqref{eq:4.4.2}中的$\ddot{q}$并将其代入最后一个方程得到
+\begin{equation}\label{eq:4.4.5}
     \ddot{e} = \ddot{q}_d - M^{-1}(q)[-N(q, \dot{q}) + \tau - \tau_d]
 \end{equation}
 
 定义控制输入函数和干扰函数
 \begin{align}
-    u &= M^{-1}(q)[\tau - N(q, \dot{q})] - \ddot{q}_d \\
-    w &= M^{-1}(q)\tau_d
+    u &= \ddot{q}_d - M^{-1}(q)[\tau - N(q, \dot{q})] \label{eq:4.4.6}\\
+    w &= M^{-1}(q)\tau_d \label{eq:4.4.7}
 \end{align}
 
 我们可以按如下方式定义状态$x = [e^T \, \dot{e}^T]^T$并写出跟踪误差动力学
-\begin{equation}
+\begin{equation}\label{eq:4.4.8}
     \frac{\dd}{\dd t}\begin{bmatrix} e \\ \dot{e} \end{bmatrix} = \begin{bmatrix} 0 & I \\ 0 & 0 \end{bmatrix}\begin{bmatrix} e \\ \dot{e} \end{bmatrix} + \begin{bmatrix} 0 \\ I \end{bmatrix}u + \begin{bmatrix} 0 \\ I \end{bmatrix}w
 \end{equation}
 
 这是Brunovsky规范形中的线性误差系统，由$n$对双积分器$1/s^2$组成，每个关节一个。它由控制输入$u(t)$和干扰$w(t)$驱动。注意，此推导是3.4节中一般反馈线性化程序的特殊情况。
 
-反馈线性化变换(4.4.5)可以反转以得到
-\begin{equation}
-    \tau = M(q)(\ddot{q}_d + u) + N(q, \dot{q})
+反馈线性化变换\eqref{eq:4.4.5}可以反转以得到
+\begin{equation}\label{eq:4.4.9}
+    \tau = M(q)(\ddot{q}_d - u) + N(q, \dot{q})
 \end{equation}
 
-我们称之为计算力矩控制律。这些操作的重要性如下。从(4.4.1)到(4.4.8)没有状态空间变换。因此，如果我们选择一个稳定(4.4.8)的控制$u(t)$，使得$e(t)$趋于零，那么由$\tau(t)$(4.4.9)给出的非线性控制输入将导致机器人臂(4.4.1)中的轨迹跟随。事实上，将(4.4.9)代入(4.4.2)得到
+我们称之为计算力矩控制律。这些操作的重要性如下。从\eqref{eq:4.4.2}到\eqref{eq:4.4.8}没有状态空间变换。因此，如果我们选择一个稳定\eqref{eq:4.4.8}的控制$u(t)$，使得$e(t)$趋于零，那么由$\tau(t)$\eqref{eq:4.4.9}给出的非线性控制输入将使得满足式\eqref{eq:4.4.2}的机器人手臂实现轨迹跟随。事实上，将\eqref{eq:4.4.9}代入\eqref{eq:4.4.2}得到
 \begin{align}
-    M\ddot{q} + N &= M(\ddot{q}_d + u) + N - \tau_d \\
-    \ddot{e} &= -u + M^{-1}\tau_d = -u + w
+    M\ddot{q} + N + \tau_d &= M(\ddot{q}_d - u) + N \label{eq:4.4.10}\\
+    \ddot{e} &= u + M^{-1}\tau_d = u + w \label{eq:4.4.11}
 \end{align}
 这正是(4.4.8)。
 
 图4.4.1展示了计算力矩控制方案，显示了内环和外环。重要的是要注意，它由一个内非线性环和一个外控制信号$u(t)$组成。我们将看到选择$u(t)$的几种方法。由于$u(t)$将取决于$q(t)$和$\dot{q}(t)$，外环将是一个反馈环。一般来说，我们可以选择一个动态补偿器$H(s)$，使得
-\begin{equation}
+\begin{equation}\label{eq:4.4.12}
     U(s) = H(s)E(s)
 \end{equation}
 
-$H(s)$可以被选择用于良好的闭环行为。根据(4.4.10)，闭环误差系统然后具有传递函数
-\begin{equation}
+$H(s)$可以被选择用于良好的闭环行为。根据\eqref{eq:4.4.11}，闭环误差系统然后具有传递函数
+\begin{equation}\label{eq:4.4.13}
     T(s) = s^2I - H(s)
 \end{equation}
 
-重要的是要意识到计算力矩取决于机器人动力学的反演，实际上有时被称为逆动力学控制。事实上，(4.4.9)显示了通过用$\ddot{q}_d + u$替换$\ddot{q}$来计算$\tau(t)$；也就是说，通过求解机器人逆动力学问题。与系统反演相关的所有警告，包括当系统具有非最小相位零点时产生的问题，都在这里适用。（注意在线性情况下，系统零点是反演的极点。这种非最小相位概念推广到非线性系统。）幸运的是，对于我们来说，刚性臂动力学是最小相位的。
+重要的是要意识到计算力矩取决于机器人动力学的反演，实际上有时被称为逆动力学控制。事实上，(4.4.9)显示了通过用$\ddot{q}_d - u$替换$\ddot{q}$来计算$\tau(t)$；也就是说，通过求解机器人逆动力学问题。与系统反演相关的所有警告，包括当系统具有非最小相位零点时产生的问题，都在这里适用。（注意在线性情况下，系统零点是反演的极点。这种非最小相位概念推广到非线性系统。）幸运的是，对于我们来说，刚性臂动力学是最小相位的。
 
-出于实现目的，有几种方法可以计算(4.4.9)。应避免在每个采样时间进行形式矩阵乘法。在某些情况下，表达式可以解析地推导出来。计算力矩$\tau(t)$的一个好方法是使用高效的Newton-Euler逆动力学公式[Craig 1985]，用$\ddot{q}_d + u$代替$\ddot{q}(t)$。
+出于实现目的，有几种方法可以计算(4.4.9)。应避免在每个采样时间进行形式矩阵乘法。在某些情况下，表达式可以解析地推导出来。计算力矩$\tau(t)$的一个好方法是使用高效的Newton-Euler逆动力学公式[Craig 1985]，用$\ddot{q}_d - u$代替$\ddot{q}(t)$。
 
 可以使用许多方法选择外环信号$u(t)$，包括鲁棒和自适应控制技术。在本章的剩余部分，我们探索$u(t)$的一些选择以及计算力矩控制的一些变体。
 
 \subsection{PD外环设计}
 
 选择辅助控制信号$u(t)$的一种方法是作为比例加微分(PD)反馈
-\begin{equation}
+\begin{equation}\label{eq:4.4.14}
     u = -K_v\dot{e} - K_pe
 \end{equation}
 
 然后整体机器人臂输入变为
-\begin{equation}
-    \tau_c = M(q)(\ddot{q}_d - K_v\dot{e} - K_pe) + N(q, \dot{q})
+\begin{equation}\label{eq:4.4.15}
+    \tau_c = M(q)(\ddot{q}_d + K_v\dot{e} + K_pe) + N(q, \dot{q})
 \end{equation}
 
 此控制器如图4.4.6所示，其中$K_i = 0$。闭环误差动力学为
-\begin{equation}
+\begin{equation}\label{eq:4.4.16}
     \ddot{e} + K_v\dot{e} + K_pe = w
 \end{equation}
 或以状态空间形式
-\begin{equation}
+\begin{equation}\label{eq:4.4.17}
     \frac{\dd}{\dd t}\begin{bmatrix} e \\ \dot{e} \end{bmatrix} = \begin{bmatrix} 0 & I \\ -K_p & -K_v \end{bmatrix}\begin{bmatrix} e \\ \dot{e} \end{bmatrix} + \begin{bmatrix} 0 \\ I \end{bmatrix}w
 \end{equation}
 
 闭环特征多项式为
-\begin{equation}
-    \Delta_c(s) = |s^2I + sK_v + K_p|
+\begin{equation}\label{eq:4.4.18}
+    \Delta_c(s) = |s^2 I + K_v s + K_p|
 \end{equation}
 
 \textbf{PD增益选择}。通常取$n \times n$增益矩阵为对角矩阵，使得
-\begin{equation}
+\begin{equation}\label{eq:4.4.19}
     K_v = \mathrm{diag}\{k_{vi}\}, \quad K_p = \mathrm{diag}\{k_{pi}\}
 \end{equation}
 
 那么
-\begin{equation}
-    \Delta_c(s) = \prod_{i=1}^{n}\left(s^2 + sk_{vi} + k_{pi}\right)
+\begin{equation}\label{eq:4.4.20}
+    \Delta_c(s) = \prod_{i=1}^{n}\left(s^2 + k_{vi} s + k_{pi}\right)
 \end{equation}
-只要所有的$k_{vi}$和$k_{pi}$都为正，误差系统就是渐近稳定的。因此，只要干扰$w(t)$有界，误差$e(t)$就是有界的。与此相关，检查(4.4.6)并回忆表3.3.1，$M^{-1}$是有上界的。因此，$w(t)$的有界性等同于$\tau_d(t)$的有界性。
+只要所有的$k_{vi}$和$k_{pi}$都为正，误差系统就是渐近稳定的。因此，只要干扰$w(t)$有界，误差$e(t)$就是有界的。与此相关，检查\eqref{eq:4.4.6}并回忆表3.3.1，$M^{-1}$是有上界的。因此，$w(t)$的有界性等同于$\tau_d(t)$的有界性。
 
 重要的是要注意，虽然选择对角PD增益矩阵导致在外环级别解耦控制，但它不会导致解耦的关节控制策略。这是因为内环中的乘以$M(q)$和加上非线性前馈项$N(q, \dot{q})$使得信号$u(t)$在所有关节之间混杂。因此，计算任何一个给定关节的控制$\tau(t)$通常需要所有关节位置$q(t)$和速度$\dot{q}(t)$的信息。
 
 二阶特征多项式的标准形式为
-\begin{equation}
+\begin{equation*}
     s^2 + 2\zeta\omega_ns + \omega_n^2
+\end{equation*}
+其中$\zeta$是阻尼比，$\omega_n$是自然频率。因此，可以通过如下选择PD增益来实现误差$e(t)$的每个分量中的期望性能：
+\begin{equation}\label{eq:4.4.21}
+    k_{p_i} = \omega_{ni}^2, \quad k_{v_i} = 2\zeta_i\omega_{ni}
 \end{equation}
-其中$\zeta$是阻尼比，$\omega_n$是自然频率。因此，可以通过如下选择PD增益来实现误差$e(t)$的每个分量中的期望性能
-\begin{equation}
-    k_{pi} = \omega_{ni}^2, \quad k_{vi} = 2\zeta_i\omega_{ni}
-\end{equation}
-其中$\zeta_i, \omega_{ni}$是关节误差$i$的期望阻尼比和自然频率。使末端附近的响应比靠近基座处更快可能是有用的，因为必须移动的质量更重。
+其中$\zeta_i,\omega_{ni}$分别为关节误差$i$的期望阻尼比与自然频率。使末端附近的响应比靠近基座处更快可能是有用的，因为必须移动的质量更重。
 
-机器人表现出超调是不希望的，因为如果例如期望轨迹在工件的表面终止，这可能导致冲击。因此，PD增益通常选择为临界阻尼$\zeta = 1$。在这种情况下
-\begin{equation}
-    k_{pi} = \omega_{ni}^2, \quad k_{vi} = 2\omega_{ni}
+机器人表现出超调是不希望的，因为如果例如期望轨迹在工件的表面终止，这可能导致冲击。因此，PD增益通常选择为各关节临界阻尼（$\zeta_i = 1$）。在这种情况下，
+\begin{equation}\label{eq:4.4.22}
+    k_{v_i} = 2\sqrt{k_{p_i}}, \quad k_{p_i} = \frac{k_{v_i}^2}{4}
 \end{equation}
+当$\zeta_i=1$时，由式\eqref{eq:4.4.21}亦得$k_{v_i}=2\omega_{ni}$与$k_{p_i}=\omega_{ni}^2$，与式\eqref{eq:4.4.22}一致。
 
 \textbf{自然频率的选择}。自然频率$\omega_n$控制每个误差分量中的响应速度。对于快速响应，它应该很大，并且根据性能目标进行选择。因此，在选择$\omega_n$时应考虑期望轨迹。
 
 现在讨论选择中的一些其他因素。[Paul 1981]给出了$\omega_n$选择上的一些上限。尽管大多数工业机器人的连杆是重的，但它们可能有一些柔性。假设连杆$i$的第一柔性或共振模式的频率为
-\begin{equation}
+\begin{equation}\label{eq:4.4.24}
     \omega_r = \sqrt{k_r/J}
 \end{equation}
 其中$J$是连杆惯量，$k_r$是连杆刚度。那么，为了避免激发共振模式，我们应该选择$\omega_n < \omega_r/2$。当然，连杆惯量$J$随臂构型变化，因此其最大值可用于计算$\omega_r$。
 
 $\omega_n$上的另一个上限由执行器饱和考虑提供。如果PD增益太大，力矩$\tau(t)$可能达到其上限。
 
-如下从误差有界性考虑提供了PD增益选择的一些更多感觉。(4.4.15)中闭环误差系统的传递函数为
-\begin{equation}
-    H(s) = (s^2I + sK_v + K_p)^{-1}
+如下从误差有界性考虑提供了PD增益选择的一些更多感觉。由式\eqref{eq:4.4.15}，闭环误差向量在拉普拉斯域满足
+\begin{equation}\label{eq:4.4.25}
+    e(s) = (s^2 I + K_v s + K_p)^{-1} w(s)
 \end{equation}
-或如果$K_v$和$K_p$是对角的
-\begin{equation}
-    H(s) = \mathrm{diag}\left\{\frac{1}{s^2 + sk_{vi} + k_{pi}}\right\}
+若$K_v$和$K_p$为对角阵，则第$i$个误差分量可写为
+\begin{equation}\label{eq:4.4.26}
+\begin{aligned}
+    e_i(s) &= \frac{1}{s^2 + k_{v_i} s + k_{p_i}} w(s) \equiv H(s) w(s), \\
+    \dot{e}_i(s) &= \frac{s}{s^2 + k_{v_i} s + k_{p_i}} w(s) \equiv s H(s) w(s)
+\end{aligned}
 \end{equation}
-
-\begin{equation}
-    w = M^{-1}\tau_d
-\end{equation}
-
-我们假设干扰和$M^{-1}$是有界的（表3.3.1），使得
-\begin{equation}
-    \|w\|_2 \leq \|M^{-1}\|_2\|\tau_d\|_2 \leq \bar{m}\|\tau_d\|_2 \leq d
-\end{equation}
-其中对于给定的机器人臂，$m$和$d$是已知的。因此
-\begin{equation}
-    \|e\|_2 \leq \|H(s)\|_2\|w\|_2 \leq \|H(s)\|_2d
-\end{equation}
-\begin{equation}
-    \|\dot{e}\|_2 \leq \|sH(s)\|_2d
-\end{equation}
-
-现在选择$L_2$范数，算子增益$\|H(s)\|_2$是$H(s)$的Bode幅度图的最大值。对于临界阻尼系统
-\begin{equation}
-    |H_i(j\omega)| = \frac{1}{\sqrt{(\omega^2 - \omega_{ni}^2)^2 + (2\zeta_i\omega_{ni}\omega)^2}}
+其中在该分量上$H(s)$表示相应的标量传递函数（依赖于$i$，下文同）。又
+\begin{equation*}
+    w = M^{-1} \tau_d .
+\end{equation*}
+假定$w$与$M^{-1}$有界（表3.3.1），则对所论机器人臂存在常数$\bar{m},\bar{d}$使得
+\begin{equation}\label{eq:4.4.27}
+    \|w\| \leq \|M^{-1}\| \, \|\tau_d\| \leq \bar{m} \bar{d}
 \end{equation}
 因此
-\begin{equation}
-    \|H(s)\|_2 = \max_i\frac{1}{2\zeta_i\omega_{ni}^2}
+\begin{equation}\label{eq:4.4.28}
+    \|e_i(t)\| \leq \|H(s)\| \, \|w\| \leq \|H(s)\| \, \bar{m} \bar{d}
+\end{equation}
+\begin{equation}\label{eq:4.4.29}
+    \|\dot{e}_i(t)\| \leq \|s H(s)\| \, \|w\| \leq \|s H(s)\| \, \bar{m} \bar{d}
+\end{equation}
+选取$L_2$范数时，算子增益$\|H(s)\|_2$可取为$H(s)$的Bode幅频曲线的峰值。对临界阻尼系统有
+\begin{equation}\label{eq:4.4.30}
+    \sup_{\omega} \|H(\mathrm{j}\omega)\|_2 = \frac{1}{k_{p_i}}
+\end{equation}
+故
+\begin{equation}\label{eq:4.4.31}
+    \|e_i(t)\|_2 \leq \frac{\bar{m} \bar{d}}{k_{p_i}}
+\end{equation}
+此外（见习题），
+\begin{equation}\label{eq:4.4.32}
+    \sup_{\omega} \|\mathrm{j}\omega H(\mathrm{j}\omega)\|_2 = \frac{1}{k_{v_i}}
+\end{equation}
+从而
+\begin{equation}\label{eq:4.4.33}
+    \|\dot{e}_i(t)\|_2 \leq \frac{\bar{m} \bar{d}}{k_{v_i}}
 \end{equation}
 
-此外（参见习题）
-\begin{equation}
-    \|sH(s)\|_2 = \max_i\frac{1}{2\zeta_i\omega_{ni}}
-\end{equation}
-所以
-\begin{equation}
-    \|e\|_2 \leq \frac{d}{\omega_{ni}^2}, \quad \|\dot{e}\|_2 \leq \frac{d}{\omega_{ni}}
-\end{equation}
+更一般地，若闭环极点由阻尼比$\zeta_i$与自然频率$\omega_{ni}$参数化，则
+\begin{equation*}
+    |H_i(\mathrm{j}\omega)| = \frac{1}{\sqrt{(\omega^2 - \omega_{ni}^2)^2 + (2\zeta_i\omega_{ni}\omega)^2}}
+\end{equation*}
+据此有$\|H(s)\|_2 = \max_i \bigl[1/(2\zeta_i\omega_{ni}^2)\bigr]$，$\|sH(s)\|_2 = \max_i \bigl[1/(2\zeta_i\omega_{ni})\bigr]$，并对应$\|e_i\|_2 \leq \bar{m}\bar{d}/\omega_{ni}^2$、$\|\dot{e}_i\|_2 \leq \bar{m}\bar{d}/\omega_{ni}$（当$\zeta_i=1$时，$k_{p_i}=\omega_{ni}^2$、$k_{v_i}=2\omega_{ni}$，与式\eqref{eq:4.4.31}–\eqref{eq:4.4.33}一致）。
 
-因此，在临界阻尼的情况下，位置误差随$k_{pi}$减小，速度误差随$k_{vi}$减小。
+因此，在临界阻尼的情况下，位置误差界随$k_{p_i}$增大而减小，速度误差界随$k_{v_i}$增大而减小。
 
-\begin{examplebox}[示例4.4-1：PD计算力矩控制的仿真]
+\begin{example}[示例4.4-1：PD计算力矩控制的仿真]
 \textbf{a. 计算力矩控制律}
 
 在示例3.2.2中，我们找到了图4.2.1所示的两连杆平面肘臂的动力学
-\begin{equation}
+\begin{equation*}
     \begin{bmatrix} \tau_1 \\ \tau_2 \end{bmatrix} = \begin{bmatrix} (m_1+m_2)a_1^2 + m_2a_2^2 + 2m_2a_1a_2c_2 & m_2a_2^2 + m_2a_1a_2c_2 \\ m_2a_2^2 + m_2a_1a_2c_2 & m_2a_2^2 \end{bmatrix} \begin{bmatrix} \ddot{\theta}_1 \\ \ddot{\theta}_2 \end{bmatrix} + \begin{bmatrix} -m_2a_1a_2s_2\dot{\theta}_2^2 - 2m_2a_1a_2s_2\dot{\theta}_1\dot{\theta}_2 \\ m_2a_1a_2s_2\dot{\theta}_1^2 \end{bmatrix} + \begin{bmatrix} (m_1+m_2)ga_1c_1 + m_2ga_2c_{12} \\ m_2ga_2c_{12} \end{bmatrix}
-\end{equation}
+\end{equation*}
 
 这些在标准形式中
-\begin{equation}
+\begin{equation*}
     M(q)\ddot{q} + N(q, \dot{q}) = \tau
-\end{equation}
+\end{equation*}
 
 取连杆质量为1 kg，长度为1 m。
 
 PD计算力矩控制律给出为
-\begin{equation}
-    \tau = M(q)(\ddot{q}_d - K_v\dot{e} - K_pe) + N(q, \dot{q})
-\end{equation}
+\begin{equation*}
+    \tau = M(q)(\ddot{q}_d + K_v\dot{e} + K_pe) + N(q, \dot{q})
+\end{equation*}
 其中跟踪误差定义为
-\begin{equation}
+\begin{equation*}
     e = q_d - q
-\end{equation}
+\end{equation*}
 
 \textbf{b. 期望轨迹}
 
 让期望轨迹$q_d(t)$的分量为
-\begin{align}
+\begin{align*}
     \theta_{1d} &= g_1\sin(2\pi t/T) \\
     \theta_{2d} &= g_2\cos(2\pi t/T)
-\end{align}
+\end{align*}
 周期$T = 2$ s，幅值$g_i = 0.1$ rad $\approx 6$ deg。为了良好的跟踪，选择闭环系统的时间常数为0.1 s。对于临界阻尼，这意味着$K_v = \mathrm{diag}\{k_v\}, K_P = \mathrm{diag}\{k_p\}$，其中
-\begin{equation}
+\begin{equation*}
     k_p = \omega_n^2 = 100, \quad k_v = 2\omega_n = 20
-\end{equation}
+\end{equation*}
 
 重要的是要意识到控制器参数（如PD增益）的选择取决于性能目标——在这种情况下，是期望轨迹的周期。
 
@@ -526,15 +541,15 @@ PD计算力矩控制律给出为
 让我们使用附录B中的程序TRESP仿真计算力矩控制器。使用MATLAB和SIMNON等商业包进行仿真非常相似。
 
 TRESP所需的子程序如图4.4.2所示。它们是
-\end{examplebox}
+\end{example}
 
-\begin{examplebox}[示例4.4-2：PID计算力矩控制的仿真]
+\begin{example}[示例4.4-2：PID计算力矩控制的仿真]
 在示例4.4.1中我们仿真了双连杆平面臂的PD计算力矩控制器。在此示例中，我们向臂动力学添加恒定的未知扰动，并比较PD与PID计算力矩控制。
 
 设臂动力学为
-\begin{equation}
-    M(q)\ddot{q} + N(q, \dot{q}) = \tau - \tau_d
-\end{equation}
+\begin{equation*}
+    M(q)\ddot{q} + N(q, \dot{q}) + \tau_d = \tau
+\end{equation*}
 其中$\tau_d$是每个分量为1 N-m的恒定扰动。这可以模拟未知动力学，如摩擦等。1 N-m的值代表了相当大的偏置。
 
 在图4.4.2的子程序arm(x, xp)中，向非线性项$N_1$和$N_2$的计算添加1，并使用PD计算力矩控制器，取$k_p=100$，$k_v=20$，得到图4.4.7(a)中的误差图。由于未建模的恒定扰动未被计算力矩定律考虑，跟踪误差中存在不可接受的残余偏置。最大误差为0.033 rad，略小于2度。
@@ -544,126 +559,125 @@ TRESP所需的子程序如图4.4.2所示。它们是
 相关的控制力矩如图4.4.8所示，表明使用积分项并不会显著增加力矩幅值。
 
 为了仿真PID控制律，有必要向子程序arm(x, xp)中的$x$添加两个额外的状态。方便起见，称它们为$x(5)$和$x(6)$，因此添加到子程序中的行是
-\begin{align}
+\begin{align*}
     \dot{x}(5) &= e(1) \\
     \dot{x}(6) &= e(2)
-\end{align}
+\end{align*}
 
 因此，现在有必要在子程序arm(x, xp)中计算$e(1)$和$e(2)$以进行积分。
-\end{examplebox}
+\end{example}
 
 \subsection{PID外环设计}
 
-为了提高性能，可以使用PID外环控制
-\begin{equation}
-    u = -K_v\dot{e} - K_pe - K_i\int e\,\dd t
-\end{equation}
-
-然后整体机器人臂输入变为
-\begin{equation}
-    \tau_c = M(q)\left(\ddot{q}_d - K_v\dot{e} - K_pe - K_i\int e\,\dd t\right) + N(q, \dot{q})
-\end{equation}
-
-此控制器如图4.4.6所示。闭环误差动力学为
-\begin{equation}
-    \ddot{e} + K_v\dot{e} + K_pe + K_i\int e\,\dd t = w
-\end{equation}
-或以状态空间形式，通过定义
-\begin{equation}
+为了提高性能，可以使用PID外环控制。定义积分状态$\varepsilon$满足
+\begin{equation}\label{eq:4.4.34}
     \dot{\varepsilon} = e
 \end{equation}
-我们有
-\begin{equation}
-    \frac{\dd}{\dd t}\begin{bmatrix} \varepsilon \\ e \\ \dot{e} \end{bmatrix} = \begin{bmatrix} 0 & I & 0 \\ 0 & 0 & I \\ -K_i & -K_p & -K_v \end{bmatrix}\begin{bmatrix} \varepsilon \\ e \\ \dot{e} \end{bmatrix} + \begin{bmatrix} 0 \\ 0 \\ I \end{bmatrix}w
+并取辅助信号
+\begin{equation}\label{eq:4.4.35}
+    u = -K_v\dot{e} - K_pe - K_i\varepsilon
+\end{equation}
+由此得到机械臂控制输入
+\begin{equation}\label{eq:4.4.36}
+    \tau = M(q)\left(\ddot{q}_d + K_v\dot{e} + K_pe + K_i\varepsilon\right) + N(q, \dot{q})
+\end{equation}
+
+此控制器如图4.4.6所示。或以状态空间形式，我们有
+\begin{equation}\label{eq:4.4.37}
+    \frac{\dd}{\dd t}\begin{bmatrix} \varepsilon \\ e \\ \dot{e} \end{bmatrix} = \begin{bmatrix} 0 & I & 0 \\ 0 & 0 & I \\ 0 & 0 & 0 \end{bmatrix}\begin{bmatrix} \varepsilon \\ e \\ \dot{e} \end{bmatrix} + \begin{bmatrix} 0 \\ 0 \\ I \end{bmatrix}u + \begin{bmatrix} 0 \\ 0 \\ I \end{bmatrix}w
+\end{equation}
+将式\eqref{eq:4.4.35}代入$\ddot{e}=u+w$，得闭环误差动力学
+\begin{equation}\label{eq:4.4.38}
+    \ddot{e} + K_v\dot{e} + K_pe + K_i\varepsilon = w
 \end{equation}
 
 闭环特征多项式为
-\begin{equation}
-    \Delta_c(s) = |s^3I + s^2K_v + sK_p + K_i|
+\begin{equation}\label{eq:4.4.39}
+    \Delta_c(s) = |s^3 I + K_v s^2 + K_p s + K_i|
 \end{equation}
 
 积分项的作用是消除稳态误差。然而，积分项可能导致执行器饱和引起的积分器饱和问题。
 
+\setcounter{equation}{42}
 \subsection{计算力矩类控制器}
 
 有许多计算力矩控制器的变体。在本小节中，我们总结了一些重要的变体。
 
-考虑近似计算力矩控制器
-\begin{equation}
-    \tau_c = \hat{M}(\ddot{q}_d + u) + \hat{N}
+一类计算力矩型（computed-torque-like）控制器可通过对计算力矩控制律作如下修改而得到：
+\begin{equation}\label{eq:4.4.43}
+    \tau_c = \hat{M} (\ddot{q}_d - u) + \hat{N}
 \end{equation}
 其中$\hat{M}$和$\hat{N}$是$M$和$N$的近似值，可能在实际实现中使用以节省计算量。然后闭环系统变为
-\begin{equation}
+\begin{equation}\label{eq:4.4.44}
     \ddot{e} = u - \Delta u + \delta
 \end{equation}
 或等价地写成
-\begin{equation}
+\begin{equation}\label{eq:4.4.45}
     (I - \Delta)\ddot{e} + K_v\dot{e} + K_pe + \delta = w
 \end{equation}
 其中
 \begin{align}
-    \Delta &= I - \hat{M}^{-1}M \\
-    \delta &= \hat{M}^{-1}(N - \hat{N}) \\
-    w &= \hat{M}^{-1}\tau_d
+    \Delta &= I - \hat{M}^{-1}M \label{eq:4.4.46}\\
+    \delta &= \hat{M}^{-1}(N - \hat{N}) \label{eq:4.4.47}\\
+    w &= \hat{M}^{-1}\tau_d \label{eq:4.4.48}
 \end{align}
 
-如果使用精确计算力矩控制使得$\Delta = 0, \delta = 0$，这会简化为误差系统(4.4.10)。否则，误差系统由期望加速度和非线性项不匹配$\delta(t)$驱动。因此，跟踪误差永远不会精确为零。此外，辅助控制$u(t)$乘以$(I - \Delta)$，这可能导致一个非常困难的控制问题。
+如果使用精确计算力矩控制使得$\Delta = 0, \delta = 0$，这会简化为误差系统\eqref{eq:4.4.11}。否则，误差系统由期望加速度和非线性项不匹配$\delta(t)$驱动。因此，跟踪误差永远不会精确为零。此外，辅助控制$u(t)$乘以$(I - \Delta)$，这可能导致一个非常困难的控制问题。
+
+一类常用的特例是PD结合重力补偿控制器（详见下一小节），其控制律为
+\begin{equation}\label{eq:4.4.49}
+    \tau_c = K_v\dot{e} + K_pe + G(q).
+\end{equation}
 
 使用外环PD反馈，使得$u(t) = -K_v\dot{e} - K_pe$，得到误差系统
-\begin{equation}\label{eq:4.4.48}
+\begin{equation}\label{eq:4.4.50}
     (I - \Delta)\ddot{e} + K_v\dot{e} + K_pe + d = w
 \end{equation}
 其中$d(t) = \delta + \Delta\ddot{q}_d$。即使$K_v$和$K_p$被选择为左侧具有良好的稳定性，这种系统的行为也不是显而易见的。存在两种问题：首先是干扰项$d(t)$，其次是误差二阶导数的函数$\Delta\ddot{e}$。
 
 \subsection{PD-Plus-Gravity控制器}
 
-计算力矩族中一个有用的控制器是PD-plus-gravity控制器，当$\hat{M} = I, \hat{N} = G(q) - \ddot{q}_d$时产生，其中$G(q)$是操作臂动力学的重力项。然后，为$u(t)$选择PD反馈产生
-\begin{equation}
-    \tau_c = -K_v\dot{e} - K_pe + G(q)
-\end{equation}
+计算力矩族中一个有用的控制器是PD-plus-gravity控制器，当$\hat{M} = I, \hat{N} = G(q) - \ddot{q}_d$时产生，其中$G(q)$是操作臂动力学的重力项。然后，为$u(t)$选择PD反馈即可得到式(\ref{eq:4.4.49})（与式(\ref{eq:4.4.15})所用外环记号一致）。
 
 此控制律在[Arimoto and Miyazaki 1984]、[Schilling 1990]中进行了处理。它比精确计算力矩控制器实现起来简单得多。
 
-当臂静止时，动力学(4.4.1)中唯一的非零项是重力$G(q)$、干扰$\tau_d$和控制力矩$\tau$。PD-gravity控制器$\tau_c$包含$G(q)$，因此我们应该期望对设定点跟踪有良好的性能，即当给定恒定的$q_d$使得$\ddot{q}_d = 0$时。下一个结果将这一点形式化。它依赖于Lyapunov证明（第1章），这种证明在本书中将始终有用，特别是利用表3.3.1中的斜对称性质。因此，理解此证明中的步骤非常重要。
+当臂静止时，动力学\eqref{eq:4.4.1}中唯一的非零项是重力$G(q)$、干扰$\tau_d$和控制力矩$\tau$。PD-gravity控制器$\tau_c$包含$G(q)$，因此我们应该期望对设定点跟踪有良好的性能，即当给定恒定的$q_d$使得$\ddot{q}_d = 0$时。下一个结果将这一点形式化。它依赖于Lyapunov证明（第1章），这种证明在本书中将始终有用，特别是利用表3.3.1中的斜对称性质。因此，理解此证明中的步骤非常重要。
 
 \begin{theorem}
-假设在臂动力学(4.4.1)中使用PD-gravity控制且$\tau_d = 0, \ddot{q}_d = 0$。则稳态跟踪误差$e = q_d - q$为零。
+假设在式\eqref{eq:4.4.2}所给出的臂动力学中使用PD-gravity控制且$\tau_d = 0, \ddot{q}_d = 0$。则稳态跟踪误差$e = q_d - q$为零。
 \end{theorem}
 
 \begin{proof}
 \textbf{1. 闭环系统}
 
-忽略摩擦，机器人动力学由下式给出
-\begin{equation}
-    M(q)\ddot{q} + V_m(q, \dot{q})\dot{q} + G(q) = \tau
-\end{equation}
+忽略摩擦时可取式\eqref{eq:4.4.2}并把$N$理解为$V(q,\dot{q})+G(q)$（等价于式\eqref{eq:4.4.1}中取$F_v=F_d=0$）。
 
-当$\ddot{q}_d = 0$时，提出的控制律(4.4.49)产生闭环动力学
-\begin{equation}
-    M\ddot{q} + V_m\dot{q} + K_v\dot{q} + K_pe = 0
-\end{equation}
+当$\ddot{q}_d = 0$时，将控制律\eqref{eq:4.4.49}代入式\eqref{eq:4.4.2}（取$\tau=\tau_c$、$\tau_d=0$）得到闭环动力学
+\begin{equation*}
+    M\ddot{q} + V_m\dot{q} - K_v\dot{e} - K_pe = 0.
+\end{equation*}
 
 \textbf{2. Lyapunov函数}
 
 现在选择Lyapunov函数
-\begin{equation}
-    V = \frac{1}{2}\dot{q}^TM\dot{q} + \frac{1}{2}e^TK_pe
-\end{equation}
+\begin{equation*}
+    V = \frac{1}{2}\dot{q}^TM\dot{q} + \frac{1}{2}e^TK_pe,
+\end{equation*}
 
 并微分得到
-\begin{equation}
-    \dot{V} = \frac{1}{2}\dot{q}^T\dot{M}\dot{q} + \dot{q}^TM\ddot{q} + \dot{e}^TK_pe
-\end{equation}
+\begin{equation*}
+    \dot{V} = \frac{1}{2}\dot{q}^T\dot{M}\dot{q} + \dot{q}^TM\ddot{q} + \dot{e}^TK_pe.
+\end{equation*}
 
-代入闭环动力学(2)产生
-\begin{equation}
-    \dot{V} = \frac{1}{2}\dot{q}^T(\dot{M} - 2V_m)\dot{q} - \dot{q}^TK_v\dot{q}
-\end{equation}
+代入该闭环动力学产生
+\begin{equation*}
+    \dot{V} = \frac{1}{2}\dot{q}^T(\dot{M} - 2V_m)\dot{q} - \dot{q}^TK_v\dot{q}.
+\end{equation*}
 
 现在，第一项的斜对称性给出
-\begin{equation}
-    \dot{V} = -\dot{q}^TK_v\dot{q} \leq 0
-\end{equation}
+\begin{equation*}
+    \dot{V} = -\dot{q}^TK_v\dot{q} \leq 0.
+\end{equation*}
 
 状态为$x = [e^T \, \dot{q}^T]^T$，因此$V$是正定的但只是负半定的。因此，我们展示了Lyapunov意义上的稳定性，即误差和关节速度都是有界的。
 
@@ -672,39 +686,41 @@ TRESP所需的子程序如图4.4.2所示。它们是
 可以使用Barbalat引理和LaSalle扩展的变体[Slotine and Li 1991]（第2章）来演示系统的渐近稳定性。因此，有必要演示包含在集合$\dot{V} = 0$中的唯一不变集是原点。
 
 由于$V$的下界为零且非正，因此$V$趋近于一个有限极限，可以写成
-\begin{equation}
-    V(\infty) - V(0) = \int_0^\infty \dot{V}\,\dd t < \infty
-\end{equation}
+\begin{equation*}
+    V(\infty) - V(0) = \int_0^\infty \dot{V}\,\dd t < \infty.
+\end{equation*}
 
 我们现在调用Barbalat引理来表明$\dot{V}$趋于零。为此，有必要演示$\dot{V}$的一致连续性。我们看到
-\begin{equation}
-    \ddot{V} = -2\dot{q}^TK_v\ddot{q}
-\end{equation}
+\begin{equation*}
+    \ddot{V} = -2\dot{q}^TK_v\ddot{q}.
+\end{equation*}
 
-所展示的稳定性表明$\dot{q}$和$q$是有界的，因此(2)和$M^{-1}(q)$的有界性（见表3.3.1）揭示$\ddot{q}$是有界的。因此，$\ddot{V}$是有界的，因此$\dot{V}$是一致连续的。这保证了根据Barbalat引理，$\dot{V}$趋于零。
+所展示的稳定性表明$\dot{q}$和$q$是有界的，因此闭环动力学与$M^{-1}(q)$的有界性（见表3.3.1）揭示$\ddot{q}$是有界的。因此，$\ddot{V}$是有界的，因此$\dot{V}$是一致连续的。这保证了根据Barbalat引理，$\dot{V}$趋于零。
 
-现在很明显$\dot{q}$趋于零。还需要表明跟踪误差$e(t)$消失。注意当$\dot{q} = 0$时，(2)揭示
-\begin{equation}
-    K_pe = 0
-\end{equation}
+现在很明显$\dot{q}$趋于零。还需要表明跟踪误差$e(t)$消失。注意当$\dot{q} = 0$时，有$\dot{e}=-\dot{q}=0$，于是闭环动力学化为
+\begin{equation*}
+    \ddot{q} = M^{-1}(q)K_pe.
+\end{equation*}
 
-因此，非零的$e(t)$导致非零的$\ddot{q}$，因此$\dot{q} \neq 0$，这是一个矛盾。因此，包含在$\{x(t) | \dot{V} = 0\}$中的唯一不变集是$x(t) = 0$。这最终表明$e(t)$和$\dot{q}$都消失，并结束了证明。
+在集合$\dot{V}\equiv 0$内的轨迹上有$\dot{V}=-\dot{q}^TK_v\dot{q}\equiv 0$，因而$\dot{q}\equiv 0$，随之$\ddot{q}\equiv 0$；代入闭环动力学即得$K_pe=0$，故$e=0$（$K_p$正定）。因此包含于$\{x \mid \dot{V}=0\}$的最大不变集仅为原点$x=0$，进而$e(t)$与$\dot{q}(t)$均趋于零，证明结束。
 \end{proof}
 
-\begin{examplebox}[示例4.4-3：PD-Gravity控制器的仿真]
+\begin{example}[示例4.4-3：PD-Gravity控制器的仿真]
 在示例4.4.1中，我们在双连杆平面操作臂上仿真了精确的计算力矩控制律。在这里，让我们仿真PD-gravity控制器。我们将采用相同的臂参数和期望轨迹。
 
-假设每个连杆的PD增益相同，双连杆臂的PD-gravity控制律为
-\begin{equation}
-    \tau_c = -K_v\dot{e} - K_pe + G(q)
-\end{equation}
+假设每个连杆的PD增益相同（标量$k_p,k_v$），双连杆臂的PD-gravity控制律可写成分量形式（重力项与示例4.4-1动力学方程中的重力向量一致，此处记$c_1=\cos\theta_1$，$c_{12}=\cos(\theta_1+\theta_2)$）：
+\begin{align*}
+    \tau_{c1} &= k_v\dot{e}_1 + k_pe_1 + (m_1+m_2)ga_1 c_1 + m_2ga_2 c_{12}, \\
+    \tau_{c2} &= k_v\dot{e}_2 + k_pe_2 + m_2ga_2 c_{12}.
+\end{align*}
+等价地亦可写成$\tau_c = K_v\dot{e} + K_pe + G(q)$；当各关节增益相同时$K_v=k_vI$，$K_p=k_pI$，而$G(q)$即上式中的重力部分。
 
 这很容易通过注释掉几行代码并在图4.4.2的子程序CTL(x)中进行一些其他修改来仿真。
 
 对于临界阻尼，PD增益选择为
-\begin{equation}
+\begin{equation*}
     k_p = \omega_n^2, \quad k_v = 2\omega_n
-\end{equation}
+\end{equation*}
 
 $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$\omega_n$的增加，因此PD增益也增加，跟踪性能提高。然而，无论PD增益多大，跟踪误差永远不会精确为零，而是以零为中心的一个球内有界，其半径随着增益变大而减小。$\omega_n = 50$的性能，对应于$k_p = 2500, k_v = 100$，对于许多应用来说会相当合适。
 
@@ -713,20 +729,20 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 相关的控制输入力矩如图4.4.10所示。非常有趣的是，力矩对于更高的增益更小。这与流行的观点相反，后者假设控制力矩总是随着PD增益的增加而增加。这是由于更大的增益提供更好的性能，因此跟踪误差更小这一事实。
 
 鉴于图4.4.9(a)中的误差具有不同的幅值，将内连杆的PD增益比外连杆更大可能更合理。
-\end{examplebox}
+\end{example}
 
 \subsection{经典关节控制}
 
-通过选择(4.4.43)中的
+通过选择\eqref{eq:4.4.43}中的
 \begin{align}
     \hat{M} &= I \\
-    \hat{N} &= 0
+    \hat{N} &= -\ddot{q}_d
 \end{align}
 可以获得在实践中经常给出良好结果的简单控制器。
 
 然后有结果
-\begin{equation}
-    \tau_c = -K_v\dot{e} - K_pe
+\begin{equation}\label{eq:4.4.51}
+    \tau_c = -u.
 \end{equation}
 
 通过选择仅依赖于关节变量$i$的$u_i$，这描述了$n$个解耦的独立关节控制器，被称为独立关节控制。在实际机器人手臂上的实现很容易，因为关节$i$的控制输入仅依赖于局部测量的变量，而不依赖于其他关节的变量。此外，计算简单，不涉及求解复杂的非线性机器人逆动力学。
@@ -736,16 +752,16 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 现在进行独立关节控制的传统分析。它提供了与经典控制概念的联系，对于机器人控制设计人员理解很重要。参见[Franklin et al. 1986]了解经典控制理论参考。
 
 具有电动执行器的机器人臂的简化动力学模型可以写成（第3.6节）
-\begin{equation}
-    \left(J_{mi} + r_i^2 m_{ii}\right)\ddot{\theta}_i + \left(B_{mi} + \frac{k_{bmi}k_{mi}}{R_i}\right)\dot{\theta}_i + r_i d_i = \frac{k_{mi}}{R_i}v_i
+\begin{equation}\label{eq:4.4.52}
+    \left(J_m + r_i^2 m_{ii}\right)\ddot{\theta}_i + \left(B_m + \frac{k_b k_m}{R}\right)\dot{\theta}_i = \frac{k_m}{R}v_i - r_i d_i, \quad i = 1,\ldots,n.
 \end{equation}
 其中$J_m$是执行器电机惯量，$B_m$是转子阻尼常数，$k_m$是力矩常数，$k_b$是反电动势常数，$R$是电枢电阻，$r_i$是关节$i$的齿轮比。电机角度表示为$\theta_i(t)$。$M(q)$的对角元素的常数部分表示为$m_{ii}$。这些元素的时间变化部分，以及$M(q)$的非对角元素、非线性项$N(q, \dot{q})$和任何干扰$\tau_d$都集中在一起成为干扰$d_i(t)$。因此$d_i(t)$包含所有其他关节对关节$i$的影响。控制输入是电机电枢电压$v_i(t)$。
 
 请注意，在此方程中主要出现电机参数。事实上，如果齿轮比很小，甚至可以忽略$m_{ii}$。由于这个原因，如果齿轮比很小，机器人臂控制问题实际上就简化为控制执行器电机的问题。
 
 让我们将操作臂关节$i$的这种简化线性时不变模型表示为
-\begin{equation}
-    J\ddot{\theta}_i + B\dot{\theta}_i + r d_i = k v_i
+\begin{equation}\label{eq:4.4.53}
+    J\ddot{\theta}_i + B\dot{\theta}_i = k v_i - r d_i
 \end{equation}
 其中常数$k_m/R$已被并入$J$和$B$的定义中。
 
@@ -754,14 +770,14 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 现在，让我们考虑控制输入$u(t)$的一些选择。
 
 \textbf{PD控制}。选择PD控制律
-\begin{equation}
+\begin{equation}\label{eq:4.4.54}
     u = k_v\dot{e} + k_pe
 \end{equation}
 其中$e(t) = \theta_{di}(t) - \theta_i(t)$是电机角度$i$的跟踪误差，得到图4.4.11所示的闭环系统。回想一下，电机角度与关节变量通过$q_i = r_i\theta_i$相关联。因此可以从$q_{di}(t)$计算$\theta_d(t)$。这个PD控制器很容易在实际的臂上实现，只需要很少的计算机能力。
 
 使用经典控制中的Mason定理，发现设定点跟踪的闭环传递函数为（参见习题）
 \begin{equation}\label{eq:4.4.55}
-    \frac{\Theta_i}{\Theta_{di}} = \frac{k_vs + k_p}{Js^2 + (B + k_v)s + k_p}
+    \theta = \frac{k_p}{\Delta(s)}\theta_d - \frac{r}{\Delta(s)}d
 \end{equation}
 具有闭环特征多项式
 \begin{equation}\label{eq:4.4.56}
@@ -778,32 +794,33 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 事实上，下一个结果表明，即使对于跟随期望轨迹，而不仅仅是设定点控制，PD控制通常也非常合适。它在[Dawson 1990]中被证明。
 
 \begin{theorem}
-如果将PD控制律(4.4.54)应用于每个关节且$e(0) = 0, \dot{e}(0) = 0$，则位置和速度跟踪误差在球内有界，其半径随着$k_v \to \infty$大致以$1/\sqrt{k_v}$减小。
+如果将PD控制律\eqref{eq:4.4.54}应用于每个关节且$e(0) = 0, \dot{e}(0) = 0$，则位置和速度跟踪误差在球内有界，其半径随着$k_v \to \infty$大致以$1/\sqrt{k_v}$减小。
 \end{theorem}
 
 这个结果证实了那些坚持认为PD控制通常足够用于实际应用的人的观点。
 
 当然，问题是$k_v$不能在没有达到执行器力矩限制的情况下无限增加。本书中将讨论的其他方案允许良好的轨迹跟随而不需要如此大的力矩。
 
-在[Paul 1981]中讨论了修改PD控制律以获得更好性能的几种方法。这些包括重力补偿[这恰好产生控制器(4.4.49)]和加速度前馈，这相当于使用
-\begin{equation}
-    u = k_v\dot{e} + k_pe + \ddot{\theta}_d
+在[Paul 1981]中讨论了修改PD控制律以获得更好性能的几种方法。这些包括重力补偿[这恰好产生控制器\eqref{eq:4.4.49}]和加速度前馈，这相当于使用
+\begin{equation}\label{eq:4.4.58}
+    u = k_v\dot{e} + k_pe + J\ddot{\theta}_{di}.
 \end{equation}
-对于每个关节。还提到了关节耦合控制，这相当于在$u(t)$中重新添加$M(q)$和$N(q, \dot{q})$中描述关节之间相互作用的一些被忽略的项。因此，这种修正涉及在近似计算力矩控制(4.4.43)中使用更好的$\hat{M}$和$\hat{N}$估计。
+对于每个关节。还提到了关节耦合控制，这相当于在$u(t)$中重新添加$M(q)$和$N(q, \dot{q})$中描述关节之间相互作用的一些被忽略的项。因此，这种修正涉及在近似计算力矩控制\eqref{eq:4.4.43}中使用更好的$\hat{M}$和$\hat{N}$估计。
 
-\textbf{PID控制}。已经看到PD独立关节控制通常适合跟踪控制。然而，在稳态时存在由于重力引起的残余误差(4.4.57)。这可以使用PID独立关节控制律消除
-\begin{equation}
-    u = k_v\dot{e} + k_pe + k_i\int e\,\dd t
-\end{equation}
+\textbf{PID控制}。已经看到PD独立关节控制通常适合跟踪控制。然而，在稳态时存在由于重力引起的残余误差\eqref{eq:4.4.57}。这可以使用PID独立关节控制律消除：
+\begin{align}
+    \dot{\varepsilon} &= e \notag \\
+    u &= k_v\dot{e} + k_pe + k_i\varepsilon \label{eq:4.4.59}
+\end{align}
 对于每个关节。
 
-现在设定点跟踪$\ddot{\theta}_d = 0$的传递函数为
+现在设定点跟踪（$\dot{\theta}_d = 0$）的传递函数为
 \begin{equation}\label{eq:4.4.60}
-    \frac{\Theta_i}{\Theta_{di}} = \frac{k_vs^2 + k_ps + k_i}{Js^3 + (B + k_v)s^2 + k_ps + k_i}
+    \theta = \frac{k_ps + k_i}{\Delta_1(s)}\theta_d - \frac{rs}{\Delta_1(s)}d
 \end{equation}
 具有闭环特征多项式
 \begin{equation}\label{eq:4.4.61}
-    \Delta_c(s) = Js^3 + (B + k_v)s^2 + k_ps + k_i
+    \Delta_1(s) = s^3 J + s^2(B + k_v) + sk_p + k_i
 \end{equation}
 现在终值定理显示，对于设定点控制，稳态误差为零。Routh检验表明，对于稳定性，需要
 \begin{equation}\label{eq:4.4.62}
@@ -812,7 +829,7 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 
 在控制律中使用积分项时，重要的是要注意由于执行器饱和限制引起的积分器饱和的可能性，这在本节前面的"PID外环设计"中进行了讨论。
 
-\begin{examplebox}[示例4.4-4：经典关节控制和力矩饱和限制]
+\begin{example}[示例4.4-4：经典关节控制和力矩饱和限制]
 在示例4.4.1中，我们为双连杆平面肘臂仿真了精确的计算力矩控制律。在这里，我们希望在同一臂上显示使用PD和PID经典关节控制的结果（具有相同的期望轨迹）。我们还对演示力矩饱和限制的影响感兴趣。为了突出效果而没有无关的细节，我们将只使用臂动力学，没有执行器动力学或齿轮比。
 
 这些可以很容易地通过在图4.4.2中的子程序arm(x, xp)中进行一些轻微的修改来包括。
@@ -820,15 +837,15 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 \textbf{a. PD独立关节控制}
 
 对于双连杆臂，PD独立关节控制就是
-\begin{equation}
+\begin{equation*}
     \tau_c = -K_v\dot{e} - K_pe
-\end{equation}
+\end{equation*}
 其中跟踪误差$e(t) = q_d(t) - q(t)$。这个控制律非常简单直接，甚至不需要使用DSP就可以在实际的臂上实现。它比示例4.4.1中的控制简单得多。
 
 在两连杆臂上使用PD控制器的结果如图4.4.13所示，对应于几个闭环自然频率$\omega_n$的值。回想一下，临界阻尼的PD增益为
-\begin{equation}
+\begin{equation*}
     k_p = \omega_n^2, \quad k_v = 2\omega_n
-\end{equation}
+\end{equation*}
 
 图(a)部分中的低增益结果($k_p = 100, k_v = 20$)非常糟糕（注意刻度）。然而，(c)部分中的高增益结果要好得多。更高的增益将导致进一步的跟踪误差减小。
 
@@ -839,10 +856,18 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 \textbf{b. PID独立关节控制}
 
 双连杆臂的PID独立关节控制为
-\begin{equation}
+\begin{equation*}
+    \dot{\varepsilon} = e
+\end{equation*}
+\begin{equation*}
+    \tau_c = -K_v\dot{e} - K_pe - K_i\varepsilon
+\end{equation*}
+其中$\varepsilon$是积分状态。这个简单的定律很容易通过向图4.4.2中的子程序arm(x, xp)添加两个状态$x(5)$和$x(6)$来实现，以考虑积分器（参见示例4.4.2）。
+
+等价地，也可以用积分形式表示为
+\begin{equation*}
     \tau_c = -K_v\dot{e} - K_pe - K_i\int e\,\dd t
-\end{equation}
-这个简单的定律很容易通过向图4.4.2中的子程序arm(x, xp)添加两个状态$x(5)$和$x(6)$来实现，以考虑积分器（参见示例4.4.2）。
+\end{equation*}
 
 图4.4.13(c)中的仿真被重复，但现在添加$k_i = 1000$的积分增益。结果如图4.4.15所示。在正弦运动的几次迭代之后，跟踪误差的直流值变为零，因此性能大大提高。也就是说，添加积分项可以补偿控制律中忽略的重力项。然而，误差收敛到零直流值需要一段时间，结果仍然不如示例4.4.3中使用相同PD增益的PD-gravity控制器。另一方面，积分项可以拒绝除重力之外的其他项（例如，某些类型的摩擦）。
 
@@ -853,44 +878,203 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 本例(b)部分中的控制力矩类似于图4.4.14(c)中的力矩；除了时间零附近的一些疯狂动作外，它表现得相当好，最大正偏移为78 N-m。
 
 假设现在有力矩限制$\tau_{max} = 35$ N-m, $\tau_{min} = -35$ N-m。这很容易通过在图4.4.2中的子程序CTL(x)中添加几行代码来仿真
-\begin{equation}
+\begin{equation*}
     \text{if } \tau(1) > 35 \text{ then } \tau(1) = 35
-\end{equation}
+\end{equation*}
 等等。
 
 这些限制的仿真结果如图4.4.16所示，非常糟糕。力矩如图4.4.17所示。
 
 在4.5节中，我们展示了如何使用数字控制器中的抗饱和保护来改善执行器饱和的影响。PD控制的仿真结果与PID控制的结果相比不那么糟糕，因为如果没有积分器存在，饱和限制的影响较小。
-\end{examplebox}
+\end{example}
+
+\textbf{表4.4.1}\quad 类计算力矩机器人控制器
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{|l|p{11.2cm}|}
+\hline
+\textbf{机器人动力学} & \begin{minipage}[t]{\linewidth}\raggedright\setlength{\lineskip}{5pt}
+$\displaystyle M(q)\ddot{q}+V(q,\dot{q})+F_v\dot{q}+F_d(\dot{q})+G(q)+\tau_d=\tau$\par
+$\displaystyle M(q)\ddot{q}+N(q,\dot{q})+\tau_d=\tau$，\quad $\displaystyle N(q,\dot{q})\equiv V(q,\dot{q})+F_v\dot{q}+F_d(\dot{q})+G(q)$\par
+\end{minipage} \\
+\hline
+\textbf{跟踪误差} & $\displaystyle e(t)=q_d(t)-q(t)$ \\
+\hline
+\textbf{PD计算力矩} & $\displaystyle \tau=M(q)(\ddot{q}_d+K_v\dot{e}+K_pe)+N(q,\dot{q})$ \\
+\hline
+\textbf{PID计算力矩} & $\displaystyle \dot{\varepsilon}=e$，\quad $\displaystyle \tau=M(q)(\ddot{q}_d+K_v\dot{e}+K_pe+K_i\varepsilon)+N(q,\dot{q})$ \\
+\hline
+\textbf{近似计算力矩} & $\displaystyle \tau_c=\hat{M}(\ddot{q}_d-u)+\hat{N}$ \\
+\hline
+\textbf{误差系统} & \begin{minipage}[t]{\linewidth}\raggedright\setlength{\lineskip}{5pt}
+$\displaystyle \ddot{e}=(I-\Delta)u+d$\par
+$\displaystyle \Delta=I-M^{-1}\hat{M}$，\quad $\displaystyle \delta=M^{-1}(N-\hat{N})$，\par
+$\displaystyle d(t)=M^{-1}\tau_d+\Delta\ddot{q}_d(t)+\delta(t)$\par
+\end{minipage} \\
+\hline
+\textbf{PD--重力} & $\displaystyle \tau_c=K_v\dot{e}+K_pe+G(q)$ \\
+\hline
+\textbf{经典PD} & $\displaystyle \tau_c=K_v\dot{e}+K_pe$ \\
+\hline
+\textbf{经典PID} & $\displaystyle \dot{\varepsilon}=e$，\quad $\displaystyle \tau_c=K_v\dot{e}+K_pe+K_i\varepsilon$ \\
+\hline
+\textbf{数字控制}（见第4.5节） & $\displaystyle \tau_k=M(q_k)\bigl(\ddot{q}_k^{\mathrm{d}}+K_v\dot{e}_k+K_pe_k\bigr)+N(q_k,\dot{q}_k)$ \\
+\hline
+\end{tabular}
+\end{center}
 
 \section{数字机器人控制}
 
 许多机器人控制方案是复杂的，涉及评估非线性项的大量计算。因此，它们在数字信号处理器(DSP)上作为数字控制律实现。某些控制方案可以通过使用简单的近似来以离散形式实现。
 
-\subsection{基于近似连续控制器的设计}
+一种数字机器人控制方案如图4.5.1所示：在对$q(t)$与$\dot{q}(t)$采样后定义
+\begin{equation}\label{eq:4.5.1}
+\begin{aligned}
+    q_k &\equiv q(kT), \\
+    \dot{q}_k &\equiv \dot{q}(kT),
+\end{aligned}
+\end{equation}
+其中$T$为采样周期。机器人应用中的采样周期通常在约$1\sim20\ \mathrm{ms}$之间。采用\textbf{零阶保持}(ZOH)由离散样本$\tau_k$重构驱动执行器所需的连续时间控制力矩$\tau(t)$。本节中用\textbf{上标$\mathrm{d}$}标记期望轨迹以简化记号。
+
+该数字控制律相当于在表4.4.1的近似计算力矩控制器中取
+\begin{equation}\label{eq:4.5.2}
+\begin{aligned}
+    \hat{M} &= M\bigl(q(kT)\bigr)=M(q_k), \\
+    \hat{N} &= N\bigl(q(kT),\dot{q}(kT)\bigr)=N(q_k,\dot{q}_k),
+\end{aligned}
+\end{equation}
+并对\textbf{外环}采用离散控制信号。于是，在\textbf{PD外环}下机械臂控制输入为
+\begin{equation}\label{eq:4.5.3}
+    \tau_k = M(q_k)\bigl(\ddot{q}_k^{\mathrm{d}} + K_v\dot{e}_k + K_pe_k\bigr) + N(q_k,\dot{q}_k),
+\end{equation}
+其中跟踪误差为$e(t)=q_d(t)-q(t)$（因而$e_k=e(kT)$等）。该结构有多种变体：例如可采用\textbf{多采样率}，使内环（非线性）更新慢于外环线性反馈；鉴于计算力矩控制的鲁棒性，这在实践中往往效果很好。
+
+\subsection{采样时的性能保证}
+
+通常在连续时间中设计控制器并给出稳定性与误差有界性证明；实现时则选取``足够小''的采样周期，稳定性依赖仿真验证。下述结果表明这种做法并非毫无依据。定义\textbf{误差状态向量}
+\begin{equation*}
+    \underline{e}=\begin{bmatrix} e \\ \dot{e} \end{bmatrix}.
+\end{equation*}
+
+\begin{theorem}
+假设将\textbf{PD数字控制律}\eqref{eq:4.5.3}施加于机械臂动力学。则对每个$L>0$，存在$T_M$，使得对所有$T<T_M$，任一误差轨迹若在某一时刻$t_0$满足$\|e(t_0)\|\le L$，则对所有$t\ge t_0$及任意$r>0$都有$\|e(t)\|\le L+r$。
+\end{theorem}
+
+\begin{proof}
+采用上述数字控制律可得误差系统（由表4.4.1，采样情形下$\Delta$、$\delta$取下述形式）
+\begin{equation*}
+    \ddot{e} = u - \Delta u + d,
+\end{equation*}
+其中
+\begin{equation*}
+    d = M^{-1}(q)\tau_d + \Delta \ddot{q}_d + \delta,
+\end{equation*}
+且
+\begin{equation*}
+\begin{aligned}
+    \Delta &= M^{-1}(q)\bigl[M(q)-M(q_k)\bigr], \\
+    \delta &= M^{-1}(q)\bigl[N(q,\dot{q})-N(q_k,\dot{q}_k)\bigr].
+\end{aligned}
+\end{equation*}
+
+定义$\underline{e}=\mathrm{col}(e,\dot{e})$，可将误差动力学写成状态空间形式
+\begin{equation*}
+    \underline{\dot{e}} = \begin{bmatrix} 0 & I \\ 0 & 0 \end{bmatrix}\underline{e} + \begin{bmatrix} 0 \\ I \end{bmatrix}(u-\Delta u+d) \equiv A\underline{e}+B(u-\Delta u+d).
+\end{equation*}
+
+施加\textbf{外环数字控制}
+\begin{equation*}
+    u=-K\underline{e}_k=-K\underline{e}+K(\underline{e}-\underline{e}_k),
+\end{equation*}
+得到闭环
+\begin{equation*}
+    \underline{\dot{e}}=(A-BK)\underline{e}+BK(\underline{e}-\underline{e}_k)+B(\Delta K\underline{e}_k+d).
+\end{equation*}
+
+选取$K$使$(A-BK)$稳定；因而存在正定矩阵$P,Q$满足Lyapunov方程
+\begin{equation*}
+    (A-BK)^{\mathsf{T}}P+P(A-BK)=-Q.
+\end{equation*}
+
+取Lyapunov函数
+\begin{equation*}
+    V(\underline{e})=\frac{1}{2}\underline{e}^{\mathsf{T}}P\underline{e},
+\end{equation*}
+则由闭环与上式可得
+\begin{equation*}
+    \dot{V}(\underline{e})=-\frac{1}{2}\underline{e}^{\mathsf{T}}Q\underline{e}+\underline{e}^{\mathsf{T}}PB\bigl[K(\underline{e}-\underline{e}_k)+d+\Delta K\underline{e}_k\bigr].
+\end{equation*}
+
+为简化起见设$\tau_d=0$，则在每个采样时刻有
+\begin{equation*}
+    \dot{V}(\underline{e}_k)=-\frac{1}{2}\underline{e}_k^{\mathsf{T}}Q\underline{e}_k.
+\end{equation*}
+它在采样瞬时\textbf{负定}。[若$\tau_d\neq 0$但有界，则$\dot{V}$在某球外亦可为负，讨论可相应修改。]
+
+证明的剩余部分借助[LaSalle and Lefschetz 1961]的定理，需验证：（1）当$\|\underline{e}\|>L$时$\dot{V}(\underline{e})\le 0$；（2）当$\|\underline{e}(t_1)\|\le L$且$\|\underline{e}(t_2)\|>L+r$（$t_2\ge t_1\ge 0$）时有$V(\underline{e}(t_1))<V(\underline{e}(t_2))$。关键在于$\dot{V}(\underline{e}_k)$在每个采样点的性质以及$\dot{V}(\underline{e})$的连续性。
+\end{proof}
+
+上述结果表明：存在依赖于具体机械臂的最大采样周期$T_M$，使得只要$T<T_M$即可获得良好跟踪；更细致的分析还可说明最大期望加速度越大则误差越大，等价地需要更小的采样周期。
+
+我们现在讨论\textbf{内环非线性}与\textbf{外环线性}离散化中的若干问题。
+
+\subsection{内环非线性的离散化}
+
+离散化非线性动力学并不存在方便的精确形式。给定非线性状态方程
+\begin{equation}\label{eq:4.5.4}
+    \dot{x}=f(x,u),
+\end{equation}
+\textbf{Euler近似}给出
+\begin{equation}\label{eq:4.5.5}
+    x_{k+1}=x_k+Tf(x_k,u_k).
+\end{equation}
+
+也存在在采样瞬时守恒能量与动量的``精确''离散化方法[Neuman and Tourassis 1985]，参见[Elliott 1990]；遗憾的是即便对简单机械臂，所得离散动力学也极为复杂，难以据此推导有保证的数字控制律。本节将\textbf{内环非线性}模块直接视为由近似\eqref{eq:4.5.2}给出。
+
+\subsection{由位置测量估计关节速度}
+
+本章示例在连续时间仿真中常假定关节位置与速度均可精确测量；事实上关节速度多由编码器位置测量\textbf{估计}而非直接测量。若用Euler公式直接差分
+\begin{equation}\label{eq:4.5.6}
+    \dot{q}_k=\frac{q_k-q_{k-1}}{T}
+\end{equation}
+则近乎注定失败，因为该高通运算会放大编码器噪声。
+
+记关节速度估计为$v_k$，可由\textbf{滤波差分}由$q_k$计算：
+\begin{equation}\label{eq:4.5.7}
+    v_k=\nu v_{k-1}+\frac{q_k-q_{k-1}}{T},
+\end{equation}
+其中$\nu$为设计参数。$\nu$较小时对应$z$平面靠近原点处的快速极点，可对传感器噪声提供一定高通衰减。示例4.5-1将演示该速度估计滤波器的使用。
+
+还可针对给定噪声统计用$\alpha$-$\beta$跟踪器优化设计[Lewis 1986a]、[Lewis 1986b]、[Lowe and Lewis 1991]（Kalman滤波的一种特化）。应注意：速度估计不仅用于\textbf{外环}计算反馈，也用于在\eqref{eq:4.5.3}中计算\textbf{内环}非线性项$N(q_k,\dot{q}_k)$。
+
+\subsection{外环PD/PID控制的离散化}
+
+我们已经看到，一类有用的计算力矩\textbf{外环}反馈是PID控制器。给定连续时间PID外环，可按如下思路设计数字外环[Lewis 1992]。
 
 机器人控制器设计通常按以下方式进行。首先，在连续时间中设计控制律以获得良好的性能。然后，使用某种近似技术将连续控制器数字化以在DSP上实现。
 
 考虑连续时间控制器
-\begin{equation}
+\begin{equation}\label{eq:4.5.8}
     u_c(t) = -K_v\dot{e} - K_pe - K_i\int e\,\dd t
 \end{equation}
 这可以以传递函数形式表示为
-\begin{equation}
+\begin{equation}\label{eq:4.5.9}
     U_c(s) = -K(s)E(s)
 \end{equation}
 其中
-\begin{equation}
+\begin{equation}\label{eq:4.5.10}
     K(s) = K_vs + K_p + \frac{K_i}{s}
 \end{equation}
 
 为了获得数字控制器，我们可以使用Euler近似$s \approx (z - 1)/T$，其中$T$是采样周期。这产生
-\begin{equation}
+\begin{equation}\label{eq:4.5.11}
     K(z) = K_v\frac{z - 1}{T} + K_p + \frac{K_i}{\frac{z - 1}{T}} = K_v\frac{z - 1}{T} + K_p + \frac{K_iT}{z - 1}
 \end{equation}
 
 然而，更常用的近似是双线性变换(BLT)
-\begin{equation}
+\begin{equation}\label{eq:4.5.12}
     s \approx \frac{2}{T}\frac{z - 1}{z + 1}
 \end{equation}
 这对应于使用梯形规则近似积分。在此映射下，稳定连续系统的极点被映射到稳定离散系统的极点。
@@ -900,23 +1084,23 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 执行器饱和导致的积分器饱和是机器人控制器外环PID回路中可能发生的问题。在示例4.4.4中，我们看到了积分器饱和的有害影响。使用数字实现可以很容易地实现抗饱和保护[Åström and Wittenmark 1984]、[Lewis 1992]。
 
 假设控制器以传递函数形式给出
-\begin{equation}
+\begin{equation}\label{eq:4.5.13}
     R(z^{-1})v_k = T(z^{-1})r_k - S(z^{-1})w_k
 \end{equation}
 其中$z^{-1}$在时间域中被解释为单位延迟$T$秒。
 
 通过向两边添加$A_0(z^{-1})u_k$可以获得具有抗饱和补偿的调节器
-\begin{equation}
+\begin{equation}\label{eq:4.5.14}
     A_0(z^{-1})v_k = T(z^{-1})r_k - S(z^{-1})w_k
 \end{equation}
-\begin{equation}
+\begin{equation}\label{eq:4.5.15}
     u_k = \mathrm{sat}(v_k)
 \end{equation}
 其中$\mathrm{sat}(\cdot)$是饱和函数。
 
 当$A_0(z)$的所有$n$个极点都在原点时，会发生特殊情况。然后调节器显示死区行为；在$n$个时间步之后，其状态保持限制在依赖于$w_k$和$u_k$的值的容易计算的值（参见习题）。
 
-\begin{examplebox}[示例4.5-1：数字机器人计算力矩控制器的仿真]
+\begin{example}[示例4.5-1：数字机器人计算力矩控制器的仿真]
 在示例4.4.1中，我们仿真了双连杆平面肘臂的连续时间PD计算力矩(CT)控制器。在此示例中，演示了该控制器离散化的一些问题。有两个目标。首先，我们展示了采样对CT控制器的影响。然后设计了一个仅使用编码器关节位置测量的实际数字控制器，重建计算控制律所需的速度。
 
 \textbf{a. 数字CT控制器的采样周期影响}
@@ -938,70 +1122,73 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 一些实现细节值得注意。首先，数字控制器的初始化方式非常重要。请注意在第一次迭代(IK=0)中将速度估计置零的代码行。删除这些行是一个很好的练习（参见习题）。
 
 其次，可能会认为找到速度误差$\dot{e}_k = \dot{e}(kT)$的合理过程是找到关节速度$\dot{q}_k$的估计$v_k$，然后使用
-\begin{equation}
+\begin{equation*}
+    v_k = \nu v_{k-1} + (q_k - q_{k-1})/T
+\end{equation*}
+\begin{equation*}
     \dot{e}_k = \dot{q}_{dk} - v_k
-\end{equation}
+\end{equation*}
 这有两个缺点。首先，它需要在内存中存储期望速度和期望轨迹。其次，它不起作用。
 
 相反，有必要使用两个导数滤波器，一个用于估计关节速度，一个用于提供速度误差$\dot{e}_k$的估计。尝试使用$\dot{q}_{dk} - v_k$的仿真很好地说明了这一点。
 
 请注意，速度估计也用于代替$\dot{q}$计算非线性项中的值。
-\end{examplebox}
+\end{example}
 
-\begin{examplebox}[示例4.5-2：带抗饱和补偿的数字PI控制器]
+\begin{example}[示例4.5-2：带抗饱和补偿的数字PI控制器]
 采样周期为$T$秒的一般数字PI控制器由下式给出
-\begin{equation}
+\begin{equation*}
     u_k = k_p e_k + k_i T \sum_{i=0}^{k} e_i
-\end{equation}
+\end{equation*}
 
 我们使用改进的匹配极零点(MPZ)方法对连续PI控制器进行采样，在积分器中获得$T$秒的延迟以允许计算时间。比例增益为$k_p$，重置时间为$T_I$；两者在设计阶段都是固定的。跟踪误差为$e_k$。
 
 乘以$(1-z^{-1})$写成
-\begin{equation}
+\begin{equation*}
     (1-z^{-1})U(z) = k_p(1-z^{-1})E(z) + k_i T E(z)
-\end{equation}
+\end{equation*}
 
 这是传递函数形式。用于实现的相应差分方程形式为
-\begin{equation}
+\begin{equation*}
     u_k = u_{k-1} + k_p(e_k - e_{k-1}) + k_i T e_k
-\end{equation}
+\end{equation*}
 
 由于自回归多项式$R=1-z^{-1}$在$z=1$处有根，使其处于边缘稳定，因此该控制器将经历饱和问题。因此，当$u_k$受限时，积分器将继续积分，"饱和"超出饱和水平。
 
 \textbf{a. 抗饱和补偿}
 
 为了纠正这个问题，选择一个观测器多项式
-\begin{equation}
+\begin{equation*}
     A_0(z) = z - \alpha
-\end{equation}
+\end{equation*}
 
 其中$|\alpha|<1$在期望位置有一个极点。设计参数$\alpha$可以通过仿真研究选择。然后具有抗饱和保护的控制器由下式给出
-\begin{align}
+\begin{align*}
     u_k &= u_{k-1} + k_p(e_k - e_{k-1}) + k_i T e_k + (1-\alpha)(u_{k-1} - u_{k-1}^{sat}) \\
     u_k^{sat} &= \mathrm{sat}(u_k)
-\end{align}
+\end{align*}
 
 如果$\alpha=1$，我们获得特殊情况，称为位置形式，没有抗饱和补偿。如果$\alpha=0$，我们获得死拍抗饱和补偿
-\begin{equation}
+\begin{equation*}
     u_k = u_{k-1} + k_p(e_k - e_{k-1}) + k_i T e_k + (u_{k-1} - u_{k-1}^{sat})
-\end{equation}
+\end{equation*}
 
 具有相应的差分方程实现。如果$u_k$未饱和，这相当于通过将(10)右侧的第二和第三项加到$u_{k-1}$来更新工厂控制。这些项因此不过是$u_k - u_{k-1}$。因此，$\alpha=0$的补偿器称为PI控制器的速度形式。
 
 \textbf{b. 直流电机的数字控制}
 
 考虑由下式给出的简化直流电机模型
-\begin{equation}
+\begin{equation*}
     J\dot{\omega} + b\omega = \tau
-\end{equation}
+\end{equation*}
 
 其中$\omega$是角速度。电机速度控制器具有形式
-\begin{equation}
+\begin{equation*}
     \tau_k = k_p e_k + k_i T \sum_{i=0}^{k} e_i
-\end{equation}
+\end{equation*}
 
 其中$e=r-\omega$是跟踪误差，$r$是期望的命令角速度。
-\end{examplebox}
+\end{example}
 
 \section{最优外环设计}
 
@@ -1032,15 +1219,15 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 其中$Q$是对称半正定$n \times n$矩阵（表示为$Q \geq 0$），$R$是对称正定$m \times m$矩阵（$R > 0$）。也就是说，$R$的所有特征值都大于零，$Q$的所有特征值都大于或等于零。$Q$被称为状态加权矩阵，$R$是控制加权矩阵。这些矩阵是设计参数，由工程师选择，例如，取决于闭环时间响应的期望形式。
 
 最优LQ反馈增益$K$是使PI$J$最小化的增益。动机如下。PI中的二次项$x^TQx$和$u^TRu$是广义能量函数（例如，电容器中的能量为$\frac{1}{2}Cv^2$，运动的动能为$\frac{1}{2}mv^2$）。假设在闭环系统(4.6.3)中最小化$J$。这意味着$x^T(t)Qx(t) + u^T(t)Ru(t)$的无限积分是有限的，因此这个时间的函数随着$t$变大而趋于零。然而
-\begin{equation}
+\begin{equation*}
     x^TQx = \|\sqrt{Q}x\|^2, \quad u^TRu = \|\sqrt{R}u\|^2
-\end{equation}
+\end{equation*}
 其中矩阵的平方根定义为$\sqrt{Q}\sqrt{Q} = Q$。由于这些范数随着$t$消失且$|R| \neq 0$，函数$\|\sqrt{Q}x\|$和$u(t)$都趋于零。在假设$\sqrt{Q}, A$是可观测的[Kailath 1980]的情况下，如果$y(t)$趋于零，$x(t)$也趋于零。
 
 因此，最优增益$K$保证在闭环系统(4.6.3)中所有信号都随时间趋于零。也就是说，$K$稳定$(A - BK)$。
 
 在现代控制理论中，确定最优$K$很容易，是标准结果（参见，例如[Lewis 1986a]、[Lewis 1986b]）。只需通过求解矩阵设计方程就可以找到最优反馈增益
-\begin{equation}
+\begin{equation}\label{eq:4.6.5}
     K = R^{-1}B^TP
 \end{equation}
 \begin{equation}
@@ -1059,71 +1246,71 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 \end{enumerate}
 \end{theorem}
 
-可控性在第1章中讨论过。可观测性大致意味着所有系统模式在PI中都有独立的影响，因此如果$J$有界，所有模式都独立地随$t$趋于零。验证这些属性很容易。如果可控性矩阵
-\begin{equation}
-    U = \begin{bmatrix} B & AB & \cdots & A^{n-1}B \end{bmatrix}
+可控性在第1章中讨论过。可观测性大致意味着所有系统模式在PI中都有独立的影响，因此如果$J$有界，所有模式都独立地随$t$趋于零。验证这些性质很容易。若可控性矩阵
+\begin{equation}\label{eq:4.6.7}
+    U = \begin{bmatrix} B & AB & A^2B & \cdots & A^{n-1}B \end{bmatrix}
 \end{equation}
-具有满秩$n$，则系统是可控的。如果可观测性矩阵
-\begin{equation}
-    V = \begin{bmatrix} \sqrt{Q} \\ \sqrt{Q}A \\ \vdots \\ \sqrt{Q}A^{n-1} \end{bmatrix}
+具有满秩$n$，则$(A,B)$可控。系统$(A,C)$可观测，当且仅当可观测性矩阵
+\begin{equation}\label{eq:4.6.8}
+    V = \begin{bmatrix} C \\ CA \\ CA^2 \\ \vdots \\ CA^{n-1} \end{bmatrix}
 \end{equation}
-具有满秩$n$，则系统$(A, C)$是可观测的。MATLAB，例如，为这些测试提供例程。因此，可以选择状态加权矩阵$Q$以满足可观测性要求。
+具有满秩$n$。MATLAB等为这些检验提供标准函数。对本节的LQ设计，常取$C=\sqrt{Q}$，与本定理中“$\sqrt{Q},A$可观测”的假设一致。因此，可适当选择状态加权矩阵$Q$以满足可观测性要求。
 
 该定理使这种现代设计方法非常强大。无论输入和状态的数量如何，只要假设成立，就可以找到稳定系统的反馈增益。
 
 \subsection{线性二次计算力矩设计}
 
-现在我们将这些结果应用于机器人操作臂动力学的控制
-\begin{equation}
-    \ddot{e} = -u + w
+现在我们将这些结果应用于机器人操作臂动力学的控制。臂动力学为
+\begin{equation}\label{eq:4.6.9}
+    M(q)\ddot{q} + N(q, \dot{q}) = \tau
 \end{equation}
-根据4.4节，计算力矩控制律
-\begin{equation}
-    \tau_c = M(q)(\ddot{q}_d + u) + N(q, \dot{q})
+根据4.4节，计算力矩控制律为
+\begin{equation}\label{eq:4.6.10}
+    \tau = M(\ddot{q}_d - u) + N
 \end{equation}
-产生误差系统
-\begin{equation}
-    \ddot{e} = -u + M^{-1}\tau_d
+其中为书写简洁记$M=M(q)$，$N=N(q,\dot{q})$。将\eqref{eq:4.6.10}代入\eqref{eq:4.6.9}，在4.4节与$\tau_d=0$时相同的理想情形下（即$\ddot{e}=u$），误差系统可写为
+\begin{equation}\label{eq:4.6.11}
+    \frac{\dd}{\dd t}\begin{bmatrix} e \\ \dot{e} \end{bmatrix} = \begin{bmatrix} 0 & I \\ 0 & 0 \end{bmatrix}\begin{bmatrix} e \\ \dot{e} \end{bmatrix} + \begin{bmatrix} 0 \\ I \end{bmatrix}u
 \end{equation}
-我们可以将其写成
-\begin{equation}
+或标准状态空间形式
+\begin{equation}\label{eq:4.6.12}
     \dot{x} = Ax + Bu
 \end{equation}
-状态定义为
-\begin{equation}
+状态取为
+\begin{equation}\label{eq:4.6.13}
     x = \begin{bmatrix} e \\ \dot{e} \end{bmatrix}
 \end{equation}
+其中$A=\begin{bmatrix} 0 & I \\ 0 & 0 \end{bmatrix}$，$B=\begin{bmatrix} 0 \\ I \end{bmatrix}$。若存在扰动$\tau_d$，则如4.4节有$\ddot{e}=u+M^{-1}\tau_d$。
 
 现在，选择外环PD反馈
-\begin{equation}
-    u = -Kx = -\begin{bmatrix} K_p & K_v \end{bmatrix}\begin{bmatrix} e \\ \dot{e} \end{bmatrix} = -K_pe - K_v\dot{e}
+\begin{equation}\label{eq:4.6.14}
+    u = -Kx = -\begin{bmatrix} K_p & K_v \end{bmatrix}x = -K_pe - K_v\dot{e}
 \end{equation}
 
-为了找到稳定增益$K$，选择PI中的设计参数$Q$为
-\begin{equation}
-    Q = \begin{bmatrix} Q_p & 0 \\ 0 & Q_v \end{bmatrix}
-\end{equation}
-使得位置和速度误差被独立加权。然后，由于代表$n$个解耦牛顿定律（即双积分器）系统的简单$A$和$B$矩阵形式，Riccati方程的解很容易找到（参见习题）。使用该解在(4.6.5)中产生最优稳定增益的公式
-\begin{equation}
-    K_p = \sqrt{Q_p R^{-1}}, \quad K_v = \sqrt{2\sqrt{Q_p R^{-1}}}
+为了找到稳定增益$K$，在PI中取设计矩阵
+\begin{equation*}
+    Q = \mathrm{diag}\{Q_p, Q_v\}, \quad Q_p, Q_v \in \mathbb{R}^{n \times n}
+\end{equation*}
+使得位置和速度误差被独立加权。然后，由于代表$n$个解耦牛顿定律（即双积分器）系统的简单$A$和$B$矩阵形式，Riccati方程的解很容易找到（参见习题）。将该解用于\eqref{eq:4.6.5}可得最优稳定增益公式
+\begin{equation}\label{eq:4.6.15}
+    K_p = \sqrt{Q_p R^{-1}}, \quad K_v = \sqrt{2K_p + Q_v R^{-1}}
 \end{equation}
 
 此LQ方法揭示了PD增益与某些设计参数$Q$和$R$之间的关系，这些参数决定了闭环系统中的总能量。特别要注意的是，闭环系统中$x(t)$和$u(t)$的相对幅值可以权衡。事实上，如果$R$相对于$Q_p$和$Q_v$较大，则PI(4.6.4)中的控制力被状态加权更重。然后最优控制将通过选择较小的控制增益来使$u(t)$更小；因此响应时间将增加。另一方面，选择较小的$R$将增加PD增益并使误差更快消失。
 
 如果$Q_p, Q_v$和$R$是对角的，那么PD增益$K_p, K_v$也是对角的。具有非对角$Q_p, Q_v$和$R$的LQ方法提供了关节之间耦合的外反馈环的可能性，有时可以改善性能。LQ设计的另一个重要特征是定理中提到的保证鲁棒性。这在近似计算力矩设计中非常有用，其中
-\begin{equation}
-    \tau_c = \hat{M}(\ddot{q}_d + u) + \hat{N}
+\begin{equation}\label{eq:4.6.16}
+    \tau_c = \hat{M} (\ddot{q}_d - u) + \hat{N}
 \end{equation}
 其中$\hat{M}$和$\hat{N}$可以是$M(q)$和$N(q, \dot{q})$的简化版本。这种控制器的性能可以预期超过使用任意选择$K_p$和$K_v$设计的控制器。
 
 重要的是要注意，这种LQ设计导致$e(t), \dot{e}(t)$和$u(t)$方面的最小闭环能量。然而，机器人手臂的实际控制输入为
-\begin{equation}
-    \tau = M(q)(\ddot{q}_d + u) + N(q, \dot{q})
+\begin{equation}\label{eq:4.6.17}
+    \tau = M (\ddot{q}_d + K_v\dot{e} + K_pe) + N
 \end{equation}
-
-尽管使用这种方法没有最小化$\tau(t)$中的能量，但我们可以使用一些范数不等式来写入
-\begin{equation}
-    \|\tau\| \leq \|M(q)\|\|\ddot{q}_d\| + \|M(q)\|\|u\| + \|N(q, \dot{q})\|
+其中$M=M(q)$，$N=N(q,\dot{q})$。尽管使用这种方法没有最小化$\tau(t)$中的能量，但我们可以使用一些范数不等式来写入
+\begin{equation}\label{eq:4.6.18}
+    \|\tau\| \leq \|M(q)\| \cdot \|\ddot{q}_d\| + \|M(q)\| \cdot \|u(t)\| + \|N(q, \dot{q})\|
 \end{equation}
 因此，保持小的$\|u(t)\|$可能预期会使$\|\tau\|$更小。
 
@@ -1142,86 +1329,99 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 
 \subsection{笛卡尔计算力矩控制}
 
-这种方法从关节空间动力学开始
-\begin{equation}
-    M(q)\ddot{q} + N(q, \dot{q}) = \tau
+这种方法与3.4节的一般反馈线性化思路一致：从关节空间动力学出发，在工作空间中对末端位姿进行跟踪。末端笛卡尔位姿$y(t)$如何选取与测量所涉及的问题，可参见附录A。
+
+关节空间动力学为
+\begin{equation}\label{eq:4.7.1}
+    M(q)\ddot{q} + N(q, \dot{q}) + \tau_d = \tau
 \end{equation}
-
-笛卡尔误差定义为
-\begin{equation}
-    e_y = y_d - y
+其中$\tau_d$为扰动力矩。感兴趣的输出取为笛卡尔误差
+\begin{equation}\label{eq:4.7.2}
+    e_y(t) = y_d(t) - y(t)
 \end{equation}
-其中$y_d(t)$是期望的笛卡尔轨迹，$y(t)$是末端执行器笛卡尔位置。
+其中$y_d(t)$为期望笛卡尔轨迹，$y(t)$为末端执行器笛卡尔位姿。注意$y(t)$不必是6维向量（位置+姿态）表示：例如可用$4\times 4$齐次变换（臂$T$矩阵）描述位姿，此时$y(t)$与$y_d(t)$均可理解为$4\times 4$矩阵，\eqref{eq:4.7.2}在矩阵意义上理解。
 
-末端执行器笛卡尔位置可以用$y(t)$以多种形式指定，包括：$4 \times 4$臂$T$矩阵；使用欧拉角的6向量；或使用四元数的7向量。
+期望轨迹可用齐次变换表示为
+\begin{equation}\label{eq:4.7.3}
+    y_d(t) = T_d(t) = \begin{bmatrix} n_d(t) & o_d(t) & a_d(t) & p_d(t) \\ 0 & 0 & 0 & 1 \end{bmatrix}
+\end{equation}
+其中$n_d,o_d,a_d,p_d$为基坐标系下的期望姿态轴与位置。实际位姿$y(t)$亦可取欧拉角6向量、四元数7向量，或在$\mathbb{R}^6$中编码的工具位形向量等形式（应与\eqref{eq:4.7.2}中采用的参数化一致）。
 
-笛卡尔误差可以指定为6向量
-\begin{equation}
+笛卡尔误差常写成6维向量
+\begin{equation}\label{eq:4.7.4}
     e_y = \begin{bmatrix} e_p \\ e_o \end{bmatrix}
 \end{equation}
-其中$e_p(t)$是位置误差，$e_o(t)$是方向误差。
+其中$e_p(t)$为位置误差，$e_o(t)$为姿态误差。
 
-假设$y = h(q)$，其中$h(q)$是从$q(t)$到$y(t)$的变换。那么相关的Jacobian为$J = \partial h/\partial q$且$\dot{y} = J\dot{q}$。
+运动学关系为
+\begin{equation}\label{eq:4.7.5}
+    y = h(q)
+\end{equation}
+其中$h$表示从关节变量$q(t)$到任务空间坐标$y(t)$的映射。相应的雅可比为$J = \partial h/\partial q$，且
+\begin{equation}\label{eq:4.7.6}
+    \dot{y} = J\dot{q}
+\end{equation}
 
-相对于$e_y(t)$的计算力矩控制由下式给出
+相对于$e_y(t)$的笛卡尔计算力矩控制由下式给出
 \begin{equation}\label{eq:4.7.7}
-    \tau = M(q)J^{-1}(\ddot{y}_d - \dot{J}\dot{q} + u) + N(q, \dot{q})
+    \tau = M J^{-1} (\ddot{y}_d - \dot{J}\dot{q} - u) + N
 \end{equation}
-产生误差系统
+其中$M=M(q)$，$N=N(q,\dot{q})$。代入\eqref{eq:4.7.1}得到误差系统
 \begin{equation}\label{eq:4.7.8}
-    \ddot{e}_y = -u + w
+    \ddot{e}_y = u + w
 \end{equation}
-具有干扰
+其中
 \begin{equation}\label{eq:4.7.9}
     w = JM^{-1}\tau_d
 \end{equation}
 我们称\eqref{eq:4.7.7}为笛卡尔计算力矩控制律。
 
-外环控制$u(t)$可以使用已经提到的用于关节空间计算力矩控制的任何技术进行选择（参见表4.4.1）。对于PD控制，完整的控制律为
-\begin{equation}
-    \tau_c = M(q)J^{-1}(\ddot{y}_d - \dot{J}\dot{q} + K_v\dot{e}_y + K_pe_y) + N(q, \dot{q})
+外环控制$u(t)$可使用已经提到的关节空间计算力矩外环设计（参见表4.4.1）。对于PD控制，将$u=-K_v\dot{e}_y-K_pe_y$代入\eqref{eq:4.7.7}，得完整控制律
+\begin{equation}\label{eq:4.7.10}
+    \tau = M J^{-1}\left(\ddot{y}_d - \dot{J}\dot{q} + K_v\dot{e}_y + K_pe_y\right) + N
 \end{equation}
+其中$M=M(q)$，$N=N(q,\dot{q})$。
 
-笛卡尔计算力矩控制的一个缺点是需要计算逆Jacobian。为了避免在每个采样周期求逆Jacobian，我们可以使用近似笛卡尔计算力矩控制器
+笛卡尔计算力矩控制的一个缺点是需要在每个采样周期计算逆Jacobian。为减轻计算负担，可采用近似控制律
 \begin{equation}\label{eq:4.7.11}
-    \tau_c = \hat{M}\hat{J}^{-1}(\ddot{y}_d - \dot{J}\dot{q} + K_v\dot{e}_y + K_pe_y) + \hat{N}
+    \tau_c = \hat{C}\left(\ddot{y}_d - \dot{J}\dot{q} - u\right) + \hat{N}
 \end{equation}
-通过设置$\hat{M}\hat{J}^{-1} = I, \hat{N} = G(q)$获得此控制律的特殊情况，产生笛卡尔PD-gravity控制器
+其中$\hat{C}$与$\hat{N}$分别为$MJ^{-1}$与$N$的近似。通过取$\hat{C}=I$、$\hat{N}=-\ddot{y}_d+\dot{J}\dot{q}+G(q)$，可得笛卡尔PD–gravity控制器
 \begin{equation}\label{eq:4.7.12}
-    \tau_c = -K_v\dot{e}_y - K_pe_y + G(q)
+    \tau_c = K_v\dot{e}_y + K_pe_y + G(q)
 \end{equation}
 
 \subsection{笛卡尔误差计算}
 
-可以从使用臂$T$矩阵表示的臂运动学测量的关节变量计算实际笛卡尔位置
-\begin{equation}
-    y = T = \begin{bmatrix} n & o & a & p \\ 0 & 0 & 0 & 1 \end{bmatrix}
+\setcounter{equation}{13}
+可由关节变量与臂齐次变换矩阵得到实际笛卡尔位姿
+\begin{equation}\label{eq:4.7.14}
+    y(t) = T(t) = \begin{bmatrix} n(t) & o(t) & a(t) & p(t) \\ 0 & 0 & 0 & 1 \end{bmatrix}
 \end{equation}
-并且可以类似地将期望笛卡尔位置表示为$y_d = T_d$。然后可以如下计算适合计算力矩控制的笛卡尔位置误差和速度误差。定义
-\begin{equation}
-    \dot{y} = \begin{bmatrix} v \\ \omega \end{bmatrix}
+并可类似地写出期望位姿$y_d(t)=T_d(t)$（见式\eqref{eq:4.7.3}）。定义实际与期望速度
+\begin{equation}\label{eq:4.7.15}
+    \dot{y} = \begin{bmatrix} v \\ \omega \end{bmatrix}, \quad \dot{y}_d = \begin{bmatrix} v_d \\ \omega_d \end{bmatrix}
 \end{equation}
-其中$v(t), v_d(t)$是实际和期望的线速度，$\omega(t), \omega_d(t)$是实际和期望的角速度。然后
-\begin{equation}
-    \dot{e}_y = \begin{bmatrix} \dot{e}_p \\ \dot{e}_o \end{bmatrix} = \begin{bmatrix} v_d - v \\ \omega_d - \omega \end{bmatrix}
+其中$v(t)$、$v_d(t)$为线速度，$\omega(t)$、$\omega_d(t)$为角速度。笛卡尔速度误差取为
+\begin{equation}\label{eq:4.7.16}
+    \dot{e}_y = \dot{y}_d - \dot{y}
 \end{equation}
-很容易计算，因为$\dot{q}(t)$可以使用$\dot{q} = J^{-1}\dot{y}$从测量的关节变量确定。
-
-线性位置误差简单地由
-\begin{equation}
+由测量关节变量可确定$\dot{y}(t)$（例如$\dot{y}=J\dot{q}$）。线位置误差为
+\begin{equation}\label{eq:4.7.17}
     e_p = p_d - p
 \end{equation}
-给出。可以获得用于反馈目的的合适方向误差$e_o(t)$更困难，但可以定义如下。
 
-分别表示$T$和$T_d$的旋转变换部分为$R(t), R_d(t)$。方向误差可以用将$R(t)$带入$R_d(t)$的Euler轴$k(t)$的$\phi(t)$弧度旋转表示。事实上，可以定义3向量
-\begin{equation}
-    e_o = k\sin\phi
+分别表示式\eqref{eq:4.7.14}与式\eqref{eq:4.7.3}中齐次变换的旋转部分为$R(t)$与$R_d(t)$。姿态误差可表示为绕Euler轴$k(t)$转角$\phi(t)$、把$R(t)$带到$R_d(t)$的旋转。定义3向量
+\begin{equation}\label{eq:4.7.18}
+    e_o(t) = k(t)\sin\phi(t), \quad -\frac{\pi}{2} \leq \phi(t) \leq \frac{\pi}{2}
 \end{equation}
-其中可以假设$e_o(t)$很小。使用此定义，可以证明$e_o(t)$从$T$和$T_d$使用
-\begin{equation}
-    e_o = \frac{1}{2}(n_d \times n + o_d \times o + a_d \times a)
+并常假设$e_o(t)$很小。由$T(t)$与$T_d(t)$可用
+\begin{equation}\label{eq:4.7.19}
+    e_o = \frac{1}{2}(n \times n_d + o \times o_d + a \times a_d)
 \end{equation}
-找到。整体笛卡尔误差现在由$e_y = [e_p^T \, e_o^T]^T$给出。
+计算$e_o$。整体笛卡尔误差写为$e_y = [e_p^{\mathsf{T}} \, e_o^{\mathsf{T}}]^{\mathsf{T}}$。
+
+需注意：采用\eqref{eq:4.7.18}时，一般而言$\dot{e}_y$并不是$e_y$对时间的导数；尽管如此，控制律\eqref{eq:4.7.10}在实践中仍常能取得良好效果。[Wu and Paul 1982]还给出采用叉乘矩阵及采样周期$T$等别的误差定义。
 
 \begin{quote}
 \textit{注：读者可以通过}\href{https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/Computed_Torque_Control.html}{\textbf{交互式可视化工具}}\textit{对比传统PID控制与计算力矩控制的性能差异，观察非线性补偿对轨迹跟踪精度的影响。}
@@ -1321,7 +1521,7 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 
 \subsection*{4.4节}
 \begin{enumerate}[label=4.4--\arabic*, resume]
-\item 证明(4.4.32)。
+\item 证明\eqref{eq:4.4.32}。
 
 \item \textbf{PD计算力矩仿真}。使用各种PD增益值重复示例4.4.1。
 
@@ -1349,7 +1549,7 @@ $\omega_n$几个值的PD-gravity控制器仿真结果如图4.4.9所示。随着$
 
 \item \textbf{带柔性耦合的PD计算力矩}。将示例3.6.1中的柔性轴与示例4.4.1中的双连杆臂结合起来。
 
-\item \textbf{带近似CT控制的误差动力学}。考虑示例3.2.1中的双连杆极坐标臂，具有形式为$F(\dot{q})=F_v\dot{q}+K_d\text{sgn}(\dot{q})$的摩擦。对以下情况找到误差动力学(4.4.44)：
+\item \textbf{带近似CT控制的误差动力学}。考虑示例3.2.1中的双连杆极坐标臂，具有形式为$F(\dot{q})=F_v\dot{q}+K_d\text{sgn}(\dot{q})$的摩擦。对以下情况找到误差动力学\eqref{eq:4.4.46}：
 \begin{enumerate}[label=(\alph*)]
 \item 摩擦未包含在CT控制律中。
 \item 在CT控制律中负载质量$m_2$不完全已知。

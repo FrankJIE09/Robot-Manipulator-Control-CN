@@ -327,12 +327,139 @@ F = J^{-T}(q)\tau
 在我们的工作中，我们通过使用$(n, o, a, p)$方法（见A.2节）在基座坐标中指定末端执行器的笛卡尔位置$y(t)$。在那里，我们将广义笛卡尔位置定义为：
 \begin{equation}
 y(t) \equiv T(t)
-\tag{A 3.13}
+\tag{A.3.13}
 \end{equation}
 
 其中$T(t)$是臂$T$矩阵，$(n, o, a)$是描述末端执行器姿态所需的向量，$p = [p_x \, p_y \, p_z]^T$是指定末端执行器框架原点的笛卡尔描述位置部分。
 
-\subsection{计算臂雅可比}
+\textbf{使用欧拉定理表示笛卡尔姿态}：考虑臂$T$矩阵(A.3.13)中的旋转部分$R$，即
+\begin{equation}
+R = \begin{bmatrix} n & o & a \end{bmatrix}
+\tag{A.3.14}
+\end{equation}
+
+描述框架1相对于框架0的姿态。注意$R$是臂$T$矩阵的左上$3\times 3$子矩阵，因此给定关节向量$q$即可计算。
+
+旋转矩阵是正交的，因此它有一个等于1的特征值。旋转轴$k$是该特征值的特征向量。即
+\begin{equation}
+(R - I)k = 0
+\tag{A.3.15}
+\end{equation}
+
+这就是著名的\textbf{欧拉定理}。它表明$Rk = k$，或者说旋转轴不被$R$旋转。关于轴$k$的旋转角度$\varphi$可以很容易地求得，因为旋转矩阵的迹等于$1 + 2\cos\varphi$。因此
+\begin{equation}
+\cos\varphi = \frac{1}{2}(n_x + o_y + a_z - 1)
+\tag{A.3.16}
+\end{equation}
+
+其中$n_x$表示法向量$n$的$x$分量。利用欧拉旋转参数，我们可以将广义笛卡尔位置指定为7向量，其中三个分量表示位置（即$T$矩阵的最后一列$p$），四个分量表示姿态（即$k$和$\varphi$）。
+
+\textbf{使用四元数表示笛卡尔姿态}：\textbf{四元数}表示是一个4向量，常用于描述末端执行器框架姿态[Ickes 1970]、[Sheppard 1978]、[Yuan 1988]、[Stevens and Lewis 1992]。
+
+四元数是表示为$(q_0, q)$的四个数，其中$q = [q_1 \, q_2 \, q_3]^T$是3向量。它们用欧拉参数$(k, \varphi)$表示为
+\begin{equation}
+\begin{aligned}
+q_0 &= \cos(\varphi/2) \\
+q &= k\sin(\varphi/2)
+\end{aligned}
+\tag{A.3.17}
+\end{equation}
+
+使用四元数，广义笛卡尔位置可以表示为7向量$y = [p_x \, p_y \, p_z \, q_0 \, q_1 \, q_2 \, q_3]^T$。这种表示的优点是不涉及角度。
+
+\textbf{工具构型向量}：在[Schilling 1990]中给出了一种将$y(t)$指定为6向量的技术。它依赖于采用一种编码姿态信息的约定。
+
+考虑臂$T$矩阵(A.3.13)，其旋转部分为(A.3.14)中的$R$。我们选择3向量$p$表示笛卡尔线性位置。接近向量$a$是3向量，指定末端执行器指向的方向。回顾A.2节中关于运动学的讨论，该向量在基座坐标中指定了附加到连杆$n$末端的框架的$z$轴$z_n$。由于旋转矩阵$R$是正交的，接近向量的长度为1。
+
+两个向量$p$和$a$几乎完全指定了末端执行器的笛卡尔位置。唯一缺失的信息是末端执行器的滚转角。然而，这个角度无非是$q_n = \theta_n$，即操作器的最后一个关节变量。
+
+为了捕获$q_n$的信息，让我们建议按指数函数$e^{q_n/a/\pi}$缩放接近向量来定义\textbf{工具构型向量}为
+\begin{equation}
+w = \begin{bmatrix} p \\ ae^{q_n/\pi} \end{bmatrix}
+\tag{A.3.18}
+\end{equation}
+
+这是一个6向量，唯一地指定了基座坐标中末端执行器的笛卡尔位置。
+
+注意$w$和$(p, a, q_n)$之间存在唯一的映射，因为给定$w$且$\|a\|=1$的事实，我们可以计算
+\begin{equation}
+q_n = \pi \ln(w_4^2 + w_5^2 + w_6^2)^{1/2}
+\tag{A.3.19}
+\end{equation}
+
+\begin{equation}
+a = \frac{1}{(w_4^2 + w_5^2 + w_6^2)^{1/2}} \begin{bmatrix} w_4 \\ w_5 \\ w_6 \end{bmatrix}
+\tag{A.3.20}
+\end{equation}
+
+其中$w_i$是$w$的第$i$个分量。
+
+\textbf{从臂$T$矩阵求笛卡尔速度}：注意使用定义(A.3.4)，笛卡尔速度$\dot{y}$是一个6向量，它不是严格意义上(A.3.13)中$y(t)$（这是一个$4\times 4$矩阵）的导数。为了计算$\dot{y}$，我们可以找到雅可比$J(q)$然后使用(A.3.3)。或者，笛卡尔速度可以直接从臂$T$矩阵(A.2.11)求得。
+
+令$\dot{y} = [\nu^T \, \omega^T]^T$，其中$\nu$是线速度，$\omega$是角速度，显然
+\begin{equation}
+\nu = \dot{p}
+\tag{A.3.21}
+\end{equation}
+
+其中$p$从$T$的最后一列求得。
+
+为了求$\omega$，按如下进行。由于(A.2.11)中的$R$是正交的，我们有
+\begin{equation}
+RR^T = I
+\tag{A.3.22}
+\end{equation}
+
+对其求导得到
+\begin{equation}
+\dot{R}R^T + R\dot{R}^T = 0
+\end{equation}
+
+因此，定义为
+\begin{equation}
+\Omega \equiv \dot{R}R^T
+\tag{A.3.23}
+\end{equation}
+
+的矩阵满足$\Omega + \Omega^T = 0$，所以它是反对称的。因此它可以表示为
+\begin{equation}
+\Omega = \begin{bmatrix} 0 & -\omega_z & \omega_y \\ \omega_z & 0 & -\omega_x \\ -\omega_y & \omega_x & 0 \end{bmatrix}
+\tag{A.3.24}
+\end{equation}
+
+\textbf{叉积矩阵}$\Omega$与角速度向量
+\begin{equation}
+\omega = \begin{bmatrix} \omega_x \\ \omega_y \\ \omega_z \end{bmatrix}
+\tag{A.3.25}
+\end{equation}
+
+之间的关系很有趣，因为可以很容易地证明
+\begin{equation}
+\omega \times w = \Omega w
+\tag{A.3.26}
+\end{equation}
+
+对于任何3向量$w$。也就是说，叉积可以用叉积矩阵的矩阵乘法代替。我们用$\Omega(\omega)$表示与向量$\omega$相关联的叉积矩阵。
+
+从$T$矩阵确定$y$的完整过程如下。首先，使用(A.3.21)中的$p$向量计算$\nu$。然后，使用(A.3.23)从旋转矩阵$R$计算$\Omega(\omega)$，从而从$\Omega(\omega)$的定义求得$y$的最后三个分量$\omega$。因此，从$q$计算$y$需要\textbf{计算机子程序}。机器人控制器通常有框图，其中一些块是像积分器这样的标准组件，但一些块在软件中实现。
+
+使用(A.3.23)，我们可以写出\textbf{捷联方程}
+\begin{equation}
+\dot{R} = \Omega R
+\tag{A.3.27}
+\end{equation}
+
+这在惯性导航中具有基础重要性[Stevens and Lewis 1992]。
+
+\textbf{计算臂雅可比}：现在让我们回到定义和计算臂雅可比$J(q)$的问题。如果笛卡尔位置由(A.3.13)定义，则(A.3.2)不能提供适当的定义。因此，让我们选择(A.3.3)作为$J(q)$的定义。即，通过下式定义$J(q)$
+\begin{equation}
+\dot{y} = J(q)\dot{q}
+\tag{A.3.28}
+\end{equation}
+
+以便它将关节速度$\dot{q}$映射到由(A.3.4)定义的笛卡尔速度$\dot{y}$。则$J(q)$是一个$6\times n$矩阵。
+
+\subsection{计算臂雅可比算法}
 
 最后，我们可以展示如何给定关节变量$q_i$计算臂雅可比。程序如下：
 
@@ -380,13 +507,13 @@ J_p(q) = \frac{\partial p}{\partial q} = \begin{bmatrix} \frac{\partial p}{\part
 
 对于旋转关节，关节旋转$q_i = \theta_i$发生在关节轴$z_{i-1}$周围（见A.2节，特别是图A.2.1）。因此，关节变量$i$的角速度由$\omega_i = z_{i-1}\dot{q}_i$给出。要添加所有连杆的效果，有必要将$z_{i-1}$表示在公共框架中；我们选择基座坐标。然而，$R_{i-1}$的最后一列正是基座坐标中的$z_{i-1}$。因此，我们可以写成：
 \begin{equation}
-J_o = \begin{bmatrix} z_0\sigma_1 & z_1\sigma_2 & \cdots & z_{n-1}\sigma_n \end{bmatrix}
+\omega = \sum_{i=1}^{n} k_i z_{i-1}\dot{q}_i = \begin{bmatrix} k_1z_0 & k_2z_1 & \cdots & k_nz_{n-1} \end{bmatrix} \dot{q}
 \tag{A.3.35}
 \end{equation}
 
-其中$z_0 = [0 \, 0 \, 1]^T$，选择参数$\sigma_i$如果$q_i$是移动关节则为0，如果是旋转关节则为1。因此：
+其中$z_0 = [0 \, 0 \, 1]^T$，选择参数$k_i$如果$q_i$是移动关节则为0，如果是旋转关节则为1。因此：
 \begin{equation}
-\sigma_i = \begin{cases} 0, & \text{如果关节}i\text{是移动关节} \\ 1, & \text{如果关节}i\text{是旋转关节} \end{cases}
+J_o(q) = \begin{bmatrix} k_1z_0 & k_2z_1 & \cdots & k_nz_{n-1} \end{bmatrix}
 \tag{A.3.36}
 \end{equation}
 

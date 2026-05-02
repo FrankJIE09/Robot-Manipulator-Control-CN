@@ -46,7 +46,7 @@
 
 为了本节中的控制设计，我们假设机器人机械臂是具有以下动力学的旋转机械臂：
 \begin{equation}\label{eq:7.2.1}
-M(q)\ddot{q} + V_m(q,\dot{q})\dot{q} + G(q) + F_d\dot{q} = \tau
+\tau = M(q)\ddot{q} + V_m(q,\dot{q})\dot{q} + G(q) + F_d\dot{q}
 \end{equation}
 其中$F_d$是$n \times n$正定对角矩阵，用于表示摩擦的动态系数，所有其他量如第3章中定义。如其他章节所述，我们将关节跟踪误差定义为
 \begin{equation}\label{eq:7.2.2}
@@ -55,15 +55,15 @@ e = q_d - q
 
 如第6章所述，机器人机械臂的自适应控制涉及将已知时间函数与未知常数参数分离。例如，回想自适应惯量相关控制器的这种参数与时间函数分离为
 \begin{equation}\label{eq:7.2.3}
-M(q)\ddot{q}_r + V_m(q,\dot{q})\dot{q}_r + G(q) + F_d\dot{q}_r = Y(\cdot)\varphi
+Y(\cdot)\varphi = M(q)(\ddot{q}_d + \dot{e}) + V_m(q,\dot{q})(\dot{q}_d + e) + G(q) + F_d\dot{q}
 \end{equation}
-其中$Y(\cdot)$是$n \times r$回归矩阵，仅取决于实际和期望轨迹的已知时间函数，$\varphi$是$r \times 1$未知常数参数向量。（注意表6.3.1中定义的$\Lambda$取为单位矩阵。）
+其中$Y(\cdot)$是$n \times r$回归矩阵，仅取决于实际轨迹与期望轨迹的已知时间函数，$\varphi$是$r \times 1$未知常数参数向量。（注意表6.3.1中定义的$\Lambda$取为单位矩阵。）
 
 在DCAL中，参数与时间函数的这种分离为
 \begin{equation}\label{eq:7.2.4}
-M(q_d)\ddot{q}_r + V_m(q_d,\dot{q}_d)\dot{q}_r + G(q_d) + F_d\dot{q}_r = Y_d(\cdot)\varphi
+Y(\cdot)\varphi = M(q_d)\ddot{q}_d + V_m(q_d,\dot{q}_d)\dot{q}_d + G(q_d) + F_d\dot{q}_d
 \end{equation}
-其中$Y_d(\cdot)$是$n \times r$回归矩阵，仅取决于期望轨迹的已知函数。注意，如果我们将$q_d$和$\dot{q}_d$分别代入$q$和$\dot{q}$到式\eqref{eq:7.2.3}中，式\eqref{eq:7.2.3}给出的回归矩阵公式与式\eqref{eq:7.2.4}给出的公式等价。
+其中式\eqref{eq:7.2.4}右端仅含期望轨迹$(q_d,\dot{q}_d,\ddot{q}_d)$；与式\eqref{eq:7.2.3}相同，左端记为$Y(\cdot)\varphi$，刻画同一未知参数向量$\varphi$。随后的DCAL扭矩及更新律中，将该期望轨迹回归矩阵记作$Y_d(\cdot)$以强调其与式\eqref{eq:7.2.3}中依赖于$(q,\dot{q})$等的$Y(\cdot)$的差别。注意，当$e=0$且$\dot{e}=0$（等价于$q=q_d$、$\dot{q}=\dot{q}_d$且$\ddot{q}=\ddot{q}_d$）时，式\eqref{eq:7.2.3}的右端化为式\eqref{eq:7.2.4}的右端。
 
 利用式\eqref{eq:7.2.4}给出的回归矩阵公式，DCAL表示为
 \begin{equation}\label{eq:7.2.5}
@@ -85,7 +85,7 @@ r = \dot{e} + e
 
 注意，式\eqref{eq:7.2.5}给出的DCAL与第6章讨论的自适应控制器非常相似，除了式\eqref{eq:7.2.5}中的项$k_a\|e\|^2r$。事实证明，这个附加项用于补偿式\eqref{eq:7.2.3}和\eqref{eq:7.2.4}中给出的$Y(\cdot)\varphi$和$Y_d(\cdot)\varphi$之间的差异。如[Sadegh和Horowitz 1990]所示，实际回归矩阵与期望回归矩阵公式之间的这种差异可以量化为
 \begin{equation}\label{eq:7.2.9}
-\|Y(\cdot)\varphi - Y_d(\cdot)\varphi\| \leq \zeta_1\|e\| + \zeta_2\|e\|\|r\| + \zeta_3\|r\| + \zeta_4
+\|\tilde{Y}\| \leq \zeta_1\|e\| + \zeta_2\|e\|^2 + \zeta_3\|r\| + \zeta_4\|r\|\|e\|
 \end{equation}
 其中
 \begin{equation}\label{eq:7.2.10}
@@ -95,16 +95,16 @@ r = \dot{e} + e
 
 为了分析式\eqref{eq:7.2.5}给出的控制器的稳定性，我们必须形成相应的误差系统。首先，我们将式\eqref{eq:7.2.1}用式\eqref{eq:7.2.3}和\eqref{eq:7.2.6}中定义的$Y(\cdot)\varphi$和$r$重写。也就是说，我们有
 \begin{equation}\label{eq:7.2.11}
-M(q)\dot{r} + V_m(q,\dot{q})r + Y(\cdot)\varphi = \tau
+M(q)\dot{r} = -V_m(q,\dot{q})r + Y(\cdot)\varphi - \tau
 \end{equation}
 
 在式\eqref{eq:7.2.11}的右侧添加和减去项$Y_d(\cdot)\varphi$得到
 \begin{equation}\label{eq:7.2.12}
-M(q)\dot{r} + V_m(q,\dot{q})r + Y_d(\cdot)\varphi + \tilde{Y} = \tau
+M(q)\dot{r} = -V_m(q,\dot{q})r + Y_d(\cdot)\varphi + \tilde{Y} - \tau
 \end{equation}
 其中$\tilde{Y}$在式\eqref{eq:7.2.10}中定义。将式\eqref{eq:7.2.5}给出的控制代入式\eqref{eq:7.2.12}得到误差系统
 \begin{equation}\label{eq:7.2.13}
-M(q)\dot{r} = -V_m(q,\dot{q})r - k_v r - k_p e - k_a\|e\|^2r - Y_d(\cdot)\tilde{\varphi} - \tilde{Y}
+M(q)\dot{r} = -V_m(q,\dot{q})r - k_v r - k_p e - k_a\|e\|^2r + Y_d(\cdot)\tilde{\varphi} + \tilde{Y}
 \end{equation}
 其中$\tilde{\varphi}$在式\eqref{eq:7.2.8}中定义。
 
@@ -115,68 +115,77 @@ V = \frac{1}{2}r^T M(q) r + \frac{1}{2}k_p e^T e + \frac{1}{2}\tilde{\varphi}^T 
 
 对式\eqref{eq:7.2.14}关于时间求导得到
 \begin{equation}\label{eq:7.2.15}
-\dot{V} = r^T M(q)\dot{r} + \frac{1}{2}r^T\dot{M}(q)r + k_p e^T\dot{e} - \tilde{\varphi}^T \Gamma^{-1}\dot{\hat{\varphi}}
+\dot{V} = \frac{1}{2}r^T\dot{M}(q)r + r^T M(q)\dot{r} + k_p e^T\dot{e} + \tilde{\varphi}^T \Gamma^{-1}\dot{\tilde{\varphi}}
 \end{equation}
 因为标量量可以转置。将式\eqref{eq:7.2.13}代入式\eqref{eq:7.2.15}得到
 \begin{equation}\label{eq:7.2.16}
 \begin{aligned}
-\dot{V} = & -r^T V_m(q,\dot{q})r - k_v r^T r - k_p r^T e - k_a\|e\|^2r^T r \\
-& - r^T Y_d(\cdot)\tilde{\varphi} - r^T\tilde{Y} + \frac{1}{2}r^T\dot{M}(q)r + k_p e^T\dot{e} - \tilde{\varphi}^T \Gamma^{-1}\dot{\hat{\varphi}}
+\dot{V} = {} & k_p e^T\dot{e} - k_v r^T r - k_p r^T e - k_a\|e\|^2 r^T r + r^T\tilde{Y} \\
+& \quad {} + \frac{1}{2} r^T \bigl( \dot{M}(q) - 2V_m(q,\dot{q}) \bigr) r + \tilde{\varphi}^T \Gamma^{-1}\dot{\tilde{\varphi}} + r^T Y_d(\cdot)\tilde{\varphi}
 \end{aligned}
 \end{equation}
 
-通过利用斜对称性质（见第3章）和式\eqref{eq:7.2.7}中的更新律，很容易看出式\eqref{eq:7.2.16}中的第二行等于零，因此，通过调用式\eqref{eq:7.2.6}中给出的$r$的定义，式\eqref{eq:7.2.16}简化为
+通过利用斜对称性质（见第3章），式\eqref{eq:7.2.16}中$\frac{1}{2} r^T \bigl( \dot{M}(q) - 2V_m(q,\dot{q}) \bigr) r$项为零；再结合式\eqref{eq:7.2.7}的更新律可知$\tilde{\varphi}^T \Gamma^{-1}\dot{\tilde{\varphi}}+r^T Y_d(\cdot)\tilde{\varphi}=0$。因此，由式\eqref{eq:7.2.6}中$r$的定义，式\eqref{eq:7.2.16}简化为
 \begin{equation}\label{eq:7.2.17}
-\dot{V} = -k_v r^T r - k_p e^T e - k_a\|e\|^2r^T r - r^T\tilde{Y}
+\dot{V} = -k_p e^T e - k_v r^T r - k_a\|e\|^2 r^T r + r^T\tilde{Y}
 \end{equation}
 
-从式\eqref{eq:7.2.17}，我们可以以以下方式放置$\dot{V}$的上界：
+从式\eqref{eq:7.2.17}，我们可以用以下方式给出$\dot{V}$的上界：
 \begin{equation}\label{eq:7.2.18}
-\dot{V} \leq -k_v \|r\|^2 - k_p \|e\|^2 - k_a\|e\|^2\|r\|^2 + \|r\|\|\tilde{Y}\|
+\dot{V} \leq -k_p \|e\|^2 - k_v \|r\|^2 - k_a \|e\|^2 \|r\|^2 + \|r\|\|\tilde{Y}\|
 \end{equation}
 
-通过在式\eqref{eq:7.2.18}中代入式\eqref{eq:7.2.9}可以得到$\dot{V}$的新上界
+在式\eqref{eq:7.2.18}中代入式\eqref{eq:7.2.9}，可得$\dot{V}$的新上界
 \begin{equation}\label{eq:7.2.19}
-\dot{V} \leq -k_v \|r\|^2 - k_p \|e\|^2 - k_a\|e\|^2\|r\|^2 + \zeta_1\|e\|\|r\| + \zeta_2\|e\|\|r\|^2 + \zeta_3\|r\|^2 + \zeta_4\|r\|
+\dot{V} \leq -k_p \|e\|^2 - k_v \|r\|^2 - k_a \|e\|^2 \|r\|^2 + \zeta_1 \|e\| \|r\| + \zeta_2 \|e\|^2 \|r\| + \zeta_3 \|r\|^2 + \zeta_4 \|r\|^2 \|e\|
 \end{equation}
 
-通过重新排列式\eqref{eq:7.2.19}的第二行，它可以写成
+将式\eqref{eq:7.2.19}右端配方后可写成
 \begin{equation}\label{eq:7.2.20}
-\dot{V} \leq -k_v \|r\|^2 - k_p \|e\|^2 - k_a\|e\|^2\|r\|^2 + \zeta_1\|e\|\|r\| + \zeta_2\|e\|\|r\|^2 + \zeta_3\|r\|^2 + \frac{1}{2}\|r\|^2 + \frac{1}{2}\zeta_4^2
+\begin{aligned}
+\dot{V} \leq {} & -k_p \|e\|^2 - k_v \|r\|^2 - k_a \|e\|^2 \|r\|^2 + \zeta_1 \|e\| \|r\| \\
+& \quad {} - \zeta_2 \|e\|^2 \bigl(\tfrac{1}{2} - \|r\|\bigr)^2 - \zeta_4 \|r\|^2 \bigl(\tfrac{1}{2} - \|e\|\bigr)^2 \\
+& \quad {} + (\zeta_2 + \zeta_4) \|e\|^2 \|r\|^2 + \frac{\zeta_2}{4} \|e\|^2 + \Bigl(\zeta_3 + \frac{\zeta_4}{4}\Bigr) \|r\|^2
+\end{aligned}
 \end{equation}
 
-在式\eqref{eq:7.2.20}中收集公共项后，它可以重写为
+在式\eqref{eq:7.2.20}中合并同类项后，它可以重写为
 \begin{equation}\label{eq:7.2.21}
-\dot{V} \leq -(k_v - \zeta_3 - \frac{1}{2})\|r\|^2 - k_p\|e\|^2 - (k_a\|e\| - \zeta_1)\|e\|\|r\|^2 + \zeta_2\|e\|\|r\|^2 + \frac{1}{2}\zeta_4^2
+\begin{aligned}
+\dot{V} \leq {} & -(k_p - \zeta_2/4) \|e\|^2 - (k_v - \zeta_3 - \zeta_4/4) \|r\|^2 + \zeta_1 \|e\| \|r\| \\
+& \quad {} - \zeta_2 \|e\|^2 \bigl(\tfrac{1}{2} - \|r\|\bigr)^2 - \zeta_4 \|r\|^2 \bigl(\tfrac{1}{2} - \|e\|\bigr)^2 \\
+& \quad {} - (k_a - \zeta_2 - \zeta_4) \|e\|^2 \|r\|^2
+\end{aligned}
 \end{equation}
 
-通过注意到，如果控制增益$k_a$按照
+注意到，若控制增益$k_a$按下式选取，
 \begin{equation}\label{eq:7.2.22}
-k_a > \frac{\zeta_1 + \zeta_2}{\|e\|}
+k_a > \zeta_2 + \zeta_4
 \end{equation}
-调整，我们可以看到式\eqref{eq:7.2.21}第二行上的所有项都将为负；因此，我们可以获得$\dot{V}$的新上界。
+则式\eqref{eq:7.2.21}第三行非正；又因含$\bigl(\tfrac{1}{2}-\|r\|\bigr)^2$与$\bigl(\tfrac{1}{2}-\|e\|\bigr)^2$的两项非正，可得$\dot{V}$的上界
 \begin{equation}\label{eq:7.2.23}
-\dot{V} \leq -(k_v - \zeta_3 - \frac{1}{2})\|r\|^2 - k_p\|e\|^2 + \frac{1}{2}\zeta_4^2
+\dot{V} \leq -(k_p - \zeta_2/4) \|e\|^2 - (k_v - \zeta_3 - \zeta_4/4) \|r\|^2 + \zeta_1 \|e\| \|r\|
 \end{equation}
 
 通过以矩阵形式重写式\eqref{eq:7.2.23}
 \begin{equation}\label{eq:7.2.24}
-\dot{V} \leq -\begin{bmatrix} \|e\| & \|r\| \end{bmatrix} \begin{bmatrix} k_p & 0 \\ 0 & k_v - \zeta_3 - \frac{1}{2} \end{bmatrix} \begin{bmatrix} \|e\| \\ \|r\| \end{bmatrix} + \frac{1}{2}\zeta_4^2
+\dot{V} \leq -x^T \bar{Q} x
 \end{equation}
 其中
-\begin{equation*}
-Q_0 = \begin{bmatrix} k_p & 0 \\ 0 & k_v - \zeta_3 - \frac{1}{2} \end{bmatrix}
-\end{equation*}
+\begin{align*}
+x &= \begin{bmatrix} \|e\| \\ \|r\| \end{bmatrix}, \\
+\bar{Q} &= \begin{bmatrix} k_p - \zeta_2/4 & -\zeta_1/2 \\ -\zeta_1/2 & k_v - \zeta_3 - \zeta_4/4 \end{bmatrix}.
+\end{align*}
 
-我们可以建立$k_p$和$k_v$的充分条件，使得式\eqref{eq:7.2.24}中的矩阵为正定。具体而言，通过使用Gerschgorin定理（见第2章），我们可以看到，如果
+我们可以建立$k_p$和$k_v$的充分条件，使得$\bar{Q}$为正定。具体而言，通过使用Gerschgorin定理（见第2章），我们可以看到，如果
 \begin{equation}\label{eq:7.2.25}
-k_p > 0
+k_p > \zeta_1/2 + \zeta_2/4
 \end{equation}
 和
 \begin{equation}\label{eq:7.2.26}
-k_v > \zeta_3 + \frac{1}{2}
+k_v > \zeta_1/2 + \zeta_3 + \zeta_4/4
 \end{equation}
-式\eqref{eq:7.2.24}中定义的矩阵将为正定；因此，$\dot{V}$将为半负定。
+$\bar{Q}$将为正定；因此，$\dot{V}$将为半负定。
 
 我们现在详细说明跟踪误差的稳定性类型。首先，由于$\dot{V}$是半负定的，我们可以说明$V$是上界有界的。利用$V$是上界有界的事实，我们可以说明$e$、$\dot{e}$、$r$和$\tilde{\varphi}$是有界的。由于$e$、$\dot{e}$、$r$和$\tilde{\varphi}$是有界的，我们可以使用式\eqref{eq:7.2.13}来表明$\dot{r}$以及因此式\eqref{eq:7.2.17}中的$\ddot{V}$是有界的。其次，注意由于$M(q)$如惯性矩阵的正定性质所阐述的那样下界有界（见第3章），我们可以说明式\eqref{eq:7.2.14}中给出的$V$下界有界。由于$V$下界有界，$\dot{V}$是半负定的，且$\ddot{V}$是有界的，我们可以使用Barbalat引理（见第2章）来说明
 \begin{equation*}
@@ -185,7 +194,7 @@ k_v > \zeta_3 + \frac{1}{2}
 
 因此，从上面的论证和式\eqref{eq:7.2.24}，我们知道
 \begin{equation}\label{eq:7.2.27}
-\lim_{t \to \infty} \|e\|, \|r\| = 0
+\lim_{t \to \infty} \begin{bmatrix} e \\ r \end{bmatrix} = 0
 \end{equation}
 
 从式\eqref{eq:7.2.27}，我们也可以确定速度跟踪误差的稳定性结果。具体而言，从式\eqref{eq:7.2.6}，注意$r$被定义为变量$e$的稳定一阶微分方程；因此，通过标准线性控制论证，我们可以写成
@@ -215,25 +224,28 @@ k_v > \zeta_3 + \frac{1}{2}
 
 我们希望为图6.2.1中给出的二连杆机械臂设计和仿真表7.2.1中给出的DCAL。（该机器人臂的动力学在第3章中给出。）假设摩擦可忽略不计且连杆长度精确知道为每根1米长，DCAL可以写成
 \begin{align}
-\tau_1 &= Y_{d11}\hat{\varphi}_1 + Y_{d12}\hat{\varphi}_2 + k_v r_1 + k_p e_1 + k_a \|e\|^2 r_1, \\
-\tau_2 &= Y_{d21}\hat{\varphi}_1 + Y_{d22}\hat{\varphi}_2 + k_v r_2 + k_p e_2 + k_a \|e\|^2 r_2
+\tau_1 &= Y_{11}\hat{\varphi}_1 + Y_{12}\hat{\varphi}_2 + k_v r_1 + k_p e_1 + k_a \|e\|^2 r_1, \\
+\tau_2 &= Y_{21}\hat{\varphi}_1 + Y_{22}\hat{\varphi}_2 + k_v r_2 + k_p e_2 + k_a \|e\|^2 r_2
 \end{align}
 
-在控制扭矩的表达式中，回归矩阵$Y_d(\cdot)$由
+在控制扭矩的表达式中，回归矩阵$Y_d(\ddot{q}_d,\dot{q}_d,q_d)$由
 \begin{equation}
-Y_d = \begin{bmatrix}
-\ddot{q}_{d1} + \dot{e}_1 & Y_{d12} \\
-0 & Y_{d22}
+Y_d(\ddot{q}_d,\dot{q}_d,q_d) = \begin{bmatrix}
+Y_{11} & Y_{12} \\
+Y_{21} & Y_{22}
 \end{bmatrix}
 \end{equation}
-给出
-其中
-\begin{equation*}
-Y_{d12} = \ddot{q}_{d1} + \dot{e}_1 + \ddot{q}_{d2} + \dot{e}_2 + (\dot{q}_{d1} + \dot{e}_1)(\dot{q}_{d2} + \dot{e}_2)
-\end{equation*}
-\begin{equation*}
-Y_{d22} = \ddot{q}_{d1} + \dot{e}_1 + \ddot{q}_{d2} + \dot{e}_2
-\end{equation*}
+给出，其中
+\begin{align}
+Y_{11} &= l_1^2 \ddot{q}_{d1} + l_1 g\cos(q_{d1}), \\
+\begin{split}
+Y_{12} &= (l_2^2 + 2l_1l_2\cos(q_{d2}) + l_1^2)\ddot{q}_{d1} + (l_2^2 + l_1l_2\cos(q_{d2}))\ddot{q}_{d2} \\
+& \quad {} - l_1l_2\sin(q_{d2})\dot{q}_{d2}\dot{q}_{d1} - l_1l_2\sin(q_{d2})(\dot{q}_{d1}+\dot{q}_{d2})\dot{q}_{d2} \\
+& \quad {} + l_2 g\cos(q_{d1}+q_{d2}) + l_1 g\cos(q_{d1}),
+\end{split} \\
+Y_{21} &= 0, \\
+Y_{22} &= (l_1l_2\cos(q_{d2}) + l_2^2)\ddot{q}_{d1} + l_2^2 \ddot{q}_{d2} + l_1l_2\sin(q_{d2})\dot{q}_{d1}^2.
+\end{align}
 
 按照表7.2.1给出的公式制定自适应更新规则，相关参数估计向量为
 \begin{equation*}
@@ -241,8 +253,8 @@ Y_{d22} = \ddot{q}_{d1} + \dot{e}_1 + \ddot{q}_{d2} + \dot{e}_2
 \end{equation*}
 带有自适应更新规则
 \begin{align}
-\dot{\hat{m}}_1 &= \gamma_1(Y_{d11}r_1 + Y_{d21}r_2), \\
-\dot{\hat{m}}_2 &= \gamma_2(Y_{d12}r_1 + Y_{d22}r_2)
+\dot{\hat{m}}_1 &= \gamma_1(Y_{11}r_1 + Y_{21}r_2) = \gamma_1 Y_{11} r_1, \\
+\dot{\hat{m}}_2 &= \gamma_2(Y_{12}r_1 + Y_{22}r_2)
 \end{align}
 
 对于$m_1=0.8$ kg和$m_2=2.3$ kg，DCAL在以下条件下进行了仿真
@@ -290,20 +302,20 @@ u_d(t) = u_d(t-T)
 \tilde{u}_d(t) = u_d(t) - \hat{u}_d(t)
 \end{equation}
 
-具体而言，将式\eqref{eq:7.2.32}乘以-1，然后在式\eqref{eq:7.2.32}的两边加上$u_d(t)$得到
+具体而言，将式\eqref{eq:7.2.32}两边乘以$-1$，再在两边加上$u_d(t)$，可得
 \begin{equation}\label{eq:7.2.34}
-\tilde{u}_d(t) = \tilde{u}_d(t-T) - k_L r
+u_d(t) - \hat{u}_d(t) = u_d(t) - \hat{u}_d(t-T) - k_L r
 \end{equation}
 
-通过利用式\eqref{eq:7.2.30}给出的周期性假设，我们可以将式\eqref{eq:7.2.34}写成
+通过利用式\eqref{eq:7.2.30}给出的周期性假设，可将式\eqref{eq:7.2.34}写成
 \begin{equation}\label{eq:7.2.35}
 u_d(t) - \hat{u}_d(t) = u_d(t-T) - \hat{u}_d(t-T) - k_L r
 \end{equation}
-这给出了学习误差更新规则
+由此得到学习误差更新规则
 \begin{equation}\label{eq:7.2.36}
 \tilde{u}_d(t) = \tilde{u}_d(t-T) - k_L r
 \end{equation}
-其中$\tilde{u}_d(t-T)$根据式\eqref{eq:7.2.33}定义。
+其中$\tilde{u}_d(t-T)=u_d(t-T)-\hat{u}_d(t-T)$（对照式\eqref{eq:7.2.33}）。
 
 在分析式\eqref{eq:7.2.31}中给出的控制器的稳定性之前，我们将形成相应的误差系统。首先，我们将式\eqref{eq:7.2.1}用式\eqref{eq:7.2.6}中定义的$r$重写。也就是说，我们有
 \begin{equation}\label{eq:7.2.37}
@@ -373,51 +385,75 @@ k_v > \zeta_3 + \frac{1}{2} + k_L\zeta_2^2
 \end{equation}
 其中$\zeta_1$、$\zeta_2$、$\zeta_3$和$\zeta_4$在式\eqref{eq:7.2.41}中定义。如果控制器增益根据式\eqref{eq:7.2.22}、\eqref{eq:7.2.25}和\eqref{eq:7.2.48}调整，则从DCAL的分析开发（即式\eqref{eq:7.2.18}到\eqref{eq:7.2.24}）和式\eqref{eq:7.2.47}，我们可以在$\dot{V}$上放置新的上界：
 \begin{equation}\label{eq:7.2.49}
-\dot{V} \leq -\lambda_3\|x_0\|^2 + \frac{1}{2}\zeta_4^2
+\dot{V} \leq -\lambda_3 \|x\|^2
 \end{equation}
-其中$\lambda_3$是正的标量常数，由$\lambda_{\min}\{Q_0\}$给出。
+其中$\lambda_3$为正的标量常数，且$\lambda_3=\lambda_{\min}\{Q_o\}$，而
+\begin{align*}
+x &= \begin{bmatrix} \|e\| \\ \|r\| \end{bmatrix}, \\
+Q_o &= \begin{bmatrix} k_p - \zeta_2/4 & -\zeta_1/2 \\ -\zeta_1/2 & k_v + \dfrac{k_L}{2} - \zeta_3 - \zeta_4/4 \end{bmatrix}.
+\end{align*}
 
-我们现在详细说明跟踪误差的稳定性类型。首先注意，从式\eqref{eq:7.2.49}，我们可以在$\dot{V}$上放置新的上界：
+我们现在详细说明跟踪误差的稳定性类型。首先注意，由式\eqref{eq:7.2.49}还可得到$\dot{V}$的更松上界：
 \begin{equation}\label{eq:7.2.50}
-\dot{V} \leq -\lambda_3\|x_0\|^2 + \frac{1}{2}\zeta_4^2
+\dot{V} \leq -\lambda_3 \|r\|^2
 \end{equation}
-这意味着
+这是因为$\|x\|^2=\|e\|^2+\|r\|^2\geq \|r\|^2$。式\eqref{eq:7.2.50}意味着
 \begin{equation}\label{eq:7.2.51}
-\int_0^{\infty} \|x_0\|^2 dt \leq \frac{1}{\lambda_3}[V(0) - V(\infty)] + \frac{1}{2\lambda_3}\zeta_4^2\int_0^{\infty} dt
+\int_0^{\infty} \dot{V}(\sigma)\,d\sigma \leq -\lambda_3 \int_0^{\infty} \|r(\sigma)\|^2\,d\sigma
 \end{equation}
 
-将式\eqref{eq:7.2.51}乘以-1并对式\eqref{eq:7.2.51}的左侧积分得到
+将式\eqref{eq:7.2.51}乘以$-1$，并对左侧关于$\sigma$积分，可得
 \begin{equation}\label{eq:7.2.52}
--\int_0^{\infty} \|x_0\|^2 dt \geq \frac{1}{\lambda_3}[V(\infty) - V(0)] - \frac{1}{2\lambda_3}\zeta_4^2\int_0^{\infty} dt
+V(0) - V(\infty) \geq \lambda_3 \int_0^{\infty} \|r(\sigma)\|^2\,d\sigma
 \end{equation}
 
-由于$\dot{V}$如式\eqref{eq:7.2.49}所阐述的那样是半负定的，我们可以说明$V$是一个非递增函数，因此由上界$V(0)$界定。通过回忆，如惯性矩阵的正定性质所阐述的那样，$M(q)$是下界有界的，我们可以说明式\eqref{eq:7.2.43}中给出的$V$由零下界有界。由于$V$是非递增的，由上界$V(0)$界定，由下界零界定，我们可以将式\eqref{eq:7.2.52}写成
+由于$\dot{V}$如式\eqref{eq:7.2.49}所述为半负定，故$V$为非增函数，因而由上界$V(0)$界定。又因惯性矩阵$M(q)$正定，式\eqref{eq:7.2.43}给出的$V$由零下界界定。由于$V$非增、上有界$V(0)$、下有界零，可将式\eqref{eq:7.2.52}写成
 \begin{equation}\label{eq:7.2.53}
-\int_0^{\infty} \|x_0\|^2 dt \leq \frac{1}{\lambda_3}V(0) + \frac{1}{2\lambda_3}\zeta_4^2\int_0^{\infty} dt
+\lambda_3 \int_0^{\infty} \|r(\sigma)\|^2\,d\sigma < \infty
 \end{equation}
-或
+或等价地
 \begin{equation}\label{eq:7.2.54}
-x_0 \in L_2^n
+\sqrt{\int_0^{\infty} \|r(\sigma)\|^2\,d\sigma} < \infty
 \end{equation}
 
-式\eqref{eq:7.2.54}给出的界限告诉我们$x_0 \in L_2^n$（见第2章），这意味着滤波跟踪误差$r$以式\eqref{eq:7.2.54}给出的特殊方式有界。
+式\eqref{eq:7.2.54}表明$r\in L_2^n$（见第2章），即滤波跟踪误差$r$在$L_2$意义下平方可积。
 
-为了建立位置跟踪误差$e$的稳定性结果，我们建立位置跟踪误差与滤波跟踪误差$r$之间的传递函数关系。从式\eqref{eq:7.2.6}，我们可以说明
+为了建立位置跟踪误差$e$的稳定性结果，我们建立位置跟踪误差与滤波跟踪误差$r$之间的传递函数关系。从式\eqref{eq:7.2.6}，我们有
 \begin{equation}\label{eq:7.2.55}
 e(s) = G(s)r(s)
 \end{equation}
 其中$s$是拉普拉斯变换变量，
 \begin{equation}\label{eq:7.2.56}
-G(s) = (sI + I)^{-1}
+G(s) = (sI + \Gamma)^{-1}
 \end{equation}
-而$I$是$n \times n$单位矩阵。由于$G(s)$是严格适当的、渐近稳定的传递函数且$r \in L_2^n$，我们可以使用第2章中的定理2.4.7来说明
+而$I$是$n \times n$单位矩阵；$\Gamma$为与式\eqref{eq:7.2.6}中$r=\dot{e}+e$相对应的$n\times n$矩阵（此处$\Gamma=I$，故亦可写成$G(s)=(sI+I)^{-1}$）。由于$G(s)$是严格真、渐近稳定的传递函数且$r\in L_2^n$，我们可以使用第2章中的定理2.4.7来说明
 \begin{equation}\label{eq:7.2.57}
-\lim_{t \to \infty} \|e\| = 0
+\lim_{t \to \infty} e = 0
 \end{equation}
 
 因此，如果控制器增益根据式\eqref{eq:7.2.22}、\eqref{eq:7.2.25}和\eqref{eq:7.2.48}选择，位置跟踪误差$e$是渐近稳定的。根据本节提出的理论开发，关于速度跟踪误差$\dot{e}$我们只能说它是有界的。应该注意的是，如果式\eqref{eq:7.2.32}中的学习估计$\hat{u}_d(t)$"人为地"防止增长，我们可以得出速度跟踪误差是渐近稳定的结论[Sadegh等1990]。这种修改的稳定性证明是第6章中提出的自适应控制证明的直接应用。
 
-本节研究的重复控制器总结在表7.2.2中，并在图7.2.3中描绘。浏览表7.2.2后，我们可以看到RCL与需要形成回归型矩阵的自适应控制器相比，需要关于被控机器人的很少信息。RCL的另一个明显优势是它需要很少的在线计算。我们现在提出一个示例来说明如何使用表7.2.2为机器人机械臂设计重复控制器。
+本节研究的重复控制器总结在表7.2.2中，并在图7.2.3中描绘。
+
+\textbf{表7.2.2}\quad RCL控制器
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{扭矩控制器} & $\tau = \hat{u}_d + k_v r + k_p e + k_a \|e\|^2 r$ \\
+\hline
+\textbf{滤波跟踪误差} & $r = e + \dot{e}$ \\
+\hline
+\textbf{学习更新律} & $\hat{u}_d(t) = \hat{u}_d(t-T) + k_L r$ \\
+\hline
+\textbf{稳定性} & 跟踪误差$e$渐近稳定；跟踪误差$\dot{e}$有界 \\
+\hline
+\textbf{注释} & 期望轨迹须为周期$T$的周期轨迹；增益$k_a$、$k_p$、$k_L$、$k_v$须选得足够大 \\
+\hline
+\end{tabular}
+\end{center}
+
+浏览表7.2.2后，我们可以看到RCL与需要形成回归型矩阵的自适应控制器相比，需要关于被控机器人的很少信息。RCL的另一个明显优势是它需要很少的在线计算。我们现在提出一个示例来说明如何使用表7.2.2为机器人机械臂设计重复控制器。
 
 \textbf{示例7.2--2：二连杆机械臂的RCL}
 
@@ -437,10 +473,15 @@ G(s) = (sI + I)^{-1}
 \begin{equation*}
 k_a = k_v = k_p = k_L = 50, \quad T = 2\pi
 \end{equation*}
-和
+和期望轨迹
 \begin{equation*}
-q_{d1} = \sin t, \quad q_{d2} = \cos t
+q_{d1} = \sin t, \quad q_{d2} = \sin t
 \end{equation*}
+以及初始条件
+\begin{equation*}
+q_1(0)=0,\quad q_2(0)=0,\quad \dot{q}_1(0)=0,\quad \dot{q}_2(0)=0,
+\end{equation*}
+学习项初值取
 \begin{equation*}
 \hat{u}_{d1}(t) = 0, \quad \hat{u}_{d2}(t) = 0, \quad \text{对于} -2\pi \leq t < 0
 \end{equation*}
@@ -457,28 +498,28 @@ q_{d1} = \sin t, \quad q_{d2} = \cos t
 
 为了本节中的控制设计，我们假设机器人机械臂是具有以下动力学的旋转机械臂：
 \begin{equation}\label{eq:7.3.1}
-M(q)\ddot{q} + V_m(q,\dot{q})\dot{q} + G(q) + F_d\dot{q} + T_d = \tau
+\tau = M(q)\ddot{q} + V_m(q,\dot{q})\dot{q} + G(q) + F_d\dot{q} + F_s(\dot{q}) + T_d
 \end{equation}
-其中$F_d$是用于表示摩擦动态系数的$n \times n$正定对角矩阵，$T_d$是表示未知有界扰动的$n \times 1$向量，所有其他量如第3章中定义。
+其中$F_d$是用于表示摩擦动态系数的$n \times n$正定对角矩阵，$F_s(\dot{q})$是表示静态摩擦的$n \times 1$向量，$T_d$是表示未知有界扰动的$n \times 1$向量，所有其他量如第3章中定义。
 
 自适应鲁棒控制器与第5章中讨论的鲁棒控制策略非常相似，因为使用辅助控制器来"界定"不确定性。回想第5章，鲁棒控制器通过使用由跟踪误差范数和正边界常数组成的标量函数来界定不确定性。例如，假设由
 \begin{equation}\label{eq:7.3.2}
-w = M(q)\ddot{q}_r + V_m(q,\dot{q})\dot{q}_r + G(q) + F_d\dot{q}_r + T_d
+w = M(q)(\ddot{q}_d + \dot{e}) + V_m(q,\dot{q})(\dot{q}_d + e) + G(q) + F_d\dot{q} + F_s(\dot{q}) + T_d
 \end{equation}
-给出的动力学表示给定机器人控制器的不确定性。也就是说，式\eqref{eq:7.3.2}给出的动力学是不确定的，因为负载质量、摩擦系数和扰动不确切知道。然而，假设可以使用正的标量函数$\rho$来界定不确定性，如下所示：
+给出的动力学表示给定机器人控制器的不确定性。也就是说，式\eqref{eq:7.3.2}给出的动力学是不确定的，因为负载质量、摩擦系数和扰动不确切知道。然而，假设可使用正的标量函数$\rho$界定不确定性，如下所示：
 \begin{equation}\label{eq:7.3.3}
 \|w\| \leq \rho
 \end{equation}
 
-如[Dawson等1990]中所述，机器人机械臂的物理特性可用于表明式\eqref{eq:7.3.2}给出的动力学可以界定为
+如[Dawson等1990]中所述，机器人机械臂的物理特性可用于表明式\eqref{eq:7.3.2}给出的动力学可界定为
 \begin{equation}\label{eq:7.3.4}
-\rho = \delta_0 + \delta_1\|e\| + \delta_2\|\dot{e}\|
+\rho = \delta_0 + \delta_1\|\mathbf{e}\| + \delta_2\|\mathbf{e}\|^2
 \end{equation}
 其中
 \begin{equation}\label{eq:7.3.5}
-\theta = \begin{bmatrix} \delta_0 \\ \delta_1 \\ \delta_2 \end{bmatrix}
+\mathbf{e} = \begin{bmatrix} e \\ \dot{e} \end{bmatrix}
 \end{equation}
-而$\delta_0$、$\delta_1$和$\delta_2$是正的边界常数，基于最大可能的负载质量、连杆质量、摩擦系数、扰动等。
+而$\delta_0$、$\delta_1$和$\delta_2$是正的边界常数，基于最大可能的负载质量、连杆质量、摩擦系数、扰动等（由[Dawson等1990]，总可适当选取这些常数使式\eqref{eq:7.3.4}给出的$\rho$满足式\eqref{eq:7.3.3}）。
 
 通常，第5章中提出的鲁棒控制器要求式\eqref{eq:7.3.4}中定义的边界常数事先制定。本节将开发的自适应鲁棒控制器在机械臂运动时在线"学习"这些边界常数。也就是说，在控制实现中，我们不需要边界常数的知识；相反，我们只需要式\eqref{eq:7.3.4}中定义的边界常数的存在。
 
@@ -495,23 +536,23 @@ v_R = \frac{r\hat{\rho}^2}{\hat{\rho}\|r\| + \varepsilon}
 \begin{equation}\label{eq:7.3.8}
 \dot{\varepsilon} = -k_\varepsilon\varepsilon
 \end{equation}
-$k_\varepsilon$是正的标量控制常数，$\hat{\rho}$是定义为
+$k_\varepsilon$是正的标量控制常数，$\hat{\rho}$定义为标量函数
 \begin{equation}\label{eq:7.3.9}
-\hat{\rho} = S\hat{\theta}
+\hat{\rho} = \hat{\delta}_0 + \hat{\delta}_1\|\mathbf{e}\| + \hat{\delta}_2\|\mathbf{e}\|^2
 \end{equation}
-的标量函数
-而$\hat{\theta}$是边界常数$\delta_0$、$\delta_1$和$\delta_2$的相应边界估计，在式\eqref{eq:7.3.4}中定义。用"$\hat{}$"表示的边界估计基于自适应更新规则在线更改。在给出更新规则之前，我们将式\eqref{eq:7.3.9}写成更方便的形式
+其中$\hat{\delta}_0$、$\hat{\delta}_1$和$\hat{\delta}_2$分别是$\delta_0$、$\delta_1$和$\delta_2$的动态估计（见式\eqref{eq:7.3.4}）。带"$\hat{}$"的边界估计基于自适应更新律在线更改。在给出更新律之前，我们将式\eqref{eq:7.3.9}写成更为方便的矩阵形式
 \begin{equation}\label{eq:7.3.10}
-\hat{\rho} = \hat{\theta}^T S^T
+\hat{\rho} = S\hat{\theta}
 \end{equation}
 其中
 \begin{equation*}
-S = \begin{bmatrix} 1 & \|e\| & \|r\| \end{bmatrix}
+S = \begin{bmatrix} 1 & \|\mathbf{e}\| & \|\mathbf{e}\|^2 \end{bmatrix}, \qquad
+\hat{\theta} = \begin{bmatrix} \hat{\delta}_0 \\ \hat{\delta}_1 \\ \hat{\delta}_2 \end{bmatrix}
 \end{equation*}
 
-式\eqref{eq:7.3.3}中给出的实际边界函数$\rho$也可以写成矩阵形式
+式\eqref{eq:7.3.4}中给出的实际边界函数$\rho$也可以写成矩阵形式
 \begin{equation}\label{eq:7.3.11}
-\rho = \theta^T S^T
+\rho = S\theta
 \end{equation}
 其中
 \begin{equation*}
@@ -546,33 +587,31 @@ V = \frac{1}{2}r^T M(q)r + \frac{1}{2}\tilde{\theta}^T \gamma^{-1}\tilde{\theta}
 
 对式\eqref{eq:7.3.16}关于时间求导得到
 \begin{equation}\label{eq:7.3.17}
-\dot{V} = r^T M(q)\dot{r} + \frac{1}{2}r^T\dot{M}(q)r + \tilde{\theta}^T\gamma^{-1}\dot{\tilde{\theta}} + \frac{1}{k_\varepsilon}\varepsilon\dot{\varepsilon}
+\dot{V} = \frac{1}{2}r^T\dot{M}(q)r + r^T M(q)\dot{r} + \tilde{\theta}^T\gamma^{-1}\dot{\tilde{\theta}} + \frac{1}{k_\varepsilon}\varepsilon\dot{\varepsilon}
 \end{equation}
 因为标量量可以转置。将式\eqref{eq:7.3.13}和\eqref{eq:7.3.15}代入式\eqref{eq:7.3.17}得到
 \begin{equation}\label{eq:7.3.18}
 \begin{aligned}
-\dot{V} = & -r^T V_m(q,\dot{q})r - r^T K_v r - r^T v_R + r^T w \\
-& + \frac{1}{2}r^T\dot{M}(q)r - \tilde{\theta}^T S^T\|r\| - \varepsilon
+\dot{V} = {} & -r^T K_v r - (S\tilde{\theta})\|r\| + r^T(w - v_R) + \frac{1}{k_\varepsilon}\varepsilon\dot{\varepsilon} \\
+& \quad {} + \frac{1}{2} r^T \bigl( \dot{M}(q) - 2V_m(q,\dot{q}) \bigr) r
 \end{aligned}
 \end{equation}
 
 通过利用斜对称性质，很容易看出式\eqref{eq:7.3.18}中的第二行等于零。从式\eqref{eq:7.3.18}，我们可以使用式\eqref{eq:7.3.3}和\eqref{eq:7.3.11}以以下方式放置$\dot{V}$的上界：
 \begin{equation}\label{eq:7.3.19}
-\dot{V} \leq -r^T K_v r - \rho\|r\| + r^T w - \tilde{\theta}^T S^T\|r\| - \varepsilon
+\dot{V} \leq -r^T K_v r - (S\tilde{\theta})\|r\| + (S\theta)\|r\| - r^T v_R + \frac{1}{k_\varepsilon}\varepsilon\dot{\varepsilon}
 \end{equation}
 
+\addtocounter{equation}{1}% 略去书中一条中间恒等式，使式号自 (7.3.21) 起与原版一致
+
 将式\eqref{eq:7.3.7}、\eqref{eq:7.3.8}、\eqref{eq:7.3.10}和\eqref{eq:7.3.14}代入式\eqref{eq:7.3.19}，我们得到
-\begin{equation}\label{eq:7.3.20}
-\dot{V} \leq -r^T K_v r - \frac{\|r\|^2\hat{\theta}^T S^T}{\hat{\theta}^T S^T\|r\| + \varepsilon} + \|r\|\theta^T S^T - \|r\|\theta^T S^T + \|r\|\hat{\theta}^T S^T - \varepsilon
-\end{equation}
-它可以写成
 \begin{equation}\label{eq:7.3.21}
-\dot{V} \leq -r^T K_v r - \|r\|\hat{\theta}^T S^T\left[\frac{\|r\|}{\hat{\theta}^T S^T\|r\| + \varepsilon} - 1\right] - \varepsilon
+\dot{V} \leq -r^T K_v r - \varepsilon + S\hat{\theta}\|r\| - \frac{\|r\|^2 (S\hat{\theta})^2}{S\hat{\theta}\|r\| + \varepsilon}
 \end{equation}
 
 为式\eqref{eq:7.3.21}中的最后两项获得公共分母使我们能够将式\eqref{eq:7.3.21}写成
 \begin{equation}\label{eq:7.3.22}
-\dot{V} \leq -r^T K_v r - \frac{\|r\|\hat{\theta}^T S^T(-\varepsilon)}{\hat{\theta}^T S^T\|r\| + \varepsilon} - \varepsilon
+\dot{V} \leq -r^T K_v r - \varepsilon + \frac{\varepsilon S\hat{\theta}\|r\|}{S\hat{\theta}\|r\| + \varepsilon}
 \end{equation}
 
 由于式\eqref{eq:7.3.22}中最后两项之和总是小于零，我们可以在$\dot{V}$上放置新的上界：
@@ -603,42 +642,64 @@ e(s) = G(s)r(s)
 \begin{center}
 \begin{tabular}{|l|l|}
 \hline
-\textbf{控制律} & $\tau = K_v r + \dfrac{r\hat{\rho}^2}{\hat{\rho}\|r\| + \varepsilon}$ \\
+\textbf{扭矩控制器} & $\tau = K_v r + \dfrac{r\hat{\rho}^2}{\hat{\rho}\|r\| + \varepsilon}$ \\
 \hline
-\textbf{辅助控制} & $\hat{\rho} = S\hat{\theta} = \hat{\delta}_0 + \hat{\delta}_1\|e\| + \hat{\delta}_2\|r\|$ \\
+\textbf{滤波跟踪误差} & $r = e + \dot{e}$ \\
 \hline
-\textbf{参数更新} & $\dot{\hat{\theta}} = \gamma S^T\|r\|$ \\
+\textbf{$\varepsilon$ 动力学} & $\dot{\varepsilon} = -k_\varepsilon\varepsilon$ \\
+\hline
+\textbf{边界估计} & $\begin{aligned}[t]
+\hat{\rho} &= S\hat{\theta},\\
+S &= \begin{bmatrix} 1 & \|\mathbf{e}\| & \|\mathbf{e}\|^2 \end{bmatrix},\quad
+\mathbf{e} = \begin{bmatrix} e \\ \dot{e} \end{bmatrix},\quad
+\hat{\theta} = \begin{bmatrix} \hat{\delta}_0 \\ \hat{\delta}_1 \\ \hat{\delta}_2 \end{bmatrix}
+\end{aligned}$ \\
+\hline
+\textbf{参数更新律} & $\dot{\hat{\theta}} = \gamma S^T\|r\|$ \\
+\hline
+\textbf{稳定性} & 位置跟踪误差$e$渐近稳定；边界估计$\hat{\theta}$有界；速度跟踪误差$\dot{e}$有界 \\
+\hline
+\textbf{注释} & 自适应鲁棒控制器无需修改即可补偿有界扰动 \\
 \hline
 \end{tabular}
 \end{center}
 
 \textbf{示例7.3--1：二连杆机械臂的自适应鲁棒控制器}
 
-我们希望为图6.2.1中给出的二连杆机械臂设计和仿真表7.3.1中给出的自适应鲁棒控制器。（该机器人臂的动力学在第3章中给出。）为了建模摩擦和扰动，将以下动力学
+我们希望为图6.2.1中给出的二连杆机械臂设计和仿真表7.3.1中给出的自适应鲁棒控制器。（该机器人臂的动力学在第3章中给出。）为了建模摩擦与扰动，分别在关节扭矩中加入以下项：
 \begin{equation}
-F_d\dot{q} = \begin{bmatrix} 3\dot{q}_1 \\ 3\dot{q}_2 \end{bmatrix}
+\begin{aligned}
+&2\dot{q}_1 + 0.5\operatorname{sgn}(\dot{q}_1) + 0.2\sin(3t),\\
+&2\dot{q}_2 + 0.5\operatorname{sgn}(\dot{q}_2) + 0.2\sin(3t),
+\end{aligned}
 \end{equation}
-和
-\begin{equation}
-T_d = \begin{bmatrix} 0.5\sin t \\ 0.2\cos t \end{bmatrix}
-\end{equation}
-添加到二连杆机器人模型中的相应位置。
+其中第一式对应$\tau_1$，第二式对应$\tau_2$。
 
 我们现在可以使用表7.3.1来制定自适应鲁棒控制器为
 \begin{align}
-\tau_1 &= k_v r_1 + \frac{r_1\hat{\rho}^2}{\hat{\rho}\|r_1\| + \varepsilon}, \\
-\tau_2 &= k_v r_2 + \frac{r_2\hat{\rho}^2}{\hat{\rho}\|r_2\| + \varepsilon}
+\tau_1 &= k_v r_1 + \frac{r_1\hat{\rho}^2}{\hat{\rho}\|r\| + \varepsilon}, \\
+\tau_2 &= k_v r_2 + \frac{r_2\hat{\rho}^2}{\hat{\rho}\|r\| + \varepsilon},
 \end{align}
+其中$K_v = k_v I$（$I$为$2\times 2$单位矩阵），$r_1 = e_1 + \dot{e}_1$，$r_2 = e_2 + \dot{e}_2$，$\dot{\varepsilon} = -k_\varepsilon\varepsilon$，且
+\begin{equation}
+\|r\| = \sqrt{r_1^2 + r_2^2}.
+\end{equation}
 
-在上面控制扭矩的表达式中，边界函数$\hat{\rho}$由
+在上面控制扭矩的表达式中，边界函数$\hat{\rho}$写为
 \begin{equation}
-\hat{\rho} = \hat{\delta}_0 + \hat{\delta}_1\|e\| + \hat{\delta}_2\|r\|
+\hat{\rho} = S\hat{\theta}
+= \begin{bmatrix} 1 & \|e\| & \|e\|^2 \end{bmatrix}
+\begin{bmatrix} \hat{\delta}_0 \\ \hat{\delta}_1 \\ \hat{\delta}_2 \end{bmatrix},
 \end{equation}
-给出
-其中$\hat{\delta}_0$、$\hat{\delta}_1$和$\hat{\delta}_2$是自适应估计。从表7.3.1，相关边界估计按以下方式更新
+其中
 \begin{equation}
-\dot{\hat{\delta}}_0 = \gamma\|r\|, \quad \dot{\hat{\delta}}_1 = \gamma\|e\|\|r\|, \quad \dot{\hat{\delta}}_2 = \gamma\|r\|^2
+\|e\| = \sqrt{e_1^2 + e_2^2 + \dot{e}_1^2 + \dot{e}_2^2},
 \end{equation}
+而$\hat{\delta}_0$、$\hat{\delta}_1$和$\hat{\delta}_2$为自适应估计。从表7.3.1，相关边界估计按以下方式更新：
+\begin{equation}
+\dot{\hat{\delta}}_0 = \gamma\|r\|, \quad \dot{\hat{\delta}}_1 = \gamma\|e\|\|r\|, \quad \dot{\hat{\delta}}_2 = \gamma\|e\|^2\|r\|,
+\end{equation}
+其中$\gamma$为正的标量自适应增益。
 
 对于$m_1=0.8$ kg，$m_2=2.3$ kg，每根连杆长度为1 m，自适应鲁棒控制器在以下条件下进行了仿真：控制参数、初始条件和期望轨迹由
 \begin{equation*}
@@ -650,7 +711,7 @@ q_{d1} = \sin t, \quad q_{d2} = \cos t, \quad \hat{\delta}_0(0) = 0, \quad \hat{
 \end{equation*}
 给出
 
-跟踪误差和质量估计在图7.3.2中描绘。如图所示，位置和速度跟踪误差都是渐近稳定的，边界估计保持有界。应该注意的是，从本节给出的理论开发，我们只保证位置跟踪误差是渐近稳定的，而所有其他信号保持有界。
+跟踪误差与边界估计在图7.3.2中描绘。如图所示，位置和速度跟踪误差都是渐近稳定的，边界估计保持有界。应该注意的是，从本节给出的理论开发，我们只保证位置跟踪误差是渐近稳定的，而所有其他信号保持有界。
 
 \section{执行器动力学补偿}
 
@@ -664,10 +725,10 @@ q_{d1} = \sin t, \quad q_{d2} = \cos t, \quad \hat{\delta}_0(0) = 0, \quad \hat{
 
 RLED机器人的模型[Tarn等1991]采用
 \begin{equation}\label{eq:7.4.1}
-M(q)\ddot{q} + N(q,\dot{q}) = K_T I
+\bar{M}(q)\ddot{q} + N(q,\dot{q}) = K_T I
 \end{equation}
 \begin{equation}\label{eq:7.4.2}
-L_a\dot{I} + R(q,\dot{q}) = u_E
+L_a\dot{I} + R(I,\dot{q}) = u_E
 \end{equation}
 其中
 \begin{equation}\label{eq:7.4.3}
@@ -677,11 +738,11 @@ $M(q)$是$n \times n$连杆惯性矩阵，$N(q,\dot{q})$是包含向心力、科
 
 在本书中，重点放在利用机器人机械臂的物理特性来帮助我们进行稳定性分析。遵循这一传统，我们注意到式\eqref{eq:7.4.3}中定义的复合惯性矩阵$\bar{M}(q)$是对称的、正定的，并且作为$q$的函数一致有界；因此，我们可以对任何$n \times 1$向量$x$说明
 \begin{equation}\label{eq:7.4.4}
-\frac{1}{m_1}\|\bar{M}^{-1}(q)\|_{i2} \leq 1
+m_1 \|x\|^2 = \lambda_{\min}\{\bar{M}(q)\}\|x\|^2 \leq x^T \bar{M}(q) x
 \end{equation}
 其中$m_1$是正的标量常数，取决于特定机器人的质量特性（见第3章）。从式\eqref{eq:7.4.4}，也可以建立
 \begin{equation}\label{eq:7.4.5}
-m_1 \leq \lambda_{\min}\{\bar{M}(q)\}
+x^T \bar{M}^{-1}(q) x \leq \lambda_{\max}\{\bar{M}^{-1}(q)\}\|x\|^2 = \frac{1}{m_1}\|x\|^2 = \|\bar{M}^{-1}(q)\|_{i2}\|x\|^2
 \end{equation}
 其中$\|\cdot\|_{i2}$用于表示诱导2-范数（见第2章）。
 
@@ -693,23 +754,25 @@ e = q_d - q
 
 控制目标将是尽管有电气动力学，也要获得渐近连杆跟踪。为了实现这一目标，我们首先用式\eqref{eq:7.4.6}给出的跟踪误差将式\eqref{eq:7.4.1}重写为
 \begin{equation}\label{eq:7.4.7}
-\dot{e} = A_0 e + B\eta_E
+\bar{M}(q)\ddot{q}_d - \bar{M}(q)\ddot{e} + N(q,\dot{q}) = K_T I
 \end{equation}
 式\eqref{eq:7.4.7}给出的误差系统也可以用状态空间形式写成
 \begin{equation}\label{eq:7.4.8}
-\dot{e} = A_0 e + B\eta_E
+\dot{\mathbf{e}} = A_o \mathbf{e} + B\left[\ddot{q}_d + \bar{M}^{-1}(q)N(q,\dot{q}) - \bar{M}^{-1}(q)K_T I\right]
 \end{equation}
 其中
 \begin{equation*}
-A_0 = \begin{bmatrix} -I_{n \times n} & I_{n \times n} \\ -K_{Lp} & -K_{Lv} \end{bmatrix}, \quad B = \begin{bmatrix} O_{n \times n} \\ \bar{M}^{-1}(q) \end{bmatrix}
+\mathbf{e} = \begin{bmatrix} e \\ \dot{e} \end{bmatrix}, \quad
+A_o = \begin{bmatrix} O_{n \times n} & I_{n \times n} \\ O_{n \times n} & O_{n \times n} \end{bmatrix}, \quad
+B = \begin{bmatrix} O_{n \times n} \\ I_{n \times n} \end{bmatrix}
 \end{equation*}
 $O_{n \times n}$是$n \times n$零矩阵，$I_{n \times n}$是$n \times n$单位矩阵。
 
 如人们可以清楚地看到，式\eqref{eq:7.4.8}中没有控制输入；因此，我们将在式\eqref{eq:7.4.8}的右侧添加和减去项$B\bar{M}^{-1}(q)u_L$得到
 \begin{equation}\label{eq:7.4.9}
-\dot{e} = A_L e + B(\bar{M}^{-1}(q)u_L - \eta_E)
+\dot{\mathbf{e}} = A_o \mathbf{e} + B\left[\ddot{q}_d + \bar{M}^{-1}(q)N(q,\dot{q}) - \bar{M}^{-1}(q)u_L\right] + B\left[\bar{M}^{-1}(q)(u_L - K_T I)\right]
 \end{equation}
-其中$u_L$是表示"虚构"$n \times 1$控制输入的$n \times 1$向量。事实证明，如果电气动力学不存在，控制器$u_L$是计算扭矩控制器，确保渐近连杆跟踪误差。正如我们稍后将看到的，虚构控制器$u_L$实际上嵌入在整体控制策略中，该策略设计在电压控制输入$u_E$处。
+其中$u_L$是表示"虚构"$n \times 1$控制输入的$n \times 1$向量。事实证明，若电气动力学不存在，则$u_L$可取为计算扭矩控制器并保证连杆跟踪误差渐近稳定。正如我们稍后将看到的，虚构控制器$u_L$实际上嵌入在整体控制策略中，该策略设计在电压控制输入$u_E$处。
 
 继续误差系统开发，我们为RLED机器人定义$u_L$为计算扭矩控制器
 \begin{equation}\label{eq:7.4.10}
@@ -717,28 +780,28 @@ u_L = \bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + N(q,\dot{q})
 \end{equation}
 其中$K_{Lv}$和$K_{Lp}$定义为$n \times n$正定对角矩阵。仅将式\eqref{eq:7.4.10}的第一个$u_L$项代入式\eqref{eq:7.4.9}得到连杆跟踪误差系统
 \begin{equation}\label{eq:7.4.11}
-\dot{e} = A_L e + B\eta_E
+\dot{\mathbf{e}} = A_L \mathbf{e} + B\bar{M}^{-1}(q)\eta_E
 \end{equation}
 其中
 \begin{equation}\label{eq:7.4.12}
-A_L = \begin{bmatrix} -I_{n \times n} & I_{n \times n} \\ -K_{Lp} & -K_{Lv} \end{bmatrix}, \quad \eta_E = \bar{M}^{-1}(q)(u_L - K_T I)
+A_L = \begin{bmatrix} O_{n \times n} & I_{n \times n} \\ -K_{Lp} & -K_{Lv} \end{bmatrix}, \quad \eta_E = u_L - K_T I
 \end{equation}
 
 关于式\eqref{eq:7.4.11}给出的连杆跟踪误差系统，如果$\eta_E$可以保证在所有时间为零，我们可以很容易地表明跟踪误差是渐近稳定的，因为式\eqref{eq:7.4.12}中定义的$A_L$具有稳定的特征值。因此，可以将控制目标视为迫使"扰动"$\eta_E$趋近于零。
 
-为了设计$\eta_E$的控制律，我们必须首先建立其动态特性。从式\eqref{eq:7.4.12}，$\eta_E$关于时间的导数为
+为了设计$\eta_E$的控制律，我们必须首先建立其动态特性。由式\eqref{eq:7.4.12}中$\eta_E = u_L - K_T I$，有
 \begin{equation}\label{eq:7.4.13}
-\dot{\eta}_E = \bar{M}^{-1}(q)\dot{u}_L - \ddot{q}
+\dot{\eta}_E = \dot{u}_L - K_T \dot{I}
 \end{equation}
 
-为了获得$\eta_E$的动态特性，我们从式\eqref{eq:7.4.1}代入$\ddot{q}$到式\eqref{eq:7.4.13}得到
+为了获得$\eta_E$的动态特性，我们将式\eqref{eq:7.4.2}中的$\dot{I}$代入式\eqref{eq:7.4.13}得到
 \begin{equation}\label{eq:7.4.14}
-\dot{\eta}_E = \bar{M}^{-1}(q)[\dot{u}_L - K_T\dot{I}]
+\dot{\eta}_E = \dot{u}_L - K_T L_a^{-1}(u_E - R(I,\dot{q}))
 \end{equation}
 
 我们现在可以使用式\eqref{eq:7.4.14}设计输入$u_E$的控制律以迫使$\eta_E$趋近于零。$\eta_E$应该趋近于零的事实推动了校正控制律
 \begin{equation}\label{eq:7.4.15}
-u_E = L_a K_T^{-1}(\ddot{u}_L + K_{Ep}\eta_E) + R(\dot{q},I)
+u_E = L_a K_T^{-1}(\dot{u}_L + K_{Ep}\eta_E) + R(I,\dot{q})
 \end{equation}
 其中$K_{Ep}$定义为$n \times n$正定对角矩阵。将式\eqref{eq:7.4.15}代入式\eqref{eq:7.4.14}得到
 \begin{equation}\label{eq:7.4.16}
@@ -747,11 +810,11 @@ u_E = L_a K_T^{-1}(\ddot{u}_L + K_{Ep}\eta_E) + R(\dot{q},I)
 
 式\eqref{eq:7.4.11}和\eqref{eq:7.4.16}给出的动力学方程可以被认为是代表整体闭环动力学的两个相互连接的子系统。如人们所期望的，确定整体闭环系统的稳定性类型将是可取的。为了确定式\eqref{eq:7.4.11}和\eqref{eq:7.4.16}的稳定性类型，我们将利用Lyapunov函数
 \begin{equation}\label{eq:7.4.17}
-V = x_0^T P_L x_0 + \eta_E^T P_E \eta_E
+V = \mathbf{e}^T P_L \mathbf{e} + \frac{1}{2}\eta_E^T \eta_E
 \end{equation}
 其中
 \begin{equation*}
-P_L = \frac{1}{2}\begin{bmatrix} K_{Lp} + \frac{1}{2}K_{Lv} & \frac{1}{2}I_{n \times n} \\ \frac{1}{2}I_{n \times n} & I_{n \times n} \end{bmatrix}, \quad P_E = \frac{1}{2}J
+P_L = \frac{1}{2}\begin{bmatrix} K_{Lp} + \frac{1}{2}K_{Lv} & \frac{1}{2}I_{n \times n} \\ \frac{1}{2}I_{n \times n} & I_{n \times n} \end{bmatrix}
 \end{equation*}
 
 如果满足
@@ -762,50 +825,54 @@ P_L = \frac{1}{2}\begin{bmatrix} K_{Lp} + \frac{1}{2}K_{Lv} & \frac{1}{2}I_{n \t
 
 对式\eqref{eq:7.4.17}关于时间求导得到
 \begin{equation}\label{eq:7.4.19}
-\dot{V} = \dot{x}_0^T P_L x_0 + x_0^T P_L \dot{x}_0 + \dot{\eta}_E^T P_E \eta_E + \eta_E^T P_E \dot{\eta}_E
+\dot{V} = \mathbf{e}^T P_L \dot{\mathbf{e}} + \dot{\mathbf{e}}^T P_L \mathbf{e} + \frac{1}{2}\dot{\eta}_E^T \eta_E + \frac{1}{2}\eta_E^T \dot{\eta}_E
 \end{equation}
 将式\eqref{eq:7.4.11}和\eqref{eq:7.4.16}代入式\eqref{eq:7.4.19}得到
 \begin{equation}\label{eq:7.4.20}
-\dot{V} = -x_0^T Q_L x_0 - \eta_E^T Q_E \eta_E + 2x_0^T P_L B \eta_E
+\dot{V} = -\mathbf{e}^T Q_L \mathbf{e} - \eta_E^T K_{Ep}\eta_E + 2\mathbf{e}^T P_L B \bar{M}^{-1}(q)\eta_E
 \end{equation}
 其中
-\begin{equation*}
-Q_L = -[A_L^T P_L + P_L A_L], \quad Q_E = K_{Ep}J
-\end{equation*}
+\begin{equation}\label{eq:7.4.21}
+Q_L = -(A_L^T P_L + P_L A_L) = \begin{bmatrix} \frac{1}{2}K_{Lp} & O_{n \times n} \\ O_{n \times n} & K_{Lv} - \frac{1}{2}I_{n \times n} \end{bmatrix}
+\end{equation}
 
 注意，如果式\eqref{eq:7.4.18}给出的充分条件成立，很明显式\eqref{eq:7.4.20}中的矩阵$Q_L$是正定的。利用$Q_L$是正定的事实使我们能够在式\eqref{eq:7.4.20}中给出的$\dot{V}$上放置上界。这个上界由
 \begin{equation}\label{eq:7.4.22}
-\dot{V} \leq -\lambda_{\min}\{Q_L\}\|x_0\|^2 - \lambda_{\min}\{Q_E\}\|\eta_E\|^2 + 2\|P_L B\|\|x_0\|\|\eta_E\|
+\dot{V} \leq -\lambda_{\min}\{Q_L\}\|\mathbf{e}\|^2 - \lambda_{\min}\{K_{Ep}\}\|\eta_E\|^2 + 2\beta_o \|\mathbf{e}\|\|\eta_E\|
 \end{equation}
-给出
-其中
+给出，其中
 \begin{equation*}
-\|P_L B\| \leq \frac{1}{2\sqrt{m_1}}
+\beta_o = \|P_L B \bar{M}^{-1}(q)\|_{i2} = \frac{1}{2}\left\|\begin{bmatrix} \frac{1}{2}\bar{M}^{-1}(q) \\ \bar{M}^{-1}(q) \end{bmatrix}\right\|_{i2}
 \end{equation*}
-其中$m_1$在式\eqref{eq:7.4.5}中定义。
+而$m_1$及$\|\bar{M}^{-1}(q)\|_{i2}=1/m_1$见式\eqref{eq:7.4.4}与式\eqref{eq:7.4.5}。
 
 为了确定渐近稳定性的控制器增益的充分条件，我们将式\eqref{eq:7.4.22}写成矩阵形式
 \begin{equation}\label{eq:7.4.23}
-\dot{V} \leq -\begin{bmatrix} \|x_0\| & \|\eta_E\| \end{bmatrix} Q \begin{bmatrix} \|x_0\| \\ \|\eta_E\| \end{bmatrix}
+\dot{V} \leq -\begin{bmatrix} \|\mathbf{e}\| & \|\eta_E\| \end{bmatrix} Q_o \begin{bmatrix} \|\mathbf{e}\| \\ \|\eta_E\| \end{bmatrix}
 \end{equation}
 其中
 \begin{equation*}
-Q = \begin{bmatrix} \lambda_{\min}\{Q_L\} & -\frac{1}{2\sqrt{m_1}} \\ -\frac{1}{2\sqrt{m_1}} & \lambda_{\min}\{Q_E\} \end{bmatrix}
+Q_o = \begin{bmatrix} \lambda_{\min}\{Q_L\} & -\beta_o \\ -\beta_o & \lambda_{\min}\{K_{Ep}\} \end{bmatrix}, \quad
+x_o = \begin{bmatrix} \|\mathbf{e}\| \\ \|\eta_E\| \end{bmatrix}
 \end{equation*}
+（原文献亦将$\|\mathbf{e}\|$写作$\|e\|$。）
 
 由Gerschgorin定理，如果满足
 \begin{equation}\label{eq:7.4.24}
-\lambda_{\min}\{Q_E\} > \frac{1}{2\sqrt{m_1}}
+\min\left\{ \lambda_{\min}\{Q_L\},\, \lambda_{\min}\{K_{Ep}\} \right\} > \beta_o
 \end{equation}
-给出的充分条件，则式\eqref{eq:7.4.23}中定义的矩阵$Q$将为正定。因此，如果控制器增益满足式\eqref{eq:7.4.18}和\eqref{eq:7.4.24}给出的条件，我们可以使用标准Lyapunov稳定性论证（见第2章）来说明式\eqref{eq:7.4.23}中定义的向量$x_0$，因此$\|e\|$、$\dot{e}$和$\ddot{e}$都是渐近稳定的。很容易表明，如果满足
+给出的充分条件，则式\eqref{eq:7.4.23}中定义的矩阵$Q_o$将为正定。因此，如果控制器增益满足式\eqref{eq:7.4.18}和\eqref{eq:7.4.24}给出的条件，我们可以使用标准Lyapunov稳定性论证（见第2章）来说明$x_o$为渐近稳定，从而$\|\mathbf{e}\|$、$e$与$\dot{e}$均为渐近稳定。很容易表明，若满足
 \begin{equation}\label{eq:7.4.25}
-\lambda_{\min}\{K_{Ep}\} > \frac{1}{m_1}
+\min\left\{ \lambda_{\min}\{K_{Lp}\},\, \lambda_{\min}\{K_{Lv}\},\, \lambda_{\min}\{K_{Ep}\} \right\} > \frac{2}{m_1} + 1
 \end{equation}
-给出的充分条件，式\eqref{eq:7.4.18}和\eqref{eq:7.4.24}给出的条件总是满足的。
+则式\eqref{eq:7.4.18}与式\eqref{eq:7.4.24}给出的增益条件均被满足。
 
-应该注意的是，式\eqref{eq:7.4.15}给出的控制取决于$\dot{u}_L$、$\ddot{u}_L$和$I$的测量。起初人们可能会想说这个控制器需要测量$\ddot{q}$和$I$；然而，由于我们假设精确知道式\eqref{eq:7.4.1}和\eqref{eq:7.4.2}给出的动力学模型，我们可以使用这些信息来消除测量$\ddot{q}$的需要。也就是说，通过对式\eqref{eq:7.4.10}关于时间求导，$\dot{u}_L$可以写成
+应该注意的是，式\eqref{eq:7.4.15}给出的控制表面上似乎需要测量位置、速度、加速度及电流等信息；然而，由于我们假设精确知道式\eqref{eq:7.4.1}和\eqref{eq:7.4.2}给出的动力学模型，我们可以消除对加速度$\ddot{q}$的直接测量需求。也就是说，通过对式\eqref{eq:7.4.10}关于时间求导，可将$\dot{u}_L$写成
 \begin{equation}\label{eq:7.4.26}
-\dot{u}_L = \dot{\bar{M}}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + \bar{M}(q)(\dddot{q}_d + K_{Lv}\ddot{e} + K_{Lp}\dot{e}) + \dot{N}(q,\dot{q})
+\begin{aligned}
+\dot{u}_L &= \dot{\bar{M}}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + \dot{N}(q,\dot{q}) \\
+&\quad {} + \bar{M}(q)\left[ \frac{d}{dt}\ddot{q}_d + K_{Lv}(\ddot{q}_d - \ddot{q}) + K_{Lp}\dot{e} \right]
+\end{aligned}
 \end{equation}
 其中$\ddot{q}$从式\eqref{eq:7.4.1}中找到为
 \begin{equation*}
@@ -814,29 +881,37 @@ Q = \begin{bmatrix} \lambda_{\min}\{Q_L\} & -\frac{1}{2\sqrt{m_1}} \\ -\frac{1}{
 
 在式\eqref{eq:7.4.26}中代入$\ddot{q}$后，$\dot{u}_L$将仅取决于$q$、$\dot{q}$和$I$的测量。在控制输入$u_E$处实现的实际控制可以通过进行适当的代入找到。也就是说，式\eqref{eq:7.4.15}给出的校正控制可以写成
 \begin{equation}\label{eq:7.4.27}
-u_E = L_a K_T^{-1}(\ddot{u}_L + K_{Ep}\eta_E) + R(\dot{q},I)
+\begin{aligned}
+u_E &= L_a K_T^{-1}\dot{u}_L + R(I,\dot{q}) \\
+&\quad {} + L_a K_T^{-1}K_{Ep}\bigl[ \bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + N(q,\dot{q}) - K_T I \bigr]
+\end{aligned}
 \end{equation}
-其中$\dot{u}_L$将由式\eqref{eq:7.4.26}给出。
+其中$\dot{u}_L$由式\eqref{eq:7.4.26}给出（方括号内即为$\eta_E=u_L-K_TI$）。
 
-在仔细检查式\eqref{eq:7.4.26}中给出的$\dot{u}_L$和$\ddot{u}_L$的函数依赖性后，现在很明显为什么我们假设期望轨迹和连杆动力学足够平滑。具体而言，从式\eqref{eq:7.4.26}我们可以看到，校正控制器需要期望轨迹的第一、第二和第三时间导数有界，同时需要连杆动力学的第一导数存在。对期望轨迹和连杆动力学的这些假设确保控制输入保持有界。
+在仔细检查式\eqref{eq:7.4.26}中给出的$\dot{u}_L$的函数依赖性后，现在很明显为什么我们假设期望轨迹和连杆动力学足够平滑。具体而言，从式\eqref{eq:7.4.26}我们可以看到，校正控制器需要期望轨迹的第一、第二和第三时间导数有界，同时需要连杆动力学的第一导数存在。对期望轨迹和连杆动力学的这些假设确保控制输入保持有界。
 
 上面推导的校正控制器总结在表7.4.1中，并在图7.4.1中描绘。
 
 \textbf{表7.4.1}\quad RLED校正控制器
 
 \begin{center}
-\begin{tabular}{|l|l|}
+\small
+\begin{tabular}{|l|p{11.2cm}|}
 \hline
-\textbf{控制律} & $u_E = L_a K_T^{-1}(\ddot{u}_L + K_{Ep}\eta_E) + R(\dot{q},I)$ \\
+\textbf{电压控制器} & \begin{minipage}[t]{\linewidth}\raggedright\setlength{\lineskip}{6pt}
+$\begin{aligned}[t] u_E &= L_a K_T^{-1}\dot{u}_L + R(I,\dot{q}) \\ &\quad {} + L_a K_T^{-1}K_{Ep}\bigl[\bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) \\ &\qquad {} + N(q,\dot{q}) - K_T I\bigr] \end{aligned}$\par
+$\begin{aligned}[t] \dot{u}_L &= \dot{\bar{M}}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + \dot{N}(q,\dot{q}) \\ &\quad {} + \bar{M}(q)\left[\frac{\mathrm{d}}{\mathrm{d}t}\ddot{q}_d + K_{Lv}(\ddot{q}_d - \ddot{q}) + K_{Lp}\dot{e}\right] \end{aligned}$\par
+$\ddot{q} = \bar{M}^{-1}(q)\bigl[K_T I - N(q,\dot{q})\bigr]$
+\end{minipage} \\
 \hline
-\textbf{连杆控制器} & $u_L = \bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + N(q,\dot{q})$ \\
+\textbf{稳定性} & 跟踪误差$e$与$\dot{e}$渐近稳定。 \\
 \hline
-\textbf{扰动定义} & $\eta_E = \bar{M}^{-1}(q)(u_L - K_T I)$ \\
+\textbf{注释} & 控制器需要系统动力学的精确知识；增益矩阵$K_{Lv}$、$K_{Lp}$与$K_{Ep}$须足够大；期望轨迹须足够光滑。 \\
 \hline
 \end{tabular}
 \end{center}
 
-其中$\ddot{u}_L$通过微分$u_L$并从式\eqref{eq:7.4.1}代入$\ddot{q}$获得。
+其中$\dot{u}_L$亦可通过对$u_L=\bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e)+N(q,\dot{q})$求导并将式\eqref{eq:7.4.1}代入$\ddot{q}$得到，与表中第二式等价。
 
 我们现在提出一个示例来说明如何使用表7.4.1为RLED机器人设计校正控制器。
 
@@ -844,17 +919,22 @@ u_E = L_a K_T^{-1}(\ddot{u}_L + K_{Ep}\eta_E) + R(\dot{q},I)
 
 我们希望使用表7.4.1为图7.4.2中给出的单连杆电机驱动机器人臂设计和仿真校正控制器。系统的动力学采用
 \begin{align}
-\bar{m}\ddot{q} + f_d \dot{q} + mgL \sin q &= K_T I, \\
-L_a \dot{I} + RI + k_b \dot{q} &= u_E
+(mL^2 + J)\ddot{q} + mLg\sin q + f_d \dot{q} &= K_T I, \tag{1} \\
+L_a \dot{I} + RI + k_b \dot{q} &= u_E. \tag{2}
 \end{align}
-其中$m=1$kg，$K_T=2$ N/A，$k_b=0.3$ V-S，$f_d=3$ kg-m/s，$L=1$ m，$L_a=0.1$ H，$R=5\ \Omega$，$g$是重力系数，$J=0.2$ kg-m$^2$，$I$是电机电流，$u_E$是电机输入电压。
+其中$m=1$ kg，$K_T=2$ N/A，$k_b=0.3$ V-S，$f_d=3$ kg-m/s，$L=1$ m，$L_a=0.1$ H，$R=5\ \Omega$，$g$是重力系数，$J=0.2$ kg-m$^2$，$I$是电机电流，$u_E$是电机输入电压。
 
-假设式(1)和(2)给出的模型精确知道，我们可以使用表7.4.1来制定校正控制器
+假设式(1)和(2)给出的模型精确知道，我们可以使用表7.4.1来制定校正控制器为
 \begin{align}
-u_E &= \frac{L_a}{K_T}(\ddot{u}_L + K_{Ep}\eta_E) + RI + k_b\dot{q}, \\
-u_L &= \bar{m}(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + f_d \dot{q} + mgL \sin q
+u_E &= L_a K_T^{-1}\dot{u}_L + RI + k_b\dot{q} \notag \\
+&\quad {} + L_a K_T^{-1}K_{Ep}\bigl[(mL^2 + J)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + mLg\sin q + f_d\dot{q} - K_T I\bigr], \tag{3} \\
+\dot{u}_L &= mLg\dot{q}\cos q + f_d\ddot{q} + (mL^2 + J)\left[\frac{d}{dt}\ddot{q}_d + K_{Lv}(\ddot{q}_d - \ddot{q}) + K_{Lp}\dot{e}\right], \tag{4}
 \end{align}
-而$\ddot{u}_L$通过对$u_L$求导并从式(1)代入$\ddot{q}$得到
+由式(1)，$\ddot{q}$可写为
+\begin{equation}
+\ddot{q} = (mL^2 + J)^{-1}\bigl[K_T I - mLg\sin q - f_d\dot{q}\bigr]. \tag{5}
+\end{equation}
+将式(5)代入式(4)，$\dot{u}_L$即可仅用可测量与模型参数表示。
 
 校正控制器在以下条件下进行了仿真：控制参数、初始条件和期望轨迹由
 \begin{equation*}
@@ -872,153 +952,158 @@ q_d = \sin t
 
 在本小节中，我们说明了如何合成"校正"控制器，以确保尽管驱动或齿轮会增加整体系统动力学的关节柔性，连杆跟踪也是渐近的。"校正控制器"一词用于强调控制器校正用于表示关节柔性效应的动力学。本小节中研究的机器人类将被称为刚连杆柔性关节（RLFJ）机器人。
 
-RLFJ机器人的模型[Spong 1987]采用
+RLFJ机器人的模型[Spong 1987]取为
 \begin{equation}\label{eq:7.4.28}
-\ddot{q} = \bar{M}^{-1}(q)[K(q_m - q) - N(q,\dot{q})]
+M(q)\ddot{q} + \mathbf{N}(q,\dot{q}) = K q_m
 \end{equation}
 \begin{equation}\label{eq:7.4.29}
-\ddot{q}_m = J^{-1}[u_F - B_m(q_m,\dot{q}_m) - K(q_m - q)]
+J\ddot{q}_m + B_m(q_m,\dot{q}_m,q) = u_F,
 \end{equation}
 其中
 \begin{equation}\label{eq:7.4.30}
-\bar{M}(q) = M(q) + J, \quad B_m(q_m,\dot{q}_m) = F_m \dot{q}_m
+\mathbf{N}(q,\dot{q}) = N(q,\dot{q}) + K q,
 \end{equation}
-$q_m(t)$是表示电机位移的$n \times 1$向量，$K$是常数、对角、正定$n \times n$关节柔性矩阵，$N(q,\dot{q})$是表示电机阻尼和柔性效应的$n \times 1$向量，$u_F(t)$是用于表示输入扭矩的$n \times 1$控制向量，所有其他量如前一子节中定义。关于式\eqref{eq:7.4.28}中给出的刚连杆模型，我们从第3章注意到，对于任何$n \times 1$向量$x$
+$q_m(t)$为电机位移的$n \times 1$向量，$K$为常数、对角、正定关节刚度矩阵，$M(q)$为连杆惯性矩阵，$N(q,\dot{q})$表示刚体机器人的非线性项（科氏力、离心力与重力等），$J$为电机惯性矩阵，$B_m(q_m,\dot{q}_m,q)$汇集电机侧阻尼及柔性耦合所产生的扭矩项，$u_F$为$n \times 1$关节输入扭矩；其余记号与前一子节一致。将式\eqref{eq:7.4.30}代入式\eqref{eq:7.4.28}可得与文献中常见的$K(q_m-q)$形式等价的连杆加速度表达式。关于$M(q)$，我们从第3章注意到，对于任何$n \times 1$向量$x$
 \begin{equation}\label{eq:7.4.31}
-\frac{1}{m_1} \leq \|\bar{M}^{-1}(q)\|_{i2} \leq \frac{1}{m_2}
+x^{\mathsf T} M^{-1}(q) x \leq \lambda_{\max}\{M^{-1}(q)\}\|x\|^2 = \frac{1}{m_1}\|x\|^2 = \|M^{-1}(q)\|_{i2}\|x\|^2
 \end{equation}
-其中$m_1$是正的标量常数。
+其中$m_1$为正的标量常数（可取为$\lambda_{\min}\{M(q)\}$的相应界限，与下文Lyapunov分析中记号一致）。
 
 如前一子节，我们对式\eqref{eq:7.4.6}中定义的连杆跟踪误差的性能感兴趣。对于RLFJ机器人的控制，我们将假设$q_d$及其第一、第二、第三和第四导数都是作为时间函数有界的。我们还假设式\eqref{eq:7.4.28}左侧连杆动力学的第一和第二导数存在。对期望轨迹和连杆动力学的这些"平滑性"假设确保稍后开发的控制器保持有界。
 
 遵循前面各节给出的相同分析开发，我们用式\eqref{eq:7.4.6}给出的跟踪误差将式\eqref{eq:7.4.28}写成状态空间形式
 \begin{equation}\label{eq:7.4.32}
-\dot{e} = A_0 e + B(u_L - K(q_m - q))
+\dot{\mathbf{e}} = A_o \mathbf{e} + B\left[\ddot{q}_d + M^{-1}(q)\mathbf{N}(q,\dot{q}) - M^{-1}(q)K q_m\right]
 \end{equation}
-其中$A_0$、$e$和$B$如式\eqref{eq:7.4.8}中定义。同样，由于式\eqref{eq:7.4.32}中没有控制输入；我们在式\eqref{eq:7.4.32}的右侧添加和减去项$B\bar{M}^{-1}(q)u_L$得到
+其中$\mathbf{e}$、$A_o$与$B$由式\eqref{eq:7.4.8}给出。同样，由于式\eqref{eq:7.4.32}中没有虚构控制输入；我们在式\eqref{eq:7.4.32}的右侧添加和减去项$B\,M^{-1}(q)\,u_L$得到
 \begin{equation}\label{eq:7.4.33}
-\dot{e} = A_L e + B\bar{M}^{-1}(q)\eta_F
+\begin{aligned}
+\dot{\mathbf{e}} &= A_o \mathbf{e} + B\left[\ddot{q}_d + M^{-1}(q)\mathbf{N}(q,\dot{q}) - M^{-1}(q)u_L\right] \\
+&\quad + B\left[M^{-1}(q)(u_L - K q_m)\right]
+\end{aligned}
 \end{equation}
 其中$u_L$再次用于表示虚构的$n \times 1$控制输入。如前所述，虚构控制器$u_L$将嵌入在整体控制策略中，该策略设计在控制输入$u_F$处。
 
 继续误差系统开发，我们为RLFJ机器人定义$u_L$为计算扭矩控制器
 \begin{equation}\label{eq:7.4.34}
-u_L = \bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + N(q,\dot{q})
+u_L = M(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + \mathbf{N}(q,\dot{q})
 \end{equation}
 其中$K_{Lv}$和$K_{Lp}$如式\eqref{eq:7.4.10}中定义。将式\eqref{eq:7.4.34}代入式\eqref{eq:7.4.33}得到连杆跟踪误差系统
 \begin{equation}\label{eq:7.4.35}
-\dot{e} = A_L e + B\eta_F
+\dot{\mathbf{e}} = A_L \mathbf{e} + B M^{-1}(q) C \boldsymbol{\eta}_F
 \end{equation}
 其中$A_L$如式\eqref{eq:7.4.12}中定义，
 \begin{equation}\label{eq:7.4.36}
-\eta_F = \bar{M}^{-1}(q)(u_L - K(q_m - q))
+C = \begin{bmatrix} I_{n \times n} & O_{n \times n} \end{bmatrix}, \quad \boldsymbol{\eta}_F = \begin{bmatrix} \eta_F \\ \dot{\eta}_F \end{bmatrix} = \begin{bmatrix} u_L - K q_m \\ \dot{u}_L - K \dot{q}_m \end{bmatrix}
 \end{equation}
 
-以式\eqref{eq:7.4.36}中给出的方式定义$\eta_F$的原因在于式\eqref{eq:7.4.29}中给出的动力学是二阶动力学。也就是说，由于执行器动力学是二阶的，我们迫使$\eta_F$及其导数（即$\dot{\eta}_F$）为零以确保连杆跟踪误差$e$趋近于零。
+以式\eqref{eq:7.4.36}中给出的方式定义$\boldsymbol{\eta}_F$（及其分量$\eta_F$、$\dot{\eta}_F$）的原因在于式\eqref{eq:7.4.29}中给出的动力学是二阶动力学。也就是说，由于执行器动力学是二阶的，我们迫使$\boldsymbol{\eta}_F$及其导数$\dot{\boldsymbol{\eta}}_F$为零以确保连杆跟踪误差$e$趋近于零。
 
-为了设计$\eta_F$的控制律，我们必须首先建立其动态特性。从式\eqref{eq:7.4.36}，$\eta_F$的导数为
+为了设计$\boldsymbol{\eta}_F$的控制律，我们必须首先建立其动态特性。由式\eqref{eq:7.4.36}，有
 \begin{equation}\label{eq:7.4.37}
-\dot{\eta}_F = \bar{M}^{-1}(q)(\dot{u}_L - K(\dot{q}_m - \dot{q})) + \dot{\bar{M}}^{-1}(q)(u_L - K(q_m - q))
+\dot{\boldsymbol{\eta}}_F = \begin{bmatrix} \dot{\eta}_F \\ \ddot{\eta}_F \end{bmatrix} = \begin{bmatrix} \dot{u}_L - K \dot{q}_m \\ \ddot{u}_L - K \ddot{q}_m \end{bmatrix}
 \end{equation}
 
-为了获得$\eta_F$的动态特性，我们从式\eqref{eq:7.4.29}代入$\ddot{q}_m$到式\eqref{eq:7.4.37}得到
+为了获得$\boldsymbol{\eta}_F$的动态特性，我们将式\eqref{eq:7.4.29}中的$\ddot{q}_m$代入式\eqref{eq:7.4.37}得到
 \begin{equation}\label{eq:7.4.38}
-\dot{\eta}_F = \bar{M}^{-1}(q)\dot{u}_L - \bar{M}^{-1}(q)KJ^{-1}[u_F - B_m(q_m,\dot{q}_m)] + \bar{M}^{-1}(q)K(q_m - q) + \dot{\bar{M}}^{-1}(q)\bar{M}(q)\eta_F
+\dot{\boldsymbol{\eta}}_F = \begin{bmatrix} \dot{u}_L - K \dot{q}_m \\ \ddot{u}_L - K J^{-1}\bigl(u_F - B_m(q_m,\dot{q}_m,q)\bigr) \end{bmatrix}
 \end{equation}
 
-我们现在可以使用式\eqref{eq:7.4.38}设计输入$u_F$的控制律以迫使$\eta_F$趋近于零。$\eta_F$应该趋近于零的事实推动了控制律
+我们现在可以使用式\eqref{eq:7.4.38}设计输入$u_F$的控制律以迫使$\boldsymbol{\eta}_F$趋近于零。$\boldsymbol{\eta}_F$应该趋近于零的事实推动了控制律
 \begin{equation}\label{eq:7.4.39}
-u_F = J\bar{M}^{-1}(q)[\dot{u}_L + K_{Fv}\eta_F + \bar{M}(q)K_{Fp}\eta_F + \dot{\bar{M}}^{-1}(q)\bar{M}(q)\eta_F] + B_m(q_m,\dot{q}_m)
+u_F = J K^{-1}\bigl(\ddot{u}_L + K_{Fv}\dot{\eta}_F + K_{Fp}\eta_F\bigr) + B_m(q_m,\dot{q}_m,q)
 \end{equation}
-其中$K_{Fv}$和$K_{Fp}$定义为$n \times n$正定对角矩阵。将式\eqref{eq:7.4.39}代入式\eqref{eq:7.4.38}得到
+其中$K_{Fv}$和$K_{Fp}$定义为$n \times n$正定对角矩阵（式中的$\eta_F$、$\dot{\eta}_F$为式\eqref{eq:7.4.36}所定义之分量）。将式\eqref{eq:7.4.39}代入式\eqref{eq:7.4.38}得到
 \begin{equation}\label{eq:7.4.40}
-\dot{\eta}_F = -K_{Fv}\eta_F - K_{Fp}\eta_F
+\dot{\boldsymbol{\eta}}_F = A_F \boldsymbol{\eta}_F
 \end{equation}
-其中
 \begin{equation*}
-\eta_F = \bar{M}^{-1}(q)(u_L - K(q_m - q))
+A_F = \begin{bmatrix} \boldsymbol{0}_{n \times n} & I_{n \times n} \\ -K_{Fp} & -K_{Fv} \end{bmatrix}
 \end{equation*}
 
-式\eqref{eq:7.4.35}和\eqref{eq:7.4.40}给出的动力学方程可以被认为是代表整体闭环动力学的两个相互连接的子系统。为了确定闭环动力学的稳定性类型，我们将利用Lyapunov函数
+式\eqref{eq:7.4.35}和式\eqref{eq:7.4.40}给出的动力学方程可以被认为是代表整体闭环动力学的两个相互连接的子系统。为了确定闭环动力学的稳定性类型，我们将利用Lyapunov函数
 \begin{equation}\label{eq:7.4.41}
-V = x_1^T P_L x_1 + \eta_F^T P_F \eta_F
+V = \mathbf{e}^{\mathsf T} P_L \mathbf{e} + \boldsymbol{\eta}_F^{\mathsf T} P_F \boldsymbol{\eta}_F
 \end{equation}
 其中$P_L$在式\eqref{eq:7.4.17}中定义且
 \begin{equation*}
-P_F = \frac{1}{2}KJ
+P_F = \frac{1}{2} \begin{bmatrix} K_{Fp} + \frac{1}{2}K_{Fv} & \frac{1}{2}I_{n \times n} \\ \frac{1}{2}I_{n \times n} & I_{n \times n} \end{bmatrix}
 \end{equation*}
 
 如果满足
 \begin{equation}\label{eq:7.4.42}
-\lambda_{\min}\{K_{Lv}\} > 1 + \frac{1}{\lambda_{\min}\{K_{Fp}\}}
+\min\left\{\lambda_{\min}\{K_{Lv}\},\lambda_{\min}\{K_{Fv}\}\right\} > 1
 \end{equation}
 给出的充分条件，则由Gerschgorin定理很明显式\eqref{eq:7.4.41}中的矩阵$P_L$和$P_F$是正定矩阵，因此$V$是Lyapunov函数。
 
 对式\eqref{eq:7.4.41}关于时间求导得到
 \begin{equation}\label{eq:7.4.43}
-\dot{V} = \dot{x}_1^T P_L x_1 + x_1^T P_L \dot{x}_1 + \dot{\eta}_F^T P_F \eta_F + \eta_F^T P_F \dot{\eta}_F
+\dot{V} = \mathbf{e}^{\mathsf T} P_L \dot{\mathbf{e}} + \dot{\mathbf{e}}^{\mathsf T} P_L \mathbf{e} + \boldsymbol{\eta}_F^{\mathsf T} P_F \dot{\boldsymbol{\eta}}_F + \dot{\boldsymbol{\eta}}_F^{\mathsf T} P_F \boldsymbol{\eta}_F
 \end{equation}
-将式\eqref{eq:7.4.35}和\eqref{eq:7.4.40}代入式\eqref{eq:7.4.43}得到
+将式\eqref{eq:7.4.35}和式\eqref{eq:7.4.40}代入式\eqref{eq:7.4.43}得到
 \begin{equation}\label{eq:7.4.44}
-\dot{V} = -x_1^T Q_L x_1 - \eta_F^T Q_F \eta_F + 2x_1^T P_L B \eta_F
+\dot{V} = -\mathbf{e}^{\mathsf T} Q_L \mathbf{e} - \boldsymbol{\eta}_F^{\mathsf T} Q_F \boldsymbol{\eta}_F + 2\, \mathbf{e}^{\mathsf T} P_L B M^{-1}(q) C \boldsymbol{\eta}_F
 \end{equation}
 其中$Q_L$在式\eqref{eq:7.4.21}中定义且
 \begin{equation}\label{eq:7.4.45}
-Q_F = K_{Fv}KJ + K_{Fp}KJ
+Q_F = -(A_F^{\mathsf T} P_F + P_F A_F) = \begin{bmatrix} \frac{1}{2}K_{Fp} & O_{n \times n} \\ O_{n \times n} & K_{Fv} - \frac{1}{2}I_{n \times n} \end{bmatrix}
 \end{equation}
 
 注意，如果式\eqref{eq:7.4.42}给出的充分条件成立，很明显式\eqref{eq:7.4.44}中的矩阵$Q_L$和$Q_F$是正定矩阵。利用$Q_L$和$Q_F$是正定的事实使我们能够在式\eqref{eq:7.4.44}中给出的$\dot{V}$上放置上界。这个上界由
 \begin{equation}\label{eq:7.4.46}
-\dot{V} \leq -\lambda_{\min}\{Q_L\}\|x_1\|^2 - \lambda_{\min}\{Q_F\}\|\eta_F\|^2 + \frac{1}{\sqrt{m_1}}\|x_1\|\|\eta_F\|
+\dot{V} \leq -\lambda_{\min}\{Q_L\}\|\mathbf{e}\|^2 - \lambda_{\min}\{Q_F\}\|\boldsymbol{\eta}_F\|^2 + 2\, \beta_1 \|\mathbf{e}\| \|\boldsymbol{\eta}_F\|
 \end{equation}
-给出
-其中
+给出，其中
 \begin{equation*}
-m_1 = \lambda_{\min}\{\bar{M}(q)\}
+\beta_1 = \frac{1}{m_1} > \left\|P_L B M^{-1}(q) C\right\|_{i2} = \frac{1}{2}\left\|\begin{bmatrix} \frac{1}{2}M^{-1}(q) & O_{n \times n} \\ M^{-1}(q) & O_{n \times n} \end{bmatrix}\right\|_{i2}
 \end{equation*}
 其中$m_1$在式\eqref{eq:7.4.31}中定义。
 
 为了确定渐近稳定性的控制器增益的充分条件，我们将式\eqref{eq:7.4.46}写成矩阵形式
 \begin{equation}\label{eq:7.4.47}
-\dot{V} \leq -\begin{bmatrix} \|x_1\| & \|\eta_F\| \end{bmatrix} Q \begin{bmatrix} \|x_1\| \\ \|\eta_F\| \end{bmatrix}
+\dot{V} \leq -x_1^{\mathsf T} Q_1 x_1
 \end{equation}
 其中
 \begin{equation*}
-Q = \begin{bmatrix} \lambda_{\min}\{Q_L\} & -\frac{1}{2\sqrt{m_1}} \\ -\frac{1}{2\sqrt{m_1}} & \lambda_{\min}\{Q_F\} \end{bmatrix}
+Q_1 = \begin{bmatrix} \lambda_{\min}\{Q_L\} & -\beta_1 \\ -\beta_1 & \lambda_{\min}\{Q_F\} \end{bmatrix}, \quad x_1 = \begin{bmatrix} \|e\| \\ \|\eta_F\| \end{bmatrix}
 \end{equation*}
 
 由Gerschgorin定理，如果满足
 \begin{equation}\label{eq:7.4.48}
-\lambda_{\min}\{Q_F\} > \frac{1}{4m_1}
+\min\left\{\lambda_{\min}\{Q_L\},\lambda_{\min}\{Q_F\}\right\} > \beta_1
 \end{equation}
-给出的充分条件，则式\eqref{eq:7.4.47}中定义的矩阵$Q$将为正定。因此，如果控制器增益满足式\eqref{eq:7.4.42}和\eqref{eq:7.4.48}给出的条件，我们可以使用标准Lyapunov稳定性论证来说明式\eqref{eq:7.4.47}中定义的向量$x_1$，因此$\|e\|$、$\dot{e}$和$\ddot{e}$都是渐近稳定的。很容易表明，如果满足
+给出的充分条件，则式\eqref{eq:7.4.47}中定义的矩阵$Q_1$将为正定。因此，如果控制器增益满足式\eqref{eq:7.4.42}和式\eqref{eq:7.4.48}给出的条件，我们可以使用标准Lyapunov稳定性论证来说明式\eqref{eq:7.4.47}中定义的向量$x_1$，从而$\|e\|$、$e$及$\dot{e}$均为渐近稳定。很容易表明，如果满足
 \begin{equation}\label{eq:7.4.49}
-\lambda_{\min}\{K_{Fp}\} > \frac{1}{m_1}
+\min\left\{\lambda_{\min}\{K_{Lp}\},\lambda_{\min}\{K_{Lv}\},\lambda_{\min}\{K_{Fv}\},\lambda_{\min}\{K_{Fp}\}\right\} > \frac{2}{m_1} + 1
 \end{equation}
-给出的充分条件，式\eqref{eq:7.4.42}和\eqref{eq:7.4.48}给出的条件总是满足的。
+给出的充分条件，式\eqref{eq:7.4.42}和式\eqref{eq:7.4.48}给出的条件总是满足的。
 
-应该注意的是，式\eqref{eq:7.4.39}给出的校正控制器取决于$\dot{u}_L$、$\ddot{u}_L$和$\dot{q}_m$的测量。同样，似乎这个控制需要测量$\ddot{q}$及其导数；然而，由于我们假设精确知道动力学模型，我们可以使用这些信息来消除测量$\ddot{q}$及其导数的需要。也就是说，$\dot{u}_L$可以写成
+应该注意的是，式\eqref{eq:7.4.39}给出的校正控制器取决于$u_L$、$\dot{u}_L$、$\ddot{u}_L$、$q_m$及$\dot{q}_m$。同样，似乎这个控制需要测量$\ddot{q}$及其导数；然而，由于我们假设精确知道动力学模型，我们可以使用这些信息来消除测量$\ddot{q}$及其导数的需要。也就是说，$\dot{u}_L$可以写成
 \begin{equation}\label{eq:7.4.50}
-\dot{u}_L = \dot{\bar{M}}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + \bar{M}(q)(\dddot{q}_d + K_{Lv}\ddot{e} + K_{Lp}\dot{e}) + \dot{N}(q,\dot{q})
+\dot{u}_L = \dot{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + \dot{\mathbf{N}}(q,\dot{q}) + M(q)\left[\frac{\mathrm{d}}{\mathrm{d}t}\ddot{q}_d + K_{Lv}(\ddot{q}_d - \ddot{q}) + K_{Lp}\dot{e}\right]
 \end{equation}
-其中$\ddot{q}$从式\eqref{eq:7.4.28}中找到为
+其中$\ddot{q}$由式\eqref{eq:7.4.28}得到为
 \begin{equation}\label{eq:7.4.51}
-\ddot{q} = \bar{M}^{-1}(q)[K(q_m - q) - N(q,\dot{q})]
+\ddot{q} = M^{-1}(q)\bigl[Kq_m - \mathbf{N}(q,\dot{q})\bigr]
 \end{equation}
+其中$\mathbf{N}(q,\dot{q})$由式\eqref{eq:7.4.30}给出。
 
-将式\eqref{eq:7.4.51}代入式\eqref{eq:7.4.50}，我们看到$u_L$可以作为$q$、$\dot{q}$、$q_m$和$t$的函数写出（即$t$），因为期望轨迹可以明确地写成时间的函数。我们可以使用以下方程阐述这种函数依赖性
+将式\eqref{eq:7.4.51}代入式\eqref{eq:7.4.50}，我们看到$\dot{u}_L$可以写成$t$、$q$、$\dot{q}$与$q_m$的函数，因为期望轨迹可以明确地写成时间的函数。我们可以使用以下方程阐述这种函数依赖性
 \begin{equation}\label{eq:7.4.52}
-u_L = f(q, \dot{q}, q_m, t)
+\dot{u}_L = f(t,q,\dot{q},q_m)
 \end{equation}
-其中$f(\cdot)$是式\eqref{eq:7.4.50}右侧给出的$n \times 1$向量。我们可以通过对式\eqref{eq:7.4.52}关于时间求导获得$\ddot{u}_L$的函数依赖性
+其中$f(\cdot)$为式\eqref{eq:7.4.50}右侧给出的$n \times 1$向量函数。我们可以通过对式\eqref{eq:7.4.52}关于时间求导获得$\ddot{u}_L$的函数依赖性
 \begin{equation}\label{eq:7.4.53}
-\ddot{u}_L = \dot{f}(q, \dot{q}, q_m, \dot{q}_m, t)
+\ddot{u}_L = \dot{f}(t,q,\dot{q},q_m) = g(t,q,\dot{q},\ddot{q},q_m,\dot{q}_m)
 \end{equation}
-其中$\dot{f}(\cdot)$是$n \times 1$向量。注意式\eqref{eq:7.4.51}可以再次用于消除测量$\ddot{q}$的需要；因此，式\eqref{eq:7.4.50}和\eqref{eq:7.4.53}中给出的$\dot{u}_L$和$\ddot{u}_L$的表达式仅取决于$q$、$\dot{q}$、$q_m$和$\dot{q}_m$的测量。在控制输入$u_F$处实现的实际控制可以通过进行适当的代入找到。也就是说，式\eqref{eq:7.4.39}给出的校正控制可以写成
+其中$g(t,q,\dot{q},\ddot{q},q_m,\dot{q}_m)$为$n \times 1$向量函数。注意式\eqref{eq:7.4.51}可以再次用于消除测量$\ddot{q}$的需要；因此，式\eqref{eq:7.4.50}和式\eqref{eq:7.4.53}中给出的$\dot{u}_L$和$\ddot{u}_L$的表达式仅取决于$q$、$\dot{q}$、$q_m$和$\dot{q}_m$的测量。在控制输入$u_F$处实现的实际控制可以通过进行适当的代入找到。也就是说，式\eqref{eq:7.4.39}给出的校正控制可以写成
 \begin{equation}\label{eq:7.4.54}
-u_F = J\bar{M}^{-1}(q)[\dot{u}_L + K_{Fv}\eta_F + \bar{M}(q)K_{Fp}\eta_F + \dot{\bar{M}}^{-1}(q)\bar{M}(q)\eta_F] + B_m(q_m,\dot{q}_m)
+\begin{aligned}
+u_F &= J K^{-1}\ddot{u}_L + B_m(q_m,\dot{q}_m,q) + J K^{-1}K_{Fv}(\dot{u}_L - K\dot{q}_m) \\
+&\quad {} + J K^{-1}K_{Fp}\bigl[M(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + \mathbf{N}(q,\dot{q}) - K q_m\bigr]
+\end{aligned}
 \end{equation}
-其中$\dot{u}_L$和$\ddot{u}_L$将分别由式\eqref{eq:7.4.50}和\eqref{eq:7.4.53}给出。
+其中$\ddot{u}_L$由式\eqref{eq:7.4.53}给出；方括号内即为$\eta_F=u_L-Kq_m$（见式\eqref{eq:7.4.34}与式\eqref{eq:7.4.36}）。
 
 在仔细检查式\eqref{eq:7.4.50}和\eqref{eq:7.4.53}中给出的$\dot{u}_L$和$\ddot{u}_L$的函数依赖性后，很明显为什么我们假设期望轨迹和连杆动力学足够平滑。具体而言，从式\eqref{eq:7.4.50}和\eqref{eq:7.4.53}我们可以看到，式\eqref{eq:7.4.39}中给出的校正控制器将需要期望轨迹的第一、第二、第三和第四时间导数有界，同时需要连杆动力学的第一和第二导数存在。对期望轨迹和连杆动力学的这些假设确保控制输入保持有界。
 
@@ -1027,57 +1112,76 @@ u_F = J\bar{M}^{-1}(q)[\dot{u}_L + K_{Fv}\eta_F + \bar{M}(q)K_{Fp}\eta_F + \dot{
 \textbf{表7.4.2}\quad RLFJ校正控制器
 
 \begin{center}
-\begin{tabular}{|l|l|}
+\small
+\begin{tabular}{|l|p{11.2cm}|}
 \hline
-\textbf{控制律} & $u_F = J\bar{M}^{-1}(q)[\ddot{u}_L + K_{Fv}\dot{\eta}_F + \bar{M}(q)K_{Fp}\eta_F + \dot{\bar{M}}^{-1}(q)\bar{M}(q)\eta_F] + B_m(q_m,\dot{q}_m)$ \\
+\textbf{扭矩控制器} & \begin{minipage}[t]{\linewidth}\raggedright\setlength{\lineskip}{6pt}
+$\begin{aligned}[t] u_F &= J K^{-1}\ddot{u}_L + B_m(q_m,\dot{q}_m,q) + J K^{-1}K_{Fv}(\dot{u}_L-K\dot{q}_m) \\ &\quad {} + J K^{-1}K_{Fp}\bigl[M(q)(\ddot{q}_d+K_{Lv}\dot{e}+K_{Lp}e)+\mathbf{N}(q,\dot{q})-Kq_m\bigr] \end{aligned}$\par
+$\begin{aligned}[t] \dot{u}_L &= \dot{M}(q)(\ddot{q}_d+K_{Lv}\dot{e}+K_{Lp}e)+\dot{\mathbf{N}}(q,\dot{q}) \\ &\quad {} + M(q)\left[\frac{\mathrm{d}}{\mathrm{d}t}\ddot{q}_d+K_{Lv}(\ddot{q}_d-\ddot{q})+K_{Lp}\dot{e}\right] \end{aligned}$\par
+$\ddot{q}=M^{-1}(q)\bigl[Kq_m-\mathbf{N}(q,\dot{q})\bigr]$\par
+$\ddot{u}_L=\dfrac{\mathrm{d}}{\mathrm{d}t}\dot{u}_L\quad\text{（利用 $\ddot{q}$）}$
+\end{minipage} \\
 \hline
-\textbf{连杆控制器} & $u_L = \bar{M}(q)(\ddot{q}_d + K_{Lv}\dot{e} + K_{Lp}e) + N(q,\dot{q})$ \\
+\textbf{稳定性} & 跟踪误差$e$与$\dot{e}$渐近稳定。 \\
 \hline
-\textbf{扰动定义} & $\eta_F = \bar{M}^{-1}(q)[u_L - K(q_m - q)]$ \\
+\textbf{注释} & 控制器需要系统动力学的精确知识；增益矩阵$K_{Lv}$、$K_{Lp}$、$K_{Fv}$与$K_{Fp}$须足够大；期望轨迹须足够光滑。 \\
 \hline
 \end{tabular}
 \end{center}
 
-其中$\dot{u}_L$和$\ddot{u}_L$通过微分$u_L$并从式\eqref{eq:7.4.28}代入$\ddot{q}$获得。
+其中$\dot{u}_L$与$\ddot{u}_L$分别由表中第二式及$\ddot{u}_L=\frac{\mathrm{d}}{\mathrm{d}t}\dot{u}_L$给出，并与式\eqref{eq:7.4.50}、式\eqref{eq:7.4.53}一致；$\ddot{q}$由式\eqref{eq:7.4.28}得到即表中第三式，代入后可消去对$\ddot{q}$的直接测量需求。表中第一式与式\eqref{eq:7.4.39}等价（$\eta_F=u_L-Kq_m$，$\dot{\eta}_F=\dot{u}_L-K\dot{q}_m$）。
 
 我们现在提出一个示例来说明如何使用表7.4.2为RLFJ机器人设计校正控制器。
 
 \textbf{示例7.4--2：单连杆RLFJ机械臂的校正控制器}
 
-我们希望使用表7.4.2为图7.4.5中给出的单连杆柔性关节机器人臂设计和仿真校正控制器。系统的动力学采用
+我们希望使用表7.4.2为图7.4.5中给出的单连杆柔性关节机器人臂设计和仿真校正控制器。系统的动力学取为
 \begin{align}
-\bar{m}\ddot{q} + f_d \dot{q} + mgL \sin q &= K(q_m - q), \\
-J\ddot{q}_m + B\dot{q}_m + K(q_m - q) &= u_F
+m L^2 \ddot{q} + m L g \sin q + f_d \dot{q} + K q &= K q_m, \tag{1} \\
+J \ddot{q}_m + B \dot{q}_m + K(q_m - q) &= u_F. \tag{2}
 \end{align}
-其中$m=1$ kg，$K=10$ N，$B=5$ kg-m/s，$f_d=3$ kg-m/s，$L=1$ m，$g$是重力系数，$J=0.2$ kg-m$^2$，$q_m$是以弧度测量的电机位移，$u_F$是输入扭矩。
+（与式\eqref{eq:7.4.28}--\eqref{eq:7.4.30}对应：$M=mL^2$，$N=mLg\sin q+f_d\dot{q}$，$\mathbf{N}=N+Kq$，且$B_m(q_m,\dot{q}_m,q)=B\dot{q}_m+K(q_m-q)$。）
+其中$m=1$ kg，$K=10$ N，$B=5$ kg-m/s，$f_d=3$ kg-m/s，$L=1$ m，$g$为重力加速度，$J=0.2$ kg-m$^2$，$q_m$为电机位移（弧度），$u_F$为电机输入扭矩。
 
-假设式(1)和(2)给出的模型精确知道，我们可以使用表7.4.2来制定校正控制器
-\begin{align}
-u_F &= J\bar{m}^{-1}[\ddot{u}_L + K_{Fv}\dot{\eta}_F + \bar{m}K_{Fp}\eta_F] + B\dot{q}_m, \\
-\eta_F &= \bar{m}^{-1}(u_L - K(q_m - q))
-\end{align}
-而$\dot{\eta}_F$可以通过对$\eta_F$求导得到。其中$\dot{u}_L$从式(1)中找到为
-\begin{align}
-\dot{u}_L &= \bar{m}(\dddot{q}_d + K_{Lv}\ddot{e} + K_{Lp}\dot{e}) + f_d\ddot{q} + mgL\cos q \cdot \dot{q}, \\
-\ddot{q} &= \frac{1}{\bar{m}}[K(q_m - q) - f_d \dot{q} - mgL \sin q]
-\end{align}
-
-为获得式(3)中给出的$\ddot{u}_L$的表达式，我们将式(5)代入式(4)得到
-\begin{align}
-\dot{u}_L &= \bar{m}(\dddot{q}_d + K_{Lv}\ddot{e} + K_{Lp}\dot{e}) + f_d\frac{1}{\bar{m}}[K(q_m - q) - f_d \dot{q} - mgL \sin q] + mgL\cos q \cdot \dot{q}, \\
-\ddot{u}_L &= \bar{m}(q_d^{(4)} + K_{Lv}\dddot{e} + K_{Lp}\ddot{e}) + f_d\ddot{q} + mgL(\cos q \cdot \ddot{q} - \sin q \cdot \dot{q}^2)
-\end{align}
-其中$\ddot{q}$从式(5)中找到。
+假设式(1)和(2)给出的模型精确已知，由式\eqref{eq:7.4.54}可得该校正控制器为
+\begin{equation}\tag{3}
+\begin{aligned}
+u_F &= J K^{-1}\ddot{u}_L + B\dot{q}_m + K(q_m-q) + J K^{-1}K_{Fv}(\dot{u}_L-K\dot{q}_m) \\
+&\quad {} + J K^{-1}K_{Fp}\bigl[mL^2(\ddot{q}_d+K_{Lv}\dot{e}+K_{Lp}e)+mLg\sin q+f_d\dot{q}+Kq-Kq_m\bigr],
+\end{aligned}
+\end{equation}
+\begin{equation}\tag{4}
+\dot{u}_L = mLg\dot{q}\cos q+f_d\ddot{q}+K\dot{q}+mL^2\left[\frac{\mathrm{d}}{\mathrm{d}t}\ddot{q}_d+K_{Lv}(\ddot{q}_d-\ddot{q})+K_{Lp}\dot{e}\right],
+\end{equation}
+其中$\ddot{q}$由式(1)得到为
+\begin{equation}\tag{5}
+\ddot{q}=(mL^2)^{-1}\bigl[Kq_m-mLg\sin q-f_d\dot{q}-Kq\bigr].
+\end{equation}
+将式(5)代入式(4)得到
+\begin{equation}\tag{6}
+\begin{aligned}
+\dot{u}_L &= mLg\dot{q}\cos q+f_d(mL^2)^{-1}\bigl[Kq_m-mLg\sin q-f_d\dot{q}-Kq\bigr] \\
+&\quad {} +K\dot{q}+mL^2\left[\frac{\mathrm{d}}{\mathrm{d}t}\ddot{q}_d+K_{Lv}\left(\ddot{q}_d-(mL^2)^{-1}\bigl[Kq_m-mLg\sin q-f_d\dot{q}-Kq\bigr]\right)+K_{Lp}\dot{e}\right].
+\end{aligned}
+\end{equation}
+再对式(6)关于时间求导以得到$\ddot{u}_L$，可得
+\begin{equation}\tag{7}
+\begin{aligned}
+\ddot{u}_L &= mLg\ddot{q}\cos q-mLg\dot{q}^2\sin q \\
+&\quad {} +f_d(mL^2)^{-1}\bigl[K\dot{q}_m-mLg\dot{q}\cos q-f_d\ddot{q}-K\dot{q}\bigr]+K\ddot{q} \\
+&\quad {} +mL^2\left[\frac{\mathrm{d}^2}{\mathrm{d}t^2}\ddot{q}_d+K_{Lv}\left(\frac{\mathrm{d}}{\mathrm{d}t}\ddot{q}_d-(mL^2)^{-1}\bigl[K\dot{q}_m-mLg\dot{q}\cos q-f_d\ddot{q}-K\dot{q}\bigr]\right)+K_{Lp}(\ddot{q}_d-\ddot{q})\right].
+\end{aligned}
+\end{equation}
 
 校正控制器在以下条件下进行了仿真：控制参数、初始条件和期望轨迹由
 \begin{equation*}
-K_{Lp} = K_{Lv} = 5, \quad K_{Fp} = K_{Fv} = 10
+K_{Lv}=K_{Lp}=K_{Fv}=K_{Fp}=5
 \end{equation*}
 和
 \begin{equation*}
-q_d = \sin t, \quad q(0) = \dot{q}(0) = q_m(0) = \dot{q}_m(0) = 0
+q_d=\sin t,\quad q(0)=\dot{q}(0)=q_m(0)=\dot{q}_m(0)=0
 \end{equation*}
-给出
+给出。
 
 跟踪误差和控制扭矩在图7.4.6中描绘。如图所示，跟踪误差是渐近稳定的。
 

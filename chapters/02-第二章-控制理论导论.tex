@@ -100,30 +100,39 @@
 
 连续时间系统被称为线性的，如果它遵循叠加原理，即如果输出 $y_1(t)$ 由输入 $u_1(t)$ 产生，输出 $y_2(t)$ 由输入 $u_2(t)$ 产生，那么由 $u(t)=\alpha_1 u_1(t)+\alpha_2 u_2(t)$ 产生的输出由 $y(t)=\alpha_1 y_1(t)+\alpha_2 y_2(t)$ 给出，其中 $\alpha_1$ 和 $\alpha_2$ 是标量常数。线性、单输入/单输出（SISO）、连续时间、时不变系统由线性、标量、常系数常微分方程描述，例如：
 \begin{equation}\label{eq:2.2.1}
-\sum_{i=0}^{n} a_i \frac{d^i y(t)}{dt^i} = \sum_{i=0}^{n} b_i \frac{d^i u(t)}{dt^i}
+\begin{aligned}
+&\frac{d^n y(t)}{dt^n} + a_{n-1}\frac{d^{n-1}y(t)}{dt^{n-1}} + \cdots + a_1\frac{dy(t)}{dt} + a_0y(t) \\
+&\quad = b_n\frac{d^n u(t)}{dt^n} + b_{n-1}\frac{d^{n-1}u(t)}{dt^{n-1}} + \cdots + b_1\frac{du(t)}{dt} + b_0u(t)
+\end{aligned}
 \end{equation}
-其中 $a_i, b_i, i=0,\ldots,n$ 是标量常数，$y(t)$ 是标量输出，$u(t)$ 是标量输入。此外，在时间 $t_0$ 给定初始条件：
+其中 $a_i, b_i, i=0,\ldots,n$ 是标量常数，$y(t)$ 是标量输出，$u(t)$ 是标量输入。此外，对某时刻 $t_0$ 给定初始条件：
 \begin{equation}
-y(t_0), \frac{dy(t_0)}{dt}, \ldots, \frac{d^{n-1}y(t_0)}{dt^{n-1}}
+y(t_0),\, \frac{dy}{dt}(t_0),\, \ldots,\, \frac{d^{n-1}y}{dt^{n-1}}(t_0),\, u(t_0),\, \frac{du}{dt}(t_0),\, \ldots,\, \frac{d^{n-1}u}{dt^{n-1}}(t_0)
 \end{equation}
 注意，输入 $u(t)$ 的导数次数最多与输出 $y(t)$ 相同。否则，系统被称为非动态的。
 
 \subsubsection{状态空间实现}
 
-系统的状态被定义为一组充分的变量，当在时间 $t_0$ 指定这些变量以及输入 $u(t), t \geq t_0$ 时，足以完全确定系统在 $t \geq t_0$ 时的行为[Kailath 1980]。状态向量然后包含确定系统中任何信号的未来行为所需的所有必要变量。根据定义，这样的状态向量 $x(t)$ 不是唯一的，这一特性稍后将加以利用。事实上，如果 $x$ 是状态向量，那么任何 $\tilde{x}(t)=Tx(t)$ 也是状态向量，其中 $T$ 是任何 $n \times n$ 可逆矩阵。对于在\eqref{eq:2.2.1}中描述的连续时间系统，可以选择以下状态向量：
+系统的状态被定义为一组充分的变量，当在时间 $t_0$ 指定这些变量以及输入 $u(t), t \geq t_0$ 时，足以完全确定系统在 $t \geq t_0$ 时的行为[Kailath 1980]。状态向量然后包含确定系统中任何信号的未来行为所需的所有必要变量。根据定义，这样的状态向量 $x(t)$ 不是唯一的，这一特性稍后将加以利用。事实上，如果 $x$ 是状态向量，那么任何 $\bar{x}(t)=Tx(t)$ 也是状态向量，其中 $T$ 是任何 $n \times n$ 可逆矩阵。对于在\eqref{eq:2.2.1}中描述的连续时间系统，可以选择状态变量 $x_i(t) = d^{i-1}y(t)/dt^{i-1}$，其中 $x_1=y, x_2=\dot{y}, \ldots, x_n=y^{(n-1)}$。状态空间描述如下：
 \begin{equation}\label{eq:2.2.2}
-x_i(t) = \frac{d^{i-1}y(t)}{dt^{i-1}}, \quad i=1,2,\ldots,n
+\begin{aligned}
+\dot{x}_1(t) &= x_2(t) \\
+\dot{x}_2(t) &= x_3(t) \\
+\vdots & \vdots \\
+\dot{x}_{n-1}(t) &= x_n(t) \\
+\dot{x}_n(t) &= -a_0x_1(t) - a_1x_2(t) - \cdots - a_{n-1}x_n(t) + u(t)
+\end{aligned}
 \end{equation}
-其中 $x_1=y, x_2=\dot{y}, \ldots, x_n=y^{(n-1)}$。输入-输出方程然后简化为：
+其中 $\dot{x}_i = dx_i/dt, i=1,2,\ldots,n$。输入-输出方程然后简化为：
 \begin{equation}\label{eq:2.2.3}
-y(t) = b_0 x_1(t) + b_1 x_2(t) + \cdots + b_{n-1} x_n(t) + u(t)
+y(t) = b_0 x_1(t) + b_1 x_2(t) + \cdots + b_{n-1} x_n(t) + b_n u(t)
 \end{equation}
 
 \eqref{eq:2.2.2}和\eqref{eq:2.2.3}的更紧凑表述由下式给出：
 \begin{equation}\label{eq:2.2.4}
 \begin{aligned}
-\dot{x} &= Ax + Bu \\
-y &= Cx + Du
+\dot{x}(t) &= Ax(t) + bu(t) \\
+y(t) &= cx(t) + du(t)
 \end{aligned}
 \end{equation}
 
@@ -144,21 +153,24 @@ y &= Cx + Du
 
 其中
 \begin{equation}\label{eq:2.2.5}
-A = \begin{bmatrix}
+\begin{aligned}
+A &= \begin{bmatrix}
 0 & 1 & 0 & \cdots & 0 \\
 0 & 0 & 1 & \cdots & 0 \\
 \vdots & \vdots & \vdots & \ddots & \vdots \\
 0 & 0 & 0 & \cdots & 1 \\
--\frac{a_0}{a_n} & -\frac{a_1}{a_n} & -\frac{a_2}{a_n} & \cdots & -\frac{a_{n-1}}{a_n}
+-a_0 & -a_1 & -a_2 & \cdots & -a_{n-1}
 \end{bmatrix}, \quad
-B = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \\ 1 \end{bmatrix}
+b = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \\ 1 \end{bmatrix}, \\
+c &= \begin{bmatrix} b_0 & b_1 & \cdots & b_{n-1} \end{bmatrix}, \quad d = b_n
+\end{aligned}
 \end{equation}
 
 这种特定的状态空间表示被称为可控规范型[Kailath 1980]、[Antsaklis and Michel 1997]。一般来说，线性、时不变、连续时间系统将具有多个输入和一个以上的输出。事实上，$u(t)$ 是 $m \times 1$ 向量，$y(t)$ 是 $p \times 1$ 向量。将 $u(t)$ 与 $y(t)$ 关联的微分方程此处不介绍，但多输入/多输出（MIMO）系统的状态空间表示变为：
 \begin{equation}\label{eq:2.2.6}
 \begin{aligned}
-\dot{x} &= Ax + Bu \\
-y &= Cx + Du
+\dot{x}(t) &= Ax(t) + Bu(t) \\
+y(t) &= Cx(t) + Du(t)
 \end{aligned}
 \end{equation}
 其中 $A$ 是 $n \times n$，$B$ 是 $n \times m$，$C$ 是 $p \times n$，$D$ 是 $p \times m$。有关 $A, B, C$ 和 $D$ 的具体形式，读者再次参考[Kailath 1980]、[Antsaklis and Michel 1997]。\eqref{eq:2.2.6}的框图如图2.2.1a所示。注意，状态的最小数量等于找到微分方程组的唯一解所需的初始条件的数量。
@@ -180,12 +192,12 @@ x_1 = y, \quad x_2 = \dot{y}
 
 \begin{example}[双平台系统]
 考虑图2.2.2所示的MIMO机械系统，它代表了一个用于将实验与外部扰动隔离的双平台系统。系统有两个输入：导致地面移动的 $u_2$ 和导致平台 $m_1$ 移动的 $u_1$。系统还有2个输出，即平台 $m_1$ 的运动 $y_1$ 和平台 $m_2$ 的运动 $y_2$。实验将在平台 $m_1$ 的顶部进行，因此，人们希望最小化 $y_1$ 的大小。系统包含弹簧 $k_1$、$k_2$ 和阻尼器 $c_1$、$c_2$，使用牛顿第二定律获得描述该系统的微分方程：
-\begin{equation}\label{eq:2.2.8}
+\[
 m_1 \ddot{y}_1 + c_1(\dot{y}_1 - \dot{y}_2) + k_1(y_1 - y_2) + u_1 = 0
-\end{equation}
-\begin{equation}\label{eq:2.2.9}
+\]
+\[
 m_2 \ddot{y}_2 + c_1(\dot{y}_2 - \dot{y}_1) + c_2\dot{y}_2 + k_1(y_2 - y_1) + k_2(y_2 - u_2) = 0
-\end{equation}
+\]
 可以通过选择以下状态获得该系统的状态空间表述：
 \[
 x_1 = y_1, \quad x_2 = \dot{y}_1, \quad x_3 = y_2, \quad x_4 = \dot{y}_2
@@ -216,25 +228,25 @@ x_1 = y_1, \quad x_2 = \dot{y}_1, \quad x_3 = y_2, \quad x_4 = \dot{y}_2
 让我们考虑由\eqref{eq:2.2.6}描述的系统并取其拉普拉斯变换：
 \begin{equation}\label{eq:2.2.7}
 \begin{aligned}
-sX(s) &= AX(s) + BU(s) + x(0) \\
-Y(s) &= CX(s) + DU(s)
+s\mathbf{X}(s) - \mathbf{x}(0) &= \mathbf{A}\mathbf{X}(s) + \mathbf{B}\mathbf{U}(s) \\
+\mathbf{Y}(s) &= \mathbf{C}\mathbf{X}(s) + \mathbf{D}\mathbf{U}(s)
 \end{aligned}
 \end{equation}
-其中 $X(s), U(s)$ 和 $Y(s)$ 分别是 $x(t), u(t)$ 和 $y(t)$ 的拉普拉斯变换。初始状态向量为 $x(0)$。通过在\eqref{eq:2.2.7}中的两个方程之间消去 $X(s)$，我们找到以下关系：
+其中 $\mathbf{X}(s), \mathbf{U}(s)$ 和 $\mathbf{Y}(s)$ 分别是 $\mathbf{x}(t), \mathbf{u}(t)$ 和 $\mathbf{y}(t)$ 的拉普拉斯变换。初始状态向量为 $\mathbf{x}(0)$。通过在\eqref{eq:2.2.7}中的两个方程之间消去 $\mathbf{X}(s)$，我们找到以下关系：
 \begin{equation}\label{eq:2.2.8}
-Y(s) = [C(sI-A)^{-1}B + D]U(s) + C(sI-A)^{-1}x(0)
+\mathbf{Y}(s) = [\mathbf{C}(s\mathbf{I}-\mathbf{A})^{-1}\mathbf{B} + \mathbf{D}]\mathbf{U}(s) + \mathbf{C}(s\mathbf{I}-\mathbf{A})^{-1}\mathbf{x}(0)
 \end{equation}
-如前所述，当 $x(0)=0$ 时，传递函数作为输入 $U(s)$ 和输出 $Y(s)$ 之间的关系获得，即：
+如前所述，当 $\mathbf{x}(0)=0$ 时，传递函数作为输入 $\mathbf{U}(s)$ 和输出 $\mathbf{Y}(s)$ 之间的关系获得，即：
 \begin{equation}\label{eq:2.2.9}
-Y(s) = [C(sI-A)^{-1}B + D]U(s)
+\mathbf{Y}(s) = [\mathbf{C}(s\mathbf{I}-\mathbf{A})^{-1}\mathbf{B} + \mathbf{D}]\mathbf{U}(s).
 \end{equation}
 这个特定线性、时不变系统的传递函数由下式给出：
 \begin{equation}\label{eq:2.2.10}
-P(s) = C(sI-A)^{-1}B + D
+P(s) = \mathbf{C}(s\mathbf{I}-\mathbf{A})^{-1}\mathbf{B} + \mathbf{D}
 \end{equation}
 使得（见图2.2.1）：
 \begin{equation}\label{eq:2.2.11}
-Y(s) = P(s)U(s)
+\mathbf{Y}(s) = P(s)\mathbf{U}(s)
 \end{equation}
 
 \begin{example}[双重积分器的传递函数]
@@ -248,45 +260,58 @@ P(s) = \frac{1}{s^2}
 
 在离散时间情况下，使用差分方程描述系统如下：
 \begin{equation}\label{eq:2.2.12}
-\sum_{i=0}^{n} a_i y(k+i) = \sum_{i=0}^{n} b_i u(k+i)
+\begin{aligned}
+&y(k+n) + a_{n-1}y(k+n-1) + \cdots + a_1y(k+1) + a_0y(k) \\
+&\quad = b_n u(k+n) + b_{n-1} u(k+n-1) + \cdots + b_1 u(k+1) + b_0 u(k),
+\end{aligned}
 \end{equation}
 其中 $a_i, b_i, i=0,\ldots,n$ 是标量常数，$y(k)$ 是输出，$u(k)$ 是时间 $k$ 的输入。注意，时间 $k+n$ 的输出依赖于时间 $k+n$ 的输入，但不依赖于后面的输入；否则，系统将是非因果的。
 
 \subsubsection{状态空间表示}
 
-以与连续时间情况类似的方式，定义以下状态向量：
+以与连续时间情况类似的方式，定义状态变量 $x_i(k) = y(k+i-1)$，其中 $i=1,2,\ldots,n$。状态空间描述如下：
 \begin{equation}\label{eq:2.2.13}
-x_i(k) = y(k+i-1), \quad i=1,2,\ldots,n
+\begin{aligned}
+x_1(k+1) &= x_2(k) \\
+x_2(k+1) &= x_3(k) \\
+\vdots & \vdots \\
+x_{n-1}(k+1) &= x_n(k) \\
+x_n(k+1) &= -a_0x_1(k) - a_1x_2(k) - \cdots - a_{n-1}x_n(k) + u(k)
+\end{aligned}
 \end{equation}
 输入-输出方程然后简化为：
 \begin{equation}\label{eq:2.2.14}
-y(k) = b_0 x_1(k) + b_1 x_2(k) + \cdots + b_{n-1}x_n(k) + u(k)
+y(k) = b_0 x_1(k) + b_1 x_2(k) + \cdots + b_{n-1}x_n(k) + b_n u(k)
 \end{equation}
 \eqref{eq:2.2.13}和\eqref{eq:2.2.14}的更紧凑表述由下式给出：
 \begin{equation}\label{eq:2.2.15}
 \begin{aligned}
-x(k+1) &= Ax(k) + Bu(k) \\
-y(k) &= Cx(k) + Du(k)
+\mathbf{x}(k+1) &= \mathbf{A}\mathbf{x}(k) + \mathbf{b}u(k) \\
+y(k) &= \mathbf{c}\mathbf{x}(k) + du(k)
 \end{aligned}
 \end{equation}
 其中
 \begin{equation}\label{eq:2.2.16}
-A = \begin{bmatrix}
+\begin{aligned}
+\mathbf{A} &= \begin{bmatrix}
 0 & 1 & 0 & \cdots & 0 \\
 0 & 0 & 1 & \cdots & 0 \\
 \vdots & \vdots & \vdots & \ddots & \vdots \\
 0 & 0 & 0 & \cdots & 1 \\
--\frac{a_0}{a_n} & -\frac{a_1}{a_n} & -\frac{a_2}{a_n} & \cdots & -\frac{a_{n-1}}{a_n}
-\end{bmatrix}
+-a_0 & -a_1 & -a_2 & \cdots & -a_{n-1}
+\end{bmatrix}, \quad
+\mathbf{b} = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \\ 1 \end{bmatrix}, \\
+\mathbf{c} &= \begin{bmatrix} b_0 & b_1 & \cdots & b_{n-1} \end{bmatrix}, \quad d = b_n
+\end{aligned}
 \end{equation}
 MIMO情况与连续时间情况类似，由下式给出：
 \begin{equation}\label{eq:2.2.17}
 \begin{aligned}
-x(k+1) &= Ax(k) + Bu(k) \\
-y(k) &= Cx(k) + Du(k)
+\mathbf{x}(k+1) &= \mathbf{A}\mathbf{x}(k) + \mathbf{B}\mathbf{u}(k) \\
+\mathbf{y}(k) &= \mathbf{C}\mathbf{x}(k) + \mathbf{D}\mathbf{u}(k)
 \end{aligned}
 \end{equation}
-其中 $A$ 是 $n \times n$，$B$ 是 $n \times m$，$C$ 是 $p \times n$，$D$ 是 $p \times m$。
+其中 $\mathbf{A}$ 是 $n \times n$，$\mathbf{B}$ 是 $n \times m$，$\mathbf{C}$ 是 $p \times n$，$\mathbf{D}$ 是 $p \times m$。
 
 在许多实际情况下，例如在机器人的控制中，系统是连续时间系统，但控制器使用数字硬件实现。这将要求设计者在连续和离散时间系统之间进行转换。有许多不同的方法来"离散化"连续时间系统，其中一些在第3章中讨论。对这一控制问题的这一非常重要方面感兴趣的读者可参考[Åström and Wittenmark 1996]、[Franklin et al. 1997]。
 
@@ -307,20 +332,20 @@ y(k) &= x_1(k)
 
 \subsubsection{传递函数表示}
 
-以与连续时间情况类似的方式，由\eqref{eq:2.2.17}给出的线性、时不变、离散时间系统可以在Z变换域中由其传递函数 $P(z)$ 描述，从输入 $U(z)$ 到输出 $Y(z)$，使得：
+以与连续时间情况类似的方式，由\eqref{eq:2.2.17}给出的线性、时不变、离散时间系统可以在Z变换域中由其传递函数 $P(z)$ 描述，从输入 $\mathbf{U}(z)$ 到输出 $\mathbf{Y}(z)$，使得：
 \[
-Y(z) = P(z)U(z)
+\mathbf{Y}(z) = P(z)\mathbf{U}(z)
 \]
 其中
 \[
-P(z) = C(zI-A)^{-1}B + D
+P(z) = \mathbf{C}(z\mathbf{I}-\mathbf{A})^{-1}\mathbf{B} + \mathbf{D}
 \]
 注意，Z变换用于离散时间情况，而拉普拉斯变换用于连续时间情况。
 
 \begin{example}[离散时间双重积分器的传递函数]
 示例2.2.4的传递函数由下式给出：
 \[
-P(z) = \frac{T^2}{z^2 - 2z + 1}
+\frac{Y(z)}{U(z)} = \frac{T^2}{2}\,\frac{z+1}{(z-1)^2}
 \]
 \end{example}
 
@@ -332,11 +357,17 @@ P(z) = \frac{T^2}{z^2 - 2z + 1}
 
 非线性、标量、连续时间、时不变系统由非线性、标量、常系数微分方程描述，例如：
 \begin{equation}\label{eq:2.3.1}
-f(y, \dot{y}, \ldots, y^{(n)}, u, \dot{u}, \ldots, u^{(m)}) = 0
+\frac{d^n y(t)}{dt^n} = h\bigl[y(t), y^{(1)}(t), \ldots, y^{(n-1)}(t), u(t), u^{(1)}(t), \ldots, u^{(n)}(t)\bigr]
 \end{equation}
-其中 $y(t)$ 是输出，$u(t)$ 是所考虑系统的输入。与线性情况一样，我们通过其分量定义状态向量 $x$ 如下：
+其中 $y(t)$ 是输出，$u(t)$ 是所考虑系统的输入。与线性情况一样，定义状态分量 $x_1=y,\ x_2=\dot{y},\ \ldots,\ x_n=y^{(n-1)}$，则状态方程可写为
 \begin{equation}\label{eq:2.3.2}
-x_1 = y, \quad x_2 = \dot{y}, \quad \ldots, \quad x_n = y^{(n-1)}
+\begin{aligned}
+\dot{x}_1(t) &= x_2(t) \\
+\dot{x}_2(t) &= x_3(t) \\
+\vdots & \vdots \\
+\dot{x}_{n-1}(t) &= x_n(t) \\
+\dot{x}_n(t) &= h\bigl[x_1(t), x_2(t), \ldots, x_n(t), u(t), u^{(1)}(t), \ldots, u^{(n)}(t)\bigr]
+\end{aligned}
 \end{equation}
 输出方程然后简化为：
 \begin{equation}\label{eq:2.3.3}
@@ -345,13 +376,13 @@ y(t) = x_1(t)
 \eqref{eq:2.3.2}和\eqref{eq:2.3.3}的更紧凑表述由下式给出：
 \begin{equation}\label{eq:2.3.4}
 \begin{aligned}
-\dot{x} &= f(x, U) \\
-y &= cx
+\dot{x}(t) &= f[x(t), U(t)] \\
+y(t) &= cx(t)
 \end{aligned}
 \end{equation}
 其中
 \[
-U(t) = [u(t) \quad \dot{u}(t) \quad \cdots \quad u^{(n-1)}(t)]^T
+U(t) = [u(t) \quad u^{(1)}(t) \quad \cdots \quad u^{(n-1)}(t)]^T
 \]
 和
 \begin{equation}\label{eq:2.3.5}
@@ -363,11 +394,11 @@ c = [1 \quad 0 \quad 0 \quad \cdots \quad 0]
 \begin{enumerate}
 \item 考虑阻尼摆方程
 \[
-\ddot{y} + \dot{y} + \sin(y) = 0
+\ddot{y} + k\dot{y} + \sin y = 0
 \]
 通过选择 $x_1=y, x_2=\dot{y}$ 获得状态空间描述，导致：
 \[
-\dot{x}_1 = x_2, \quad \dot{x}_2 = -x_2 - \sin(x_1)
+\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \end{bmatrix} = \begin{bmatrix} x_2 \\ -\sin x_1 - kx_2 \end{bmatrix}
 \]
 $y(t)$ 的时间历程如图2.3.1所示。
 
@@ -394,47 +425,54 @@ M(q)\ddot{q} + V(q, \dot{q})\dot{q} + G(q) = \tau
 \[
 x = \begin{bmatrix} q \\ \dot{q} \end{bmatrix}
 \]
-输入向量为 $u=\tau$，假设输出向量为 $y=q$。由于刚性机器人的一些特殊性质（见第2章），矩阵 $M(q)$ 已知是可逆的，因此：
+输入向量为 $u=\tau$，假设输出向量为 $y=q$。由于刚性机器人的一些特殊性质（见第3章），矩阵 $M(q)$ 已知是可逆的，因此：
 \[
-\ddot{q} = M^{-1}(q)[\tau - V(q,\dot{q})\dot{q} - G(q)]
+\begin{bmatrix} \dot{q} \\ \ddot{q} \end{bmatrix} = \begin{bmatrix} \dot{q} \\ -M^{-1}(q)\bigl(V(q,\dot{q})\dot{q} + G(q)\bigr) \end{bmatrix} + \begin{bmatrix} 0 \\ M^{-1}(q) \end{bmatrix} \tau
 \]
-或
+或等价地，以 $y=q=[I \ \ 0]x$ 的输出，
 \[
-\dot{x} = \begin{bmatrix} \dot{q} \\ M^{-1}(q)[\tau - V(q,\dot{q})\dot{q} - G(q)] \end{bmatrix}
+\dot{x} = F(x) + G(x)u = f(x,u), \qquad y = \begin{bmatrix} I & 0 \end{bmatrix} x
 \]
 其中
 \[
-f(x) = \begin{bmatrix} x_2 \\ M^{-1}(x_1)[-V(x_1,x_2)x_2 - G(x_1)] \end{bmatrix}, \quad g(x) = \begin{bmatrix} 0 \\ M^{-1}(x_1) \end{bmatrix}
+F(x) = \begin{bmatrix} x_2 \\ -M^{-1}(x_1)\bigl(V(x_1,x_2)x_2 + G(x_1)\bigr) \end{bmatrix}, \quad G(x) = \begin{bmatrix} 0 \\ M^{-1}(x_1) \end{bmatrix}
 \]
+（与上文同一状态划分下，也可记 $f(x)=F(x)$、$g(x)=G(x)$，使得 $\dot{x}=f(x)+g(x)u$。）
 \end{example}
 
 \subsection{离散时间系统}
 
 非线性、标量、离散时间、时不变系统由非线性、标量、常系数差分方程描述，例如：
 \begin{equation}\label{eq:2.3.6}
-f(y(k), y(k+1), \ldots, y(k+n), u(k), u(k+1), \ldots, u(k+n)) = 0
+y(k+n) = h\bigl[y(k+n-1), \ldots, y(k+1), y(k), u(k), u(k-1), \ldots, u(k+n)\bigr]
 \end{equation}
-其中 $y(.)$ 和 $u$ 如前所定义。状态变量的简单选择将导致：
+其中 $y(\cdot)$ 和 $u$ 如前所定义。状态变量的简单选择将导致：
 \begin{equation}\label{eq:2.3.7}
-x_i(k) = y(k+i-1), \quad i=1,2,\ldots,n
+\begin{aligned}
+x_1(k+1) &= x_2(k) \\
+x_2(k+1) &= x_3(k) \\
+\vdots & \vdots \\
+x_{n-1}(k+1) &= x_n(k) \\
+x_n(k+1) &= h\bigl[x_n(k), \ldots, x_2(k), x_1(k), u(k), u(k-1), \ldots, u(k+n)\bigr]
+\end{aligned}
 \end{equation}
 或更紧凑地：
 \begin{equation}\label{eq:2.3.8}
 \begin{aligned}
-x(k+1) &= f(x(k), U(k)) \\
+x(k+1) &= f[x(k), U(k)] \\
 y(k) &= cx(k)
 \end{aligned}
 \end{equation}
 其中 $U(k)$ 和 $c$ 的定义类似于\eqref{eq:2.3.4}中给出的那些。
 
-\begin{example}[逻辑斯蒂方程]
+\begin{example}[逻辑斯蒂映射]
 考虑标量系统
 \[
-y(k+1) = y(k) + u(k)y(k)(1-y(k))
+y(k+1) = \lambda\, y(k)\bigl[1 - y(k)\bigr]
 \]
 这导致状态空间表示：
 \[
-x(k+1) = x(k) + u(k)x(k)(1-x(k)), \quad y(k) = x(k)
+x(k+1) = \lambda\, x(k)\bigl[1 - x(k)\bigr], \quad y(k) = x(k)
 \]
 \end{example}
 
@@ -442,7 +480,7 @@ x(k+1) = x(k) + u(k)x(k)(1-x(k)), \quad y(k) = x(k)
 
 \section{非线性系统与平衡点}
 
-在本节中，我们集中于由\eqref{eq:2.2.15}描述的系统，附加要求是 $u(t)$ 被指定为状态 $x(t)$ 的函数，即：
+在本节中，我们集中于由\eqref{eq:2.3.4}描述的系统，附加要求是 $u(t)$ 被指定为状态 $x(t)$ 的函数，即：
 \begin{equation}\label{eq:2.4.1}
 \dot{x}(t) = f[t, x(t)], \quad x \in \mathbb{R}^n
 \end{equation}
@@ -644,6 +682,24 @@ x(t) = [x_1(t), x_2(t), \ldots, x_n(t)]^T
 \[
 ||x||_\infty = \max_i \sup_{t \geq 0} |x_i(t)|
 \]
+\end{example}
+
+在某些情况下，我们希望处理在有限时间内有界但可能随着时间趋于无穷而变得无界的信号。这导致我们定义扩展的 $L_p$ 空间。因此考虑函数
+\begin{equation}\label{eq:2.5.1}
+f_T(t) = \begin{cases} f(t), & t \leq T \\ 0, & t > T \end{cases}
+\end{equation}
+那么，扩展的 $L_p$ 空间定义为
+\[
+L_{pe} = \{f | f_T \in L_p \text{ 对所有 } T < \infty\}
+\]
+我们还定义 $L_{pe}$ 上的范数为
+\begin{equation}\label{eq:2.5.2}
+|||f|||_{T_p} = ||f_T||_p
+\end{equation}
+感兴趣的读者可以参考 [Boyd and Barratt]、[Desoer and Vidyasagar 1975] 了解更多细节。
+
+\begin{example}[扩展 $L_p$ 空间]
+函数 $f(t)=t$ 属于 $L_{pe}$（对于任何 $p \in [1, \infty]$），但不属于 $L_p$。
 \end{example}
 
 \subsubsection{系统范数}
@@ -1036,11 +1092,39 @@ F(x) = A(x)^T P + PA(x) + Q
 在某个以原点为中心的球 $B$ 中是正定的。函数 $V(x)=f(x)^T P f(x)$ 然后是系统的李雅普诺夫函数。如果 $B=\mathbb{R}^n$ 并且如果 $V(x)$ 是径向无界的，则系统是GAS。
 \end{theorem}
 
+\subsubsection{收敛速率}
+
+尽管李雅普诺夫稳定性理论并不直接给出系统的瞬态行为指示，但它实际上可以用于估计线性系统的收敛速率。为了看清这一点，考虑以下不等式，它们是 Rayleigh-Ritz 定理 2.5.2 的结果：
+\begin{equation}\label{eq:2.7.2}
+\lambda_{\min}(P) x^T x \leq x^T P x \leq \lambda_{\max}(P) x^T x
+\end{equation}
+那么，注意
+\begin{equation}\label{eq:2.7.3}
+\dot{V} \leq -\gamma x^T x
+\end{equation}
+现在，我们可以通过分离变量并积分来证明
+\begin{equation}\label{eq:2.7.4}
+x^T \lambda_{\min}(P) x \leq V(t) \leq V(0) e^{-\alpha t}
+\end{equation}
+或者
+\begin{equation}\label{eq:2.7.5}
+||x(t)|| \leq \sqrt{V(0)/\lambda_{\min}(P)} e^{-\alpha t/2}
+\end{equation}
+因此，$x(t)$ 以快于 $\alpha/2$ 的速率趋近于原点。事实上，可以证明当 $Q=I$ 时获得最快的收敛速率估计。
+
 \section{输入/输出稳定性}
 
 当处理非线性系统时，李雅普诺夫意义下的稳定性并不一定意味着有界输入将导致有界输出。这个事实在下一个示例中显示。
 
 然而，我们需要讨论有界输入将导致有界输出的条件[Boyd and Barratt]、[Desoer and Vidyasagar 1975]。这实际上在讨论系统诱导范数时已经提出（见定义2.5.7），当前的讨论应作为这些概念与李雅普诺夫稳定性的对比。
+
+考虑动态系统：
+\begin{equation}\label{eq:2.8.1}
+\dot{x} = f(x, u)
+\end{equation}
+\begin{equation}\label{eq:2.8.2}
+y = h(x, u)
+\end{equation}
 
 \begin{definition}[BIBO稳定性]
 如果对于任何 $||u(t)|| \leq M < \infty$，存在有限 $\gamma > 0$ 和 $b$ 使得：
@@ -1200,7 +1284,7 @@ u_1, u_2 \in L_p\]
 \subsection{总稳定性定理}
 
 \begin{theorem}[总稳定性]
-考虑由下式描述的状态空间系统：
+考虑如下形式的状态空间系统：
 \[
 \dot{x} = Ax + f(t, x) + g(t, x)
 \]
@@ -1213,7 +1297,7 @@ u_1, u_2 \in L_p\]
 \item $||g(t, x_1) - g(t, x_2)|| \leq \beta_2 ||x_1 - x_2||$
 \item $||x_0|| \leq r/K$
 \end{enumerate}
-那么，存在\eqref{eq:2.10.1}的唯一解 $x(t)$ 并且：
+那么，存在唯一解 $x(t)$ 并且：
 \[
 ||x(t)|| \leq k_1 e^{-\alpha t} ||x(0)|| + k_2 r
 \]
@@ -1252,7 +1336,11 @@ x(t) \leq b \exp\left(\int_0^t a(\tau)d\tau\right)
 
 控制设计的目的是使机器人以可预测和期望的方式响应一组输入信号。在本节中，我们回顾如何设计线性控制器，以使机器人-控制器组合的行为是可接受的。机器人控制器的第一个要求显然是其稳定性。因此，控制器的第一个功能是稳定机器人在空间中移动时的状态。事实上，我们现在可以提出我们希望解决的问题：
 
-\textbf{线性控制设计问题}：考虑一个LTI系统。设计一个对输出 $y(t)$ 进行操作而不进行微分并生成输入 $u(t)$ 的反馈控制器，使得系统从任何初始状态 $x(0)$ 在有限时间内达到指定的期望最终状态 $x_d$。这个问题有2个部分：
+\textbf{线性控制设计问题}：考虑如下LTI系统：
+\begin{equation}\label{eq:2.11.1}
+\dot{x} = Ax + Bu
+\end{equation}
+设计一个对输出 $y(t)$ 进行操作而不进行微分并生成输入 $u(t)$ 的反馈控制器，使得系统从任何初始状态 $x(0)$ 在有限时间内达到指定的期望最终状态 $x_d$。这个问题有2个部分：
 \begin{enumerate}
 \item 可控性：如果 $y=x$，问题可以解决吗？
 \item 可观测性：如果是这样，我如何从 $y$ 得到 $x$？
@@ -1265,10 +1353,10 @@ x(t) \leq b \exp\left(\int_0^t a(\tau)d\tau\right)
 \end{definition}
 
 \begin{theorem}[可控性测试]
-LTI系统完全可控的必要和充分条件是 $n \times nm$ 矩阵：
-\[
+LTI系统完全可控的必要和充分条件是 $n \times nm$ 可控性矩阵：
+\begin{equation}\label{eq:2.11.2}
 C = [B \quad AB \quad A^2B \quad \cdots \quad A^{n-1}B]
-\]
+\end{equation}
 是满秩的，即 $\text{rank} C = n$。
 \end{theorem}
 
@@ -1296,10 +1384,10 @@ K = [0 \quad 0 \quad \cdots \quad 0 \quad 1]C^{-1}\phi(A)
 \end{definition}
 
 \begin{theorem}[可观测性测试]
-LTI系统完全可观测的必要和充分条件是 $np \times n$ 矩阵：
-\[
+LTI系统完全可观测的必要和充分条件是 $np \times n$ 可观测性矩阵：
+\begin{equation}\label{eq:2.11.6}
 O = \begin{bmatrix} C \\ CA \\ CA^2 \\ \vdots \\ CA^{n-1} \end{bmatrix}
-\]
+\end{equation}
 是满秩的。
 \end{theorem}
 
@@ -1308,6 +1396,42 @@ O = \begin{bmatrix} C \\ CA \\ CA^2 \\ \vdots \\ CA^{n-1} \end{bmatrix}
 \begin{theorem}
 当且仅当状态空间实现既是可观测的又是可控的，线性控制设计问题对系统\eqref{eq:2.11.1}是可解的。
 \end{theorem}
+
+假设我们有2个通过状态空间变换关联的传递函数$H(s)$的实现：
+\[
+\begin{aligned}
+\dot{x} &= Ax + bu \\
+y &= cx + du
+\end{aligned}
+\]
+和
+\[
+\begin{aligned}
+\dot{\bar{x}} &= T^{-1}AT\bar{x} + T^{-1}bu = \bar{A}\bar{x} + \bar{b}u \\
+y &= cT\bar{x} + du = \bar{c}\bar{x} + \bar{d}u
+\end{aligned}
+\]
+那么，变换后的可控性矩阵$\bar{\mathcal{C}}$为：
+\begin{equation}\label{eq:2.11.7}
+\begin{aligned}
+\bar{\mathcal{C}} &= [T^{-1}b \quad T^{-1}ATT^{-1}b \quad \cdots \quad T^{-1}A^{n-1}b] \\
+&= T^{-1}\mathcal{C}
+\end{aligned}
+\end{equation}
+因此，$\text{rank}\mathcal{C} = \text{rank}\bar{\mathcal{C}}$，可控性在状态空间变换下保持不变。
+
+接下来要解决的问题是找到系统\eqref{eq:2.11.1}的条件，使得静态输出反馈控制器将使闭环系统SPR。我们只考虑SISO情况，因为这是本书中唯一遇到的情况。
+\begin{equation}\label{eq:2.11.8}
+\begin{aligned}
+\dot{x} &= (A - \gamma BKC)x + BK\tau \\
+y &= Cx
+\end{aligned}
+\end{equation}
+或在频域中
+\begin{equation}\label{eq:2.11.9}
+Y(s) = [I + \gamma P(s)K]^{-1}P(s)KR(s) = \frac{P(s)K}{1+\gamma P(s)K}R(s)
+\end{equation}
+我们提出一个简单的频域结果来展示存在$K$和$\gamma$使得闭环系统SPR。该结果首次出现在[Gu 1988]中。
 
 \begin{quote}
 \textit{注：读者可以通过}\href{https://frankjie09.github.io/Robot-Manipulator-Control-CN/figures/PID_Tuning_Demo.html}{\textbf{交互式可视化工具}}\textit{实时调节PID参数，观察Kp、Ki、Kd对机器人关节跟踪性能的影响。}
